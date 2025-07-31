@@ -1,0 +1,147 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/login"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Criar Conta - LIMA</ion-title>
+    <ion-buttons slot="end">
+      <!-- Botão de tema -->
+      <ion-button (click)="toggleTheme()" fill="clear">
+        <ion-icon slot="icon-only" [name]="darkMode ? 'sunny' : 'moon'"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="register-content" [fullscreen]="true">
+  <div class="register-container">
+    <!-- Header -->
+    <div class="header-section">
+      <ion-icon name="person-add" class="register-icon"></ion-icon>
+      <h1>Criar Conta</h1>
+    </div>
+
+    <!-- Register Form -->
+    <ion-card class="register-card">
+      <ion-card-content>
+        <form (ngSubmit)="onRegister()" #registerForm="ngForm">
+          <!-- Name Field -->
+          <ion-item class="input-item" lines="none">
+            <ion-input
+              type="text"
+              [(ngModel)]="registerData.name"
+              name="name"
+              placeholder="Nome completo"
+              required
+              autocomplete="name"
+              [disabled]="isLoading">
+            </ion-input>
+          </ion-item>
+
+          <!-- Email Field -->
+          <ion-item class="input-item" lines="none">
+            <ion-input
+              type="email"
+              [(ngModel)]="registerData.email"
+              name="email"
+              placeholder="Email"
+              required
+              autocomplete="email"
+              [disabled]="isLoading">
+            </ion-input>
+          </ion-item>
+
+          <!-- Password Field -->
+          <ion-item class="input-item" lines="none">
+            <ion-input
+              [type]="showPassword ? 'text' : 'password'"
+              [(ngModel)]="registerData.password"
+              name="password"
+              placeholder="Senha (mín. 6 caracteres)"
+              required
+              autocomplete="new-password"
+              [disabled]="isLoading">
+            </ion-input>
+            <ion-button 
+              fill="clear" 
+              slot="end" 
+              (click)="togglePasswordVisibility()"
+              [disabled]="isLoading">
+              <ion-icon [name]="showPassword ? 'eye-off' : 'eye'"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <!-- Password Strength Indicator -->
+          <div class="password-strength" *ngIf="registerData.password">
+            <div class="strength-bar">
+              <div 
+                class="strength-fill" 
+                [class.weak]="getPasswordStrength() === 'weak'"
+                [class.medium]="getPasswordStrength() === 'medium'"
+                [class.strong]="getPasswordStrength() === 'strong'">
+              </div>
+            </div>
+          </div>
+
+          <!-- Confirm Password Field -->
+          <ion-item class="input-item" lines="none">
+            <ion-input
+              [type]="showConfirmPassword ? 'text' : 'password'"
+              [(ngModel)]="confirmPassword"
+              name="confirmPassword"
+              placeholder="Confirmar senha"
+              required
+              autocomplete="new-password"
+              [disabled]="isLoading">
+            </ion-input>
+            <ion-button 
+              fill="clear" 
+              slot="end" 
+              (click)="toggleConfirmPasswordVisibility()"
+              [disabled]="isLoading">
+              <ion-icon [name]="showConfirmPassword ? 'eye-off' : 'eye'"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <!-- Password Match Indicator -->
+          <div class="password-match" *ngIf="confirmPassword">
+            <ion-text [color]="registerData.password === confirmPassword ? 'success' : 'danger'">
+              <ion-icon [name]="registerData.password === confirmPassword ? 'checkmark-circle' : 'close-circle'"></ion-icon>
+              {{ registerData.password === confirmPassword ? 'Senhas coincidem' : 'Senhas não coincidem' }}
+            </ion-text>
+          </div>
+
+          <!-- Error Message -->
+          <ion-text color="danger" *ngIf="errorMessage" class="error-text">
+            <p>{{ errorMessage }}</p>
+          </ion-text>
+
+          <!-- Register Button -->
+          <ion-button 
+            expand="block" 
+            type="submit" 
+            [disabled]="isLoading || !registerForm.form.valid || registerData.password !== confirmPassword"
+            class="register-button">
+            <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+            <span *ngIf="!isLoading">Criar Conta</span>
+          </ion-button>
+        </form>
+
+        <!-- Login Link -->
+        <div class="login-section">
+          <ion-text>
+            <p>Já tem uma conta? 
+              <ion-button 
+                fill="clear" 
+                size="small"
+                (click)="goToLogin()"
+                [disabled]="isLoading">
+                Fazer login
+              </ion-button>
+            </p>
+          </ion-text>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

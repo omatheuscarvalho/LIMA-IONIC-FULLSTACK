@@ -1,0 +1,128 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Login - LIMA</ion-title>
+    <ion-buttons slot="end">
+      <!-- Botão de tema -->
+      <ion-button (click)="toggleTheme()" fill="clear">
+        <ion-icon slot="icon-only" [name]="darkMode ? 'sunny' : 'moon'"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="login-container">
+    <!-- Logo/Header -->
+    <div class="header-section">
+      <ion-icon name="person" class="login-icon"></ion-icon>
+      <h1>Bem-vindo ao LIMA</h1>
+      <p>Faça login para continuar</p>
+    </div>
+
+    <!-- Login Form -->
+    <ion-card class="login-card">
+      <ion-card-header>
+        <ion-card-title>Acessar</ion-card-title>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+          <!-- Email Field -->
+          <ion-item class="input-item">
+            <ion-label position="stacked">Email</ion-label>
+            <ion-input
+              type="email"
+              [(ngModel)]="credentials.email"
+              name="email"
+              placeholder="Digite seu email"
+              required
+              autocomplete="email"
+              [disabled]="isLoading">
+            </ion-input>
+          </ion-item>
+
+          <!-- Password Field -->
+          <ion-item class="input-item">
+            <ion-label position="stacked">Senha</ion-label>
+            <ion-input
+              [type]="showPassword ? 'text' : 'password'"
+              [(ngModel)]="credentials.password"
+              name="password"
+              placeholder="Digite sua senha"
+              required
+              autocomplete="current-password"
+              [disabled]="isLoading">
+            </ion-input>
+            <ion-button 
+              fill="clear" 
+              slot="end" 
+              (click)="togglePasswordVisibility()"
+              [disabled]="isLoading">
+              <ion-icon [name]="showPassword ? 'eye-off' : 'eye'"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <!-- Error Message -->
+          <ion-text color="danger" *ngIf="errorMessage" class="error-text">
+            <p>{{ errorMessage }}</p>
+          </ion-text>
+
+          <!-- Login Button -->
+          <ion-button 
+            expand="block" 
+            type="submit" 
+            [disabled]="isLoading || !loginForm.form.valid"
+            class="login-button">
+            <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+            <span *ngIf="!isLoading">Acessar</span>
+          </ion-button>
+        </form>
+
+        <!-- Demo Credentials -->
+        <div class="demo-section">
+          <ion-text color="medium">
+            <p><strong>Credenciais de Demonstração:</strong></p>
+          </ion-text>
+          
+          <ion-grid>
+            <ion-row>
+              <ion-col size="6">
+                <ion-button 
+                  fill="outline" 
+                  size="small" 
+                  expand="block"
+                  (click)="fillDemoCredentials('admin')"
+                  [disabled]="isLoading">
+                  Admin
+                </ion-button>
+              </ion-col>
+              <ion-col size="6">
+                <ion-button 
+                  fill="outline" 
+                  size="small" 
+                  expand="block"
+                  (click)="fillDemoCredentials('user')"
+                  [disabled]="isLoading">
+                  Usuário
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </div>
+
+        <!-- Register Link -->
+        <div class="register-section">
+          <ion-text color="medium">
+            <p>Não tem uma conta?</p>
+          </ion-text>
+          <ion-button 
+            fill="clear" 
+            (click)="goToRegister()"
+            [disabled]="isLoading">
+            Criar conta
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

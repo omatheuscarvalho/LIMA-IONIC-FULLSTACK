@@ -1,0 +1,49 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Ajuda</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="home"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Como usar o aplicativo L.I.M.A.</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>O L.I.M.A. (Leaf Image Measurement and Analysis) é uma ferramenta para análise de imagens de folhas. Siga as instruções abaixo para obter os melhores resultados:</p>
+      
+      <h5>1. Preparando a imagem</h5>
+      <ul>
+        <li>Use um fundo contrastante com a folha (preferencialmente branco)</li>
+        <li>Garanta boa iluminação, evitando sombras</li>
+        <li>Inclua um objeto de escala conhecido (como uma régua ou um quadrado de tamanho conhecido)</li>
+        <li>Posicione a folha de forma plana, sem dobras</li>
+      </ul>
+      
+      <h5>2. Configurando a análise</h5>
+      <ul>
+        <li>Preencha os campos de Espécie, Tratamento e Réplica</li>
+        <li>Informe a área do padrão de escala em cm²</li>
+        <li>Selecione as medidas que deseja calcular</li>
+      </ul>
+      
+      <h5>3. Realizando a análise</h5>
+      <ul>
+        <li>Selecione a imagem usando o botão "Selecionar Imagem"</li>
+        <li>Clique em "Calcular" para processar a imagem</li>
+        <li>Visualize os resultados na seção correspondente</li>
+        <li>Exporte os resultados em formato CSV se necessário</li>
+      </ul>
+      
+      <h5>4. Histórico e exportação</h5>
+      <ul>
+        <li>Todas as análises são salvas automaticamente no histórico</li>
+        <li>Acesse o histórico na aba correspondente</li>
+        <li>Os dados exportados em CSV podem ser abertos em programas como Excel ou LibreOffice Calc</li>
+      </ul>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

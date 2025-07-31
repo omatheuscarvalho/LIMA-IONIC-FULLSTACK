@@ -1,0 +1,345 @@
+ion-content {
+  --background: var(--register-bg, #ffffff);
+}
+
+// Força o fundo branco no modo claro
+body:not(.dark) ion-content {
+  --background: #ffffff !important;
+}
+
+// Força o fundo escuro no modo escuro
+body.dark ion-content {
+  --background: #121212 !important;
+}
+
+.register-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.header-section {
+  text-align: center;
+  margin-bottom: 32px;
+  
+  .register-icon {
+    font-size: 3.5rem;
+    color: var(--register-icon-color, var(--ion-color-primary));
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+  }
+  
+  h1 {
+    color: var(--register-title-color, var(--ion-color-dark));
+    font-size: 1.8rem;
+    font-weight: 500;
+    margin: 0;
+    transition: all 0.3s ease;
+  }
+}
+
+.register-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--register-card-bg, var(--ion-card-background));
+  border-radius: 20px;
+  box-shadow: var(--register-card-shadow, 0 4px 20px rgba(0, 0, 0, 0.08));
+  border: var(--register-card-border, none);
+  transition: all 0.3s ease;
+  
+  ion-card-content {
+    padding: 32px 24px;
+  }
+}
+
+.input-item {
+  margin-bottom: 20px;
+  border-radius: 12px;
+  --background: var(--input-bg, var(--ion-color-light));
+  --border-color: transparent;
+  --highlight-color: var(--ion-color-primary);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--input-hover-shadow, 0 2px 8px rgba(0, 0, 0, 0.1));
+  }
+  
+  ion-input {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-top: 14px;
+    --padding-bottom: 14px;
+    --color: var(--input-text-color, var(--ion-color-dark));
+    --placeholder-color: var(--input-placeholder-color, var(--ion-color-medium));
+    font-size: 1rem;
+  }
+  
+  ion-button {
+    --color: var(--ion-color-medium);
+    margin: 0;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      --color: var(--ion-color-primary);
+    }
+  }
+}
+
+.password-strength {
+  margin: 8px 0 16px 0;
+  
+  .strength-bar {
+    width: 100%;
+    height: 4px;
+    background-color: var(--strength-bar-bg, var(--ion-color-light-shade));
+    border-radius: 4px;
+    overflow: hidden;
+    
+    .strength-fill {
+      height: 100%;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 4px;
+      
+      &.weak {
+        width: 33%;
+        background: var(--ion-color-danger);
+      }
+      
+      &.medium {
+        width: 66%;
+        background: var(--ion-color-warning);
+      }
+      
+      &.strong {
+        width: 100%;
+        background: var(--ion-color-success);
+      }
+    }
+  }
+}
+
+.password-match {
+  margin: 8px 0 16px 0;
+  
+  ion-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    
+    ion-icon {
+      font-size: 1rem;
+    }
+  }
+}
+
+.error-text {
+  margin: 16px 0;
+  text-align: center;
+  
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--ion-color-danger);
+    background: var(--error-bg, rgba(235, 68, 90, 0.1));
+    padding: 12px 16px;
+    border-radius: 8px;
+    border-left: 3px solid var(--ion-color-danger);
+  }
+}
+
+.register-button {
+  margin: 24px 0 20px 0;
+  height: 48px;
+  font-weight: 600;
+  font-size: 1rem;
+  --border-radius: 12px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.3);
+  }
+  
+  ion-spinner {
+    margin-right: 8px;
+  }
+}
+
+.login-section {
+  text-align: center;
+  
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--login-section-text, var(--ion-color-medium));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  
+  ion-button {
+    --color: var(--ion-color-primary);
+    font-weight: 600;
+    margin: 0;
+    
+    &:hover {
+      --color: var(--ion-color-primary-shade);
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 480px) {
+  .register-container {
+    padding: 16px;
+  }
+  
+  .header-section {
+    margin-bottom: 24px;
+    
+    .register-icon {
+      font-size: 3rem;
+    }
+    
+    h1 {
+      font-size: 1.6rem;
+    }
+  }
+  
+  .register-card {
+    max-width: 100%;
+    
+    ion-card-content {
+      padding: 24px 20px;
+    }
+  }
+  
+  .input-item {
+    margin-bottom: 16px;
+  }
+}
+
+:root {
+  // Light Mode (padrão)
+  --register-bg: #ffffff;
+  --register-icon-color: #3880ff;
+  --register-title-color: #222428;
+  --register-card-bg: #ffffff;
+  --register-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --register-card-border: none;
+  --input-bg: #f4f5f8;
+  --input-text-color: #222428;
+  --input-placeholder-color: #92949c;
+  --input-hover-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --strength-bar-bg: #d7d8da;
+  --error-bg: rgba(235, 68, 90, 0.1);
+  --login-section-text: #92949c;
+}
+
+// Dark Mode
+body.dark {
+  --register-bg: #121212 !important;
+  --register-icon-color: #4c8dff !important;
+  --register-title-color: #ffffff !important;
+  --register-card-bg: #1e1e1e !important;
+  --register-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+  --register-card-border: 1px solid #333333 !important;
+  --input-bg: #2a2a2a !important;
+  --input-text-color: #ffffff !important;
+  --input-placeholder-color: #888888 !important;
+  --input-hover-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  --strength-bar-bg: #333333 !important;
+  --error-bg: rgba(255, 73, 97, 0.15) !important;
+  --login-section-text: #888888 !important;
+}
+
+// Focus States
+.input-item.item-has-focus {
+  --border-color: var(--ion-color-primary);
+  --highlight-color: var(--ion-color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--input-hover-shadow, 0 2px 8px rgba(0, 0, 0, 0.1));
+}
+
+// Animations
+.register-card {
+  animation: slideInUp 0.4s ease-out;
+}
+
+.header-section {
+  animation: fadeInDown 0.5s ease-out;
+}
+
+.input-item {
+  animation: fadeInUp 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
+.input-item:nth-child(1) { animation-delay: 0.1s; }
+.input-item:nth-child(2) { animation-delay: 0.15s; }
+.input-item:nth-child(3) { animation-delay: 0.2s; }
+.input-item:nth-child(4) { animation-delay: 0.25s; }
+
+.register-button {
+  animation: fadeInUp 0.4s ease-out 0.3s both;
+}
+
+.login-section {
+  animation: fadeInUp 0.4s ease-out 0.35s both;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(15px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// Reduce motion for accessibility
+@media (prefers-reduced-motion: reduce) {
+  .register-card,
+  .header-section,
+  .input-item,
+  .register-button,
+  .login-section {
+    animation: none;
+  }
+  
+  .input-item:hover,
+  .input-item.item-has-focus,
+  .register-button:hover {
+    transform: none;
+  }
+}

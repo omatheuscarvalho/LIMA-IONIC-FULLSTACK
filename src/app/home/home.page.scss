@@ -1,0 +1,154 @@
+.ion-padding {
+  margin-top: 10px;
+}
+
+
+
+/* Estilos gerais para cards */
+ion-card {
+  margin-bottom: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+ion-card-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Container principal */
+.main-container {
+  padding: 0 8px;
+  margin-top: 0;
+}
+
+/* Estilos para o layout de colunas */
+.config-column {
+  padding: 0 4px;
+}
+
+.image-column {
+  padding: 0 4px;
+}
+
+/* Estilos para o card de configuração */
+.config-card {
+  margin-bottom: 12px;
+}
+
+.compact-item {
+  --min-height: 60px;
+  margin-bottom: 4px;
+}
+
+.section-label {
+  display: block;
+  margin: 8px 0 4px 0;
+  font-weight: 500;
+}
+
+/* Estilos para os checkboxes */
+.medidas-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin: 4px 0 8px 0;
+}
+
+.checkbox-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --min-height: 28px;
+  width: auto;
+  margin-right: 8px;
+}
+
+/* Estilos para os botões de ação */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Estilos para o card de resultados */
+.results-card {
+  margin-bottom: 12px;
+}
+
+.results-list ion-item {
+  --min-height: 36px;
+}
+
+.export-button {
+  margin-top: 8px;
+}
+
+/* Estilos para o card de imagem */
+.image-card {
+  height: calc(100% - 12px);
+  margin-bottom: 12px;
+}
+
+.image-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  height: calc(100% - 20px);
+  background-color: var(--ion-color-light);
+  border-radius: 8px;
+  position: relative;
+}
+
+.placeholder-text {
+  position: absolute;
+  text-align: center;
+  font-style: italic;
+}
+
+ion-img {
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Estilos para o modo escuro */
+:host-context(.dark) .image-container {
+  background-color: var(--ion-color-dark-shade);
+}
+
+/* Ocultar card de resultados móvel em telas grandes */
+.results-card-mobile {
+  display: none;
+}
+
+/* Estilos responsivos */
+@media (min-width: 768px) {
+  .action-buttons {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  .action-buttons ion-button {
+    width: 32%;
+  }
+  
+  ion-img {
+    max-height: 100%;
+  }
+}
+
+/* Estilos para telas pequenas */
+@media (max-width: 767px) {
+  .results-card {
+    display: none;
+  }
+  
+  .results-card-mobile {
+    display: block;
+  }
+  
+  .image-container {
+    min-height: 180px;
+  }
+}

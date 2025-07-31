@@ -1,0 +1,360 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>L.I.M.A.</ion-title>
+    <ion-buttons slot="end">
+      <!-- Informações do usuário -->
+      <ion-button fill="clear" *ngIf="getCurrentUser()">
+        <ion-icon name="person"></ion-icon>
+      </ion-button>
+      
+      <!-- Botão de tema -->
+      <ion-button (click)="toggleTheme()" fill="clear">
+        <ion-icon slot="icon-only" [name]="darkMode ? 'sunny' : 'moon'"></ion-icon>
+      </ion-button>
+      
+      <!-- Botão de logout -->
+      <ion-button (click)="confirmarLogout()" fill="clear">
+        <ion-icon slot="icon-only" name="log-out"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">L.I.M.A.</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+
+
+  <div class="ion-padding main-container">
+    <ion-grid>
+      <ion-row>
+        <!-- Coluna de Configuração e Controles -->
+        <ion-col size="12" size-md="5" class="config-column">
+          <!-- Seção de Configuração Unificada -->
+          <ion-card class="config-card">
+            <ion-card-header>
+              <ion-card-title>Configuração</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <!-- Dados do Experimento -->
+              <ion-grid>
+                <ion-row>
+                  <ion-col size="4">
+                    <ion-item lines="none" class="compact-item">
+                      <ion-label position="stacked">Espécie:</ion-label>
+                      <ion-input [(ngModel)]="especie" placeholder="Digite a espécie"></ion-input>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col size="4">
+                    <ion-item lines="none" class="compact-item">
+                      <ion-label position="stacked">Tratamento:</ion-label>
+                      <ion-input [(ngModel)]="tratamento" placeholder="Digite o tratamento"></ion-input>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col size="4">
+                    <ion-item lines="none" class="compact-item">
+                      <ion-label position="stacked">Réplica:</ion-label>
+                      <ion-input [(ngModel)]="replica" placeholder="Digite a réplica"></ion-input>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+              <ion-item lines="none" class="compact-item">
+                <ion-label position="stacked">Área do Padrão de Escala (cm²):</ion-label>
+                <ion-input [(ngModel)]="areaEscala" type="number" placeholder="Digite a área do padrão" required></ion-input>
+              </ion-item>
+              
+              <!-- Medidas a Calcular -->
+              <ion-label class="section-label">Medidas a Calcular:</ion-label>
+              <div class="medidas-container">
+                <ion-item lines="none" class="checkbox-item">
+                  <ion-checkbox [(ngModel)]="medidasSelecionadas.area" slot="start"></ion-checkbox>
+                  <ion-label>Área</ion-label>
+                </ion-item>
+                <ion-item lines="none" class="checkbox-item">
+                  <ion-checkbox [(ngModel)]="medidasSelecionadas.perimetro" slot="start"></ion-checkbox>
+                  <ion-label>Perímetro</ion-label>
+                </ion-item>
+                <ion-item lines="none" class="checkbox-item">
+                  <ion-checkbox [(ngModel)]="medidasSelecionadas.comprimento" slot="start"></ion-checkbox>
+                  <ion-label>Comprimento</ion-label>
+                </ion-item>
+                <ion-item lines="none" class="checkbox-item">
+                  <ion-checkbox [(ngModel)]="medidasSelecionadas.largura" slot="start"></ion-checkbox>
+                  <ion-label>Largura</ion-label>
+                </ion-item>
+                <ion-item lines="none" class="checkbox-item">
+                  <ion-checkbox [(ngModel)]="medidasSelecionadas.somarAreas" slot="start"></ion-checkbox>
+                  <ion-label>Somar áreas</ion-label>
+                </ion-item>
+                <ion-item lines="none" class="checkbox-item">
+                  <ion-checkbox [(ngModel)]="medidasSelecionadas.relacaoLarguraComprimento" slot="start"></ion-checkbox>
+                  <ion-label>Relação L/C</ion-label>
+                </ion-item>
+                <ion-item lines="none" class="checkbox-item">
+                  <ion-checkbox [(ngModel)]="medidasSelecionadas.mediaDesvio" slot="start"></ion-checkbox>
+                  <ion-label>Média e desvio</ion-label>
+                </ion-item>
+              </div>
+              
+              <!-- Botões de Ação -->
+              <div class="action-buttons">
+                <ion-button expand="block" color="primary" (click)="selecionarImagem()">
+                  <ion-icon slot="start" name="image"></ion-icon>
+                  Selecionar Imagem
+                </ion-button>
+                <ion-button expand="block" color="success" (click)="calcular()">
+                  <ion-icon slot="start" name="calculator"></ion-icon>
+                  Calcular
+                </ion-button>
+                <ion-button expand="block" color="danger" (click)="limpar()">
+                  <ion-icon slot="start" name="trash"></ion-icon>
+                  Limpar
+                </ion-button>
+              </div>
+            </ion-card-content>
+          </ion-card>
+          
+          <!-- Seção de Resultados -->
+        <ion-card class="results-card">
+          <ion-card-header>
+            <ion-card-title style="display: flex; justify-content: space-between; align-items: center;">
+               Resultados
+               <ion-buttons>
+                 <ion-button fill="clear" (click)="openHistory()">
+                   <ion-icon name="time-outline"></ion-icon>
+                   Histórico
+                 </ion-button>
+                 <ion-button fill="clear" (click)="openHelp()">
+                   <ion-icon name="help-circle-outline"></ion-icon>
+                   Ajuda
+                 </ion-button>
+               </ion-buttons>
+             </ion-card-title>
+          </ion-card-header>
+            <ion-card-content>
+              <!-- Resultados por folha -->
+              <div *ngIf="resultados.length > 0">
+                <div *ngFor="let resultado of resultados">
+                  <h5>Folha {{ resultado.id }}</h5>
+                  <ion-list class="results-list">
+                    <ion-item *ngIf="medidasSelecionadas.area">
+                      <ion-label>Área:</ion-label>
+                      <ion-note slot="end">{{ resultado.area }} cm²</ion-note>
+                    </ion-item>
+                    <ion-item *ngIf="medidasSelecionadas.perimetro">
+                      <ion-label>Perímetro:</ion-label>
+                      <ion-note slot="end">{{ resultado.perimetro }} cm</ion-note>
+                    </ion-item>
+                    <ion-item *ngIf="medidasSelecionadas.comprimento">
+                      <ion-label>Comprimento:</ion-label>
+                      <ion-note slot="end">{{ resultado.comprimento }} cm</ion-note>
+                    </ion-item>
+                    <ion-item *ngIf="medidasSelecionadas.largura">
+                      <ion-label>Largura:</ion-label>
+                      <ion-note slot="end">{{ resultado.largura }} cm</ion-note>
+                    </ion-item>
+                    <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento">
+                      <ion-label>Relação L/C:</ion-label>
+                      <ion-note slot="end">{{ resultado.relacaoLarguraComprimento | number:'1.2-2' }}</ion-note>
+                    </ion-item>
+                  </ion-list>
+                </div>
+                
+                <!-- Resultados agregados -->
+                <div *ngIf="medidasSelecionadas.somarAreas || medidasSelecionadas.mediaDesvio">
+                  <h5>Resultados Agregados</h5>
+                  <ion-list class="results-list">
+                    <ion-item *ngIf="medidasSelecionadas.somarAreas">
+                      <ion-label>Soma das Áreas:</ion-label>
+                      <ion-note slot="end">{{ resultadosAgregados.somaAreas | number:'1.2-2' }} cm²</ion-note>
+                    </ion-item>
+                    <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
+                      <ion-label>Média da Área:</ion-label>
+                      <ion-note slot="end">{{ resultadosAgregados.mediaArea | number:'1.2-2' }} cm²</ion-note>
+                    </ion-item>
+                    <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
+                      <ion-label>Desvio Padrão da Área:</ion-label>
+                      <ion-note slot="end">{{ resultadosAgregados.desvioArea | number:'1.2-2' }} cm²</ion-note>
+                    </ion-item>
+                    <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento && medidasSelecionadas.mediaDesvio">
+                      <ion-label>Média da Relação L/C:</ion-label>
+                      <ion-note slot="end">{{ resultadosAgregados.relacaoLarguraComprimento | number:'1.2-2' }}</ion-note>
+                    </ion-item>
+                  </ion-list>
+                </div>
+              </div>
+              
+              <!-- Mensagem quando não há resultados -->
+              <div *ngIf="resultados.length === 0" class="ion-text-center ion-padding">
+                <ion-text color="medium">Nenhum resultado disponível</ion-text>
+              </div>
+              
+              <ion-button expand="block" color="tertiary" class="export-button" [disabled]="resultados.length === 0" (click)="exportarResultados()">
+                <ion-icon slot="start" name="download"></ion-icon>
+                Exportar Resultados
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+        
+        <!-- Coluna da Imagem -->
+        <ion-col size="12" size-md="7" class="image-column">
+          <!-- Área de Visualização da Imagem -->
+          <ion-card class="image-card">
+            <ion-card-header>
+              <ion-card-title>Imagem</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="image-container">
+                <ion-img *ngIf="hasImage" [src]="imagemSelecionada"></ion-img>
+                <ion-text *ngIf="!hasImage" color="medium" class="placeholder-text">
+                  Selecione uma imagem para análise
+                </ion-text>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    
+    <!-- Área de Resultados para telas pequenas -->
+    <ion-card class="results-card-mobile" *ngIf="resultados.length > 0">
+      <ion-card-header>
+        <ion-card-title>Resultados</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Resultados por folha -->
+        <div *ngFor="let resultado of resultados">
+          <h5>Folha {{ resultado.id }}</h5>
+          <ion-list>
+            <ion-item *ngIf="medidasSelecionadas.area">
+              <ion-label>Área:</ion-label>
+              <ion-note slot="end">{{ resultado.area }} cm²</ion-note>
+            </ion-item>
+            <ion-item *ngIf="medidasSelecionadas.perimetro">
+              <ion-label>Perímetro:</ion-label>
+              <ion-note slot="end">{{ resultado.perimetro }} cm</ion-note>
+            </ion-item>
+            <ion-item *ngIf="medidasSelecionadas.comprimento">
+              <ion-label>Comprimento:</ion-label>
+              <ion-note slot="end">{{ resultado.comprimento }} cm</ion-note>
+            </ion-item>
+            <ion-item *ngIf="medidasSelecionadas.largura">
+              <ion-label>Largura:</ion-label>
+              <ion-note slot="end">{{ resultado.largura }} cm</ion-note>
+            </ion-item>
+            <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento">
+              <ion-label>Relação L/C:</ion-label>
+              <ion-note slot="end">{{ resultado.relacaoLarguraComprimento | number:'1.2-2' }}</ion-note>
+            </ion-item>
+          </ion-list>
+        </div>
+        
+        <!-- Resultados agregados -->
+        <div *ngIf="medidasSelecionadas.somarAreas || medidasSelecionadas.mediaDesvio">
+          <h5>Resultados Agregados</h5>
+          <ion-list>
+            <ion-item *ngIf="medidasSelecionadas.somarAreas">
+              <ion-label>Soma das Áreas:</ion-label>
+              <ion-note slot="end">{{ resultadosAgregados.somaAreas | number:'1.2-2' }} cm²</ion-note>
+            </ion-item>
+            <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
+              <ion-label>Média da Área:</ion-label>
+              <ion-note slot="end">{{ resultadosAgregados.mediaArea | number:'1.2-2' }} cm²</ion-note>
+            </ion-item>
+            <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
+              <ion-label>Desvio Padrão da Área:</ion-label>
+              <ion-note slot="end">{{ resultadosAgregados.desvioArea | number:'1.2-2' }} cm²</ion-note>
+            </ion-item>
+            <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento && medidasSelecionadas.mediaDesvio">
+              <ion-label>Média da Relação L/C:</ion-label>
+              <ion-note slot="end">{{ resultadosAgregados.relacaoLarguraComprimento | number:'1.2-2' }}</ion-note>
+            </ion-item>
+          </ion-list>
+        </div>
+        
+        <ion-button expand="block" color="tertiary" class="ion-margin-top" (click)="exportarResultados()">
+          <ion-icon slot="start" name="download"></ion-icon>
+          Exportar Resultados
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+    
+    <!-- Tela de Histórico -->
+    <div *ngIf="false" class="ion-padding">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Histórico de Análises</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list *ngIf="historico.length > 0">
+            <ion-item *ngFor="let analise of historico" detail="true">
+              <ion-label>
+                <h2>{{ analise.especie }} - {{ analise.tratamento }}</h2>
+                <p>Data: {{ analise.data | date:'dd/MM/yyyy HH:mm' }}</p>
+                <p>Imagem: {{ analise.nomeImagem }}</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+          
+          <div *ngIf="historico.length === 0" class="ion-text-center ion-padding">
+            <ion-text color="medium">Nenhuma análise no histórico</ion-text>
+          </div>
+          
+          <ion-button expand="block" color="danger" [disabled]="historico.length === 0" (click)="limparHistorico()">
+            <ion-icon slot="start" name="trash"></ion-icon>
+            Limpar Histórico
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    </div>
+    
+    <!-- Tela de Ajuda -->
+    <div *ngIf="false" class="ion-padding">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Ajuda</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <h4>Como usar o aplicativo L.I.M.A.</h4>
+          <p>O L.I.M.A. (Leaf Image Measurement and Analysis) é uma ferramenta para análise de imagens de folhas. Siga as instruções abaixo para obter os melhores resultados:</p>
+          
+          <h5>1. Preparando a imagem</h5>
+          <ul>
+            <li>Use um fundo contrastante com a folha (preferencialmente branco)</li>
+            <li>Garanta boa iluminação, evitando sombras</li>
+            <li>Inclua um objeto de escala conhecido (como uma régua ou um quadrado de tamanho conhecido)</li>
+            <li>Posicione a folha de forma plana, sem dobras</li>
+          </ul>
+          
+          <h5>2. Configurando a análise</h5>
+          <ul>
+            <li>Preencha os campos de Espécie, Tratamento e Réplica</li>
+            <li>Informe a área do padrão de escala em cm²</li>
+            <li>Selecione as medidas que deseja calcular</li>
+          </ul>
+          
+          <h5>3. Realizando a análise</h5>
+          <ul>
+            <li>Selecione a imagem usando o botão "Selecionar Imagem"</li>
+            <li>Clique em "Calcular" para processar a imagem</li>
+            <li>Visualize os resultados na seção correspondente</li>
+            <li>Exporte os resultados em formato CSV se necessário</li>
+          </ul>
+          
+          <h5>4. Histórico e exportação</h5>
+          <ul>
+            <li>Todas as análises são salvas automaticamente no histórico</li>
+            <li>Acesse o histórico na aba correspondente</li>
+            <li>Os dados exportados em CSV podem ser abertos em programas como Excel ou LibreOffice Calc</li>
+          </ul>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content>

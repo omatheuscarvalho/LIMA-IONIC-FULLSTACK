@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#f0f0f0" />
+  <path d="M180,100 Q200,80 220,100 T260,100 M180,100 C160,140 240,140 220,100" stroke="#888" fill="none" stroke-width="2" />
+  <path d="M140,150 C180,120 220,120 260,150 C220,200 180,200 140,150 Z" stroke="#888" fill="#e0e0e0" stroke-width="2" />
+  <text x="200" y="180" font-family="Arial" font-size="14" text-anchor="middle" fill="#888">Folha</text>
+  <line x1="120" y1="220" x2="280" y2="220" stroke="#888" stroke-width="2" />
+  <text x="200" y="240" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">Escala: 5cm</text>
+</svg>

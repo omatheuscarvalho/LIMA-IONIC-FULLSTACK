@@ -218,6 +218,18 @@
               </div>
             </ion-card-content>
           </ion-card>
+          
+          <!-- Área de Visualização da Imagem Processada -->
+          <ion-card class="image-card" *ngIf="imagemProcessada">
+            <ion-card-header>
+              <ion-card-title>Imagem Processada</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="image-container">
+                <ion-img [src]="imagemProcessada"></ion-img>
+              </div>
+            </ion-card-content>
+          </ion-card>
         </ion-col>
       </ion-row>
     </ion-grid>

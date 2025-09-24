@@ -7,33 +7,47 @@ amax = 10000000000
 cosAngle = 0.3
 
 def cosine_angle(pt1, pt2, pt0):
-    dx1 = pt1[0] - pt0[0]
-    dy1 = pt1[1] - pt0[1]
-    dx2 = pt2[0] - pt0[0]
-    dy2 = pt2[1] - pt0[1]
-    return (dx1*dx2 + dy1*dy2) / np.sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10)
+    # Usa inteiros de 64 bits para evitar o 'overflow warning'
+    dx1 = np.int64(pt1[0]) - np.int64(pt0[0])
+    dy1 = np.int64(pt1[1]) - np.int64(pt0[1])
+    dx2 = np.int64(pt2[0]) - np.int64(pt0[0])
+    dy2 = np.int64(pt2[1]) - np.int64(pt0[1])
+    
+    denominator = np.sqrt(float((dx1*dx1 + dy1*dy1) * (dx2*dx2 + dy2*dy2))) + 1e-10
+    if denominator == 0: return 1.0 # Evita divisão por zero
+    return float(dx1 * dx2 + dy1 * dy2) / denominator
 
 def find_objects(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray, 60, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
+
+    # Alinhado com o C++: Threshold de Otsu imediatamente após a conversão para escala de cinza.
+    # O valor 60 no C++ é ignorado quando THRESH_OTSU é usado, então usar 0 aqui está correto.
+    _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
+
+    # Alinhado com o C++: Usa RETR_LIST para obter todos os contornos, incluindo internos.
+    # Isso é crucial para replicar o comportamento exato do C++.
     contours, _ = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
     square = []
     leaves = []
+
     for cnt in contours:
         auxper = cv2.arcLength(cnt, True)
         approx = cv2.approxPolyDP(cnt, auxper*0.02, True)
         auxarea = abs(cv2.contourArea(cnt))
+        # Lógica de classificação alinhada com o LIMA-Desktop original
         if len(approx) == 4 and amin < auxarea < amax and cv2.isContourConvex(approx):
             max_cosine = 0
             for j in range(2, 5):
                 cosine = abs(cosine_angle(approx[j%4][0], approx[j-2][0], approx[j-1][0]))
                 max_cosine = max(max_cosine, cosine)
             if max_cosine < cosAngle:
-                square.append(cnt)
+                square.append(cnt) # É um quadrado
             else:
-                leaves.append(cnt)
+                leaves.append(cnt) # É uma forma de 4 lados, mas não um quadrado, então é uma folha
         elif amin < auxarea < amax:
-            leaves.append(cnt)
+            leaves.append(cnt) # Não tem 4 lados, então é uma folha
+
     return square, leaves, thresh
 
 class MainWindow(QWidget):

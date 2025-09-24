@@ -1,9 +1,9 @@
 import { Component, Inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonNote, IonRow, IonText, IonTitle, IonToolbar, IonImg, IonCheckbox, AlertController } from '@ionic/angular/standalone';
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, CommonModule } from '@angular/common';
+import { HttpClient, HttpClientModule } from '@angular/common/http'; // 1. Importar HttpClient
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
 import { camera, download, help, home, moon, sunny, time, trash, logOut, person } from 'ionicons/icons';
 import * as Papa from 'papaparse';
@@ -17,7 +17,7 @@ import { ThemeService } from '../services/theme.service';
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, FormsModule, CommonModule, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton, IonIcon, IonNote, IonButtons, IonGrid, IonRow, IonCol, IonList, IonText, IonImg, IonCheckbox],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, FormsModule, CommonModule, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton, IonIcon, IonNote, IonButtons, IonGrid, IonRow, IonCol, IonList, IonText, IonImg, IonCheckbox, HttpClientModule], // 2. Adicionar HttpClientModule
 })
 export class HomePage {
   // Variáveis para armazenar os dados do formulário
@@ -39,8 +39,10 @@ export class HomePage {
   
   // Variável para controlar se uma imagem foi selecionada
   imagemSelecionada: string | null = null;
+  imagemProcessada: string | null = null; // Imagem com contornos detectados
   nomeImagem: string = '';
   hasImage: boolean = false;
+  selectedImageFile: File | null = null;
   
   // Resultados das medições
   resultados: any[] = [];
@@ -62,7 +64,8 @@ export class HomePage {
     @Inject(DOCUMENT) private document: Document,
     private authService: AuthService,
     private alertController: AlertController,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private http: HttpClient // 3. Injetar o HttpClient
   ) {
     addIcons({ camera, trash, download, sunny, moon, home, time, help, logOut, person });
     this.carregarHistorico();
@@ -74,57 +77,142 @@ export class HomePage {
   }
 
   /**
-   * Simula a seleção de uma imagem
+   * Abre o seletor de arquivos para escolher uma imagem
    */
   selecionarImagem() {
-    // Em uma implementação real, isso abriria o seletor de arquivos
-    // ou a câmera do dispositivo
-    console.log('Selecionando imagem...');
-    // Simulando uma imagem selecionada
-    this.imagemSelecionada = 'assets/placeholder-image.png';
-    this.nomeImagem = 'folha_exemplo.jpg';
-    this.hasImage = true;
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (event: any) => {
+      const file = event.target.files[0];
+      if (file) {
+        this.selectedImageFile = file;
+        this.nomeImagem = file.name;
+        this.hasImage = true;
+        
+        // Criar URL para preview da imagem
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          this.imagemSelecionada = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        
+        console.log('Imagem selecionada:', file.name);
+      }
+    };
+    input.click();
   }
 
   /**
-   * Simula o cálculo das medidas da folha
+   * Converte um arquivo de imagem para uma string base64.
    */
-  calcular() {
-    if (!this.hasImage) {
-      console.log('Selecione uma imagem primeiro');
+  private convertFileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        // O resultado é "data:image/jpeg;base64,LzlqLzRBQ...".
+        // O script Python espera apenas a parte depois da vírgula.
+        const base64String = (reader.result as string).split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = error => reject(error);
+    });
+  }
+
+  /**
+   * Analisa a imagem selecionada e calcula as medidas das folhas
+   */
+  async calcular() {
+    if (!this.hasImage || !this.selectedImageFile) {
+      this.presentErrorAlert('Atenção', 'Por favor, selecione uma imagem primeiro.');
       return;
     }
 
     if (!this.areaEscala || this.areaEscala <= 0) {
-      console.log('Informe a área do padrão de escala');
+      this.presentErrorAlert('Atenção', 'Por favor, informe um valor válido para a área do padrão de escala.');
       return;
     }
 
-    console.log('Calculando medidas...');
-    console.log('Espécie:', this.especie);
-    console.log('Tratamento:', this.tratamento);
-    console.log('Réplica:', this.replica);
-    console.log('Área do Padrão de Escala:', this.areaEscala);
-    console.log('Medidas selecionadas:', this.medidasSelecionadas);
+    console.log('Iniciando análise da imagem...');
 
-    // Simulando resultados de cálculo para uma folha
-    const novoResultado = {
-      id: this.resultados.length + 1,
-      area: 45.7,
-      perimetro: 28.3,
-      comprimento: 12.5,
-      largura: 5.8,
-      relacaoLarguraComprimento: 5.8 / 12.5
-    };
-    
-    // Adicionar ao array de resultados
-    this.resultados.push(novoResultado);
-    
-    // Calcular resultados agregados
-    this.calcularResultadosAgregados();
-    
-    // Adicionar ao histórico
-    this.adicionarAoHistorico();
+    try {
+      // 1. Converte a imagem para base64
+      const base64Image = await this.convertFileToBase64(this.selectedImageFile);
+
+      // 2. Define o endereço do seu servidor Python.
+      const backendUrl = 'http://127.0.0.1:5000/analyze'; // <-- MUDE PARA O ENDEREÇO DO SEU SERVIDOR
+
+      // 3. Cria o corpo da requisição
+      const payload = {
+        base64_image: base64Image,
+        real_area_square: this.areaEscala
+      };
+
+      console.log('Enviando imagem para o servidor de análise...');
+
+      // 4. Faz a requisição HTTP POST para o backend
+      this.http.post<any>(backendUrl, payload).subscribe({
+        next: (analysisResult) => {
+          if (analysisResult.error) {
+            console.error('Erro retornado pelo servidor Python:', analysisResult.error);
+            this.presentErrorAlert('Erro na Análise', `O servidor retornou um erro: ${analysisResult.error}`);
+            return;
+          }
+
+          console.log('Análise recebida do servidor:', analysisResult);
+
+          // Limpa resultados anteriores
+          this.resultados = [];
+
+          // Mapeia os resultados do Python para o formato da interface
+          this.resultados = analysisResult.leaves.map((leaf: any) => ({
+            id: leaf.id,
+            area: leaf.area,
+            perimetro: leaf.perimeter,
+            comprimento: leaf.length,
+            largura: leaf.width,
+            relacaoLarguraComprimento: leaf.widthToLengthRatio
+          }));
+
+          // Atualiza resultados agregados com os dados da análise
+          this.resultadosAgregados = {
+            somaAreas: analysisResult.aggregatedMetrics.totalArea,
+            mediaArea: analysisResult.aggregatedMetrics.averageArea,
+            desvioArea: analysisResult.aggregatedMetrics.standardDeviationArea,
+            relacaoLarguraComprimento: analysisResult.aggregatedMetrics.averageWidthToLengthRatio
+          };
+
+          // Exibe a imagem processada com contornos, se disponível
+          if (analysisResult.processedImage) {
+            this.imagemProcessada = 'data:image/png;base64,' + analysisResult.processedImage;
+          }
+
+          console.log(`Análise concluída: ${analysisResult.numberOfLeaves} folhas detectadas`);
+          this.adicionarAoHistorico();
+        },
+        error: (err) => {
+          console.error('Erro ao conectar com o servidor de análise:', err);
+          this.presentErrorAlert('Erro de Conexão', 'Não foi possível conectar ao servidor de análise. Verifique se ele está em execução e se o endereço está correto.');
+        }
+      });
+
+    } catch (error) {
+      console.error('Erro ao processar a imagem localmente:', error);
+      this.presentErrorAlert('Erro Local', 'Ocorreu um erro ao preparar a imagem para análise.');
+    }
+  }
+
+  /**
+   * Exibe um alerta de erro para o usuário.
+   */
+  async presentErrorAlert(header: string, message: string) {
+    const alert = await this.alertController.create({
+      header,
+      message,
+      buttons: ['OK']
+    });
+    await alert.present();
   }
 
   /**
@@ -136,8 +224,10 @@ export class HomePage {
     this.replica = '';
     this.areaEscala = 1;
     this.imagemSelecionada = null;
+    this.imagemProcessada = null;
     this.nomeImagem = '';
     this.hasImage = false;
+    this.selectedImageFile = null;
     this.resultados = [];
     this.resultadosAgregados = {
       somaAreas: 0,

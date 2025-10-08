@@ -84,6 +84,9 @@ export class HomePage {
    * Abre o seletor de arquivos para escolher uma imagem
    */
   selecionarImagem() {
+    // Limpa os resultados e a imagem da análise anterior
+    this.limpar();
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';

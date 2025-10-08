@@ -189,28 +189,28 @@
                       <ion-note slot="end">{{ resultadosAgregados.totalArea | number:'1.2-2' }} cm²</ion-note>
                     </ion-item>
                     <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
+                      <ion-label>Média da Largura:</ion-label>
+                      <ion-note slot="end">{{ resultadosAgregados.averageWidth | number:'1.5-5' }} cm</ion-note>
+                    </ion-item>
+                    <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
+                      <ion-label>Média do Comprimento:</ion-label>
+                      <ion-note slot="end">{{ resultadosAgregados.averageLength | number:'1.5-5' }} cm</ion-note>
+                    </ion-item>
+                    <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
                       <ion-label>Média da Área:</ion-label>
                       <ion-note slot="end">{{ resultadosAgregados.averageArea | number:'1.5-5' }} cm²</ion-note>
                     </ion-item>
                     <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
-                      <ion-label>Average Width:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados.averageWidth | number:'1.5-5' }} cm</ion-note>
+                      <ion-label>Média do Perímetro:</ion-label>
+                      <ion-note slot="end">{{ resultadosAgregados.averagePerimeter | number:'1.5-5' }} cm</ion-note>
                     </ion-item>
                     <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
-                      <ion-label>Width Deviation:</ion-label>
+                      <ion-label>Desvio da Largura:</ion-label>
                       <ion-note slot="end">{{ resultadosAgregados.standardDeviationWidth | number:'1.5-5' }} cm</ion-note>
                     </ion-item>
                     <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
-                      <ion-label>Average Length:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados.averageLength | number:'1.5-5' }} cm</ion-note>
-                    </ion-item>
-                    <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
-                      <ion-label>Length Deviation:</ion-label>
+                      <ion-label>Desvio do Comprimento:</ion-label>
                       <ion-note slot="end">{{ resultadosAgregados.standardDeviationLength | number:'1.5-5' }} cm</ion-note>
-                    </ion-item>
-                    <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
-                      <ion-label>Average Perimeter:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados.averagePerimeter | number:'1.5-5' }} cm</ion-note>
                     </ion-item>
                     <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento && medidasSelecionadas.mediaDesvio">
                       <ion-label>Média da Relação L/C:</ion-label>
@@ -314,16 +314,32 @@
               <ion-note slot="end">{{ resultadosAgregados.totalArea | number:'1.2-2' }} cm²</ion-note>
             </ion-item>
             <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
-              <ion-label>Média da Área:</ion-label>
-              <ion-note slot="end">{{ resultadosAgregados.averageArea | number:'1.2-2' }} cm²</ion-note>
+              <ion-label>Média da Largura:</ion-label>
+              <ion-note slot="end">{{ resultadosAgregados.averageWidth | number:'1.5-5' }} cm</ion-note>
             </ion-item>
             <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
-              <ion-label>Desvio Padrão da Área:</ion-label>
-              <ion-note slot="end">{{ resultadosAgregados.standardDeviationArea | number:'1.2-2' }} cm²</ion-note>
+              <ion-label>Média do Comprimento:</ion-label>
+              <ion-note slot="end">{{ resultadosAgregados.averageLength | number:'1.5-5' }} cm</ion-note>
+            </ion-item>
+            <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
+              <ion-label>Média da Área:</ion-label>
+              <ion-note slot="end">{{ resultadosAgregados.averageArea | number:'1.5-5' }} cm²</ion-note>
+            </ion-item>
+            <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
+              <ion-label>Média do Perímetro:</ion-label>
+              <ion-note slot="end">{{ resultadosAgregados.averagePerimeter | number:'1.5-5' }} cm</ion-note>
+            </ion-item>
+            <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
+              <ion-label>Desvio da Largura:</ion-label>
+              <ion-note slot="end">{{ resultadosAgregados.standardDeviationWidth | number:'1.5-5' }} cm</ion-note>
+            </ion-item>
+            <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
+              <ion-label>Desvio do Comprimento:</ion-label>
+              <ion-note slot="end">{{ resultadosAgregados.standardDeviationLength | number:'1.5-5' }} cm</ion-note>
             </ion-item>
             <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento && medidasSelecionadas.mediaDesvio">
               <ion-label>Média da Relação L/C:</ion-label>
-              <ion-note slot="end">{{ resultadosAgregados.averageWidthToLengthRatio | number:'1.2-2' }}</ion-note>
+              <ion-note slot="end">{{ resultadosAgregados.averageWidthToLengthRatio | number:'1.5-5' }}</ion-note>
             </ion-item>
           </ion-list>
         </div>

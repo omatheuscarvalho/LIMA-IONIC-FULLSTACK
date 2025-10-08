@@ -19,6 +19,8 @@ ion-card-title {
 .main-container {
   padding: 0 8px;
   margin-top: 0;
+  max-width: 1400px; // Limita a largura máxima em telas grandes
+  margin: 0 auto; // Centraliza o container
 }
 
 /* Estilos para o layout de colunas */

@@ -238,26 +238,14 @@
           <!-- Área de Visualização da Imagem -->
           <ion-card class="image-card">
             <ion-card-header>
-              <ion-card-title>Imagem</ion-card-title>
+              <ion-card-title>{{ imagemProcessada ? 'Imagem Processada' : 'Imagem' }}</ion-card-title>
             </ion-card-header>
             <ion-card-content>
               <div class="image-container">
-                <ion-img *ngIf="hasImage" [src]="imagemSelecionada"></ion-img>
+                <ion-img *ngIf="hasImage" [src]="imagemProcessada || imagemSelecionada"></ion-img>
                 <ion-text *ngIf="!hasImage" color="medium" class="placeholder-text">
                   Selecione uma imagem para análise
                 </ion-text>
-              </div>
-            </ion-card-content>
-          </ion-card>
-          
-          <!-- Área de Visualização da Imagem Processada -->
-          <ion-card class="image-card" *ngIf="imagemProcessada">
-            <ion-card-header>
-              <ion-card-title>Imagem Processada</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="image-container">
-                <ion-img [src]="imagemProcessada"></ion-img>
               </div>
             </ion-card-content>
           </ion-card>

@@ -194,11 +194,27 @@ export class ImageAnalysisService {
           cv.drawContours(processedImageMat, sqVec, -1, new cv.Scalar(0, 255, 0, 255), 3);
           sqVec.delete();
         }
-        for (const leaf of leaves) {
+        for (let i = 0; i < leaves.length; i++) {
+          const leaf = leaves[i];
           const leafVec = new cv.MatVector();
           leafVec.push_back(leaf);
-          cv.drawContours(processedImageMat, leafVec, -1, new cv.Scalar(0, 0, 255, 255), 3);
+          // Desenha o contorno da folha em azul para melhor contraste
+          cv.drawContours(processedImageMat, leafVec, -1, new cv.Scalar(0, 0, 255, 255), 4);
           leafVec.delete();
+
+          // Calcula o centroide da folha para posicionar o número
+          const M = cv.moments(leaf, false);
+          const cX = Math.round(M.m10 / M.m00);
+          const cY = Math.round(M.m01 / M.m00);
+
+          // Prepara e desenha o número da folha
+          const text = `${i + 1}`;
+          const org = new cv.Point(cX - 25, cY + 25); // Ajuste para o novo tamanho da fonte
+          const fontFace = cv.FONT_HERSHEY_SIMPLEX;
+          const fontScale = 2.5;
+          const color = new cv.Scalar(255, 0, 0, 255); // Cor vermelha
+          const thickness = 6; // Aumenta a espessura para um efeito de "negrito"
+          cv.putText(processedImageMat, text, org, fontFace, fontScale, color, thickness);
         }
 
         const canvas = document.createElement('canvas');

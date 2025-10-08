@@ -152,19 +152,19 @@
                   <ion-list class="results-list">
                     <ion-item *ngIf="medidasSelecionadas.area">
                       <ion-label>Área:</ion-label>
-                      <ion-note slot="end">{{ resultado.area | number:'1.2-4' }} cm²</ion-note>
+                      <ion-note slot="end">{{ resultado.area | number:'1.5-5' }} cm²</ion-note>
                     </ion-item>
                     <ion-item *ngIf="medidasSelecionadas.perimetro">
                       <ion-label>Perímetro:</ion-label>
-                      <ion-note slot="end">{{ resultado.perimetro | number:'1.2-4' }} cm</ion-note>
+                      <ion-note slot="end">{{ resultado.perimetro | number:'1.5-5' }} cm</ion-note>
                     </ion-item>
                     <ion-item *ngIf="medidasSelecionadas.comprimento">
                       <ion-label>Comprimento:</ion-label>
-                      <ion-note slot="end">{{ resultado.comprimento }} cm</ion-note>
+                      <ion-note slot="end">{{ resultado.comprimento | number:'1.5-5' }} cm</ion-note>
                     </ion-item>
                     <ion-item *ngIf="medidasSelecionadas.largura">
                       <ion-label>Largura:</ion-label>
-                      <ion-note slot="end">{{ resultado.largura | number:'1.2-4' }} cm</ion-note>
+                      <ion-note slot="end">{{ resultado.largura | number:'1.5-5' }} cm</ion-note>
                     </ion-item>
                     <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento">
                       <ion-label>Relação L/C:</ion-label>
@@ -254,19 +254,19 @@
           <ion-list>
             <ion-item *ngIf="medidasSelecionadas.area">
               <ion-label>Área:</ion-label>
-              <ion-note slot="end">{{ resultado.area | number:'1.2-4' }} cm²</ion-note>
+              <ion-note slot="end">{{ resultado.area | number:'1.5-5' }} cm²</ion-note>
             </ion-item>
             <ion-item *ngIf="medidasSelecionadas.perimetro">
               <ion-label>Perímetro:</ion-label>
-              <ion-note slot="end">{{ resultado.perimetro | number:'1.2-4' }} cm</ion-note>
+              <ion-note slot="end">{{ resultado.perimetro | number:'1.5-5' }} cm</ion-note>
             </ion-item>
             <ion-item *ngIf="medidasSelecionadas.comprimento">
               <ion-label>Comprimento:</ion-label>
-              <ion-note slot="end">{{ resultado.comprimento }} cm</ion-note>
+              <ion-note slot="end">{{ resultado.comprimento | number:'1.5-5' }} cm</ion-note>
             </ion-item>
             <ion-item *ngIf="medidasSelecionadas.largura">
               <ion-label>Largura:</ion-label>
-              <ion-note slot="end">{{ resultado.largura | number:'1.2-4' }} cm</ion-note>
+              <ion-note slot="end">{{ resultado.largura | number:'1.5-5' }} cm</ion-note>
             </ion-item>
             <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento">
               <ion-label>Relação L/C:</ion-label>

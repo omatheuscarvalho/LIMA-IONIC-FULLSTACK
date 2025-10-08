@@ -163,11 +163,26 @@ export class ImageAnalysisService {
         if (n > 0) {
           const getMean = (arr: number[]) => arr.reduce((sum, val) => sum + val, 0) / n;
           const getStdDev = (arr: number[], mean: number) => Math.sqrt(arr.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / n);
-
+ 
           const areas = leafMetrics.map(l => l.area);
           aggregatedMetrics.totalArea = areas.reduce((sum, val) => sum + val, 0);
           aggregatedMetrics.averageArea = getMean(areas);
           aggregatedMetrics.standardDeviationArea = getStdDev(areas, aggregatedMetrics.averageArea);
+
+          const perimeters = leafMetrics.map(l => l.perimetro);
+          aggregatedMetrics.averagePerimeter = getMean(perimeters);
+          aggregatedMetrics.standardDeviationPerimeter = getStdDev(perimeters, aggregatedMetrics.averagePerimeter);
+
+          const widths = leafMetrics.map(l => l.largura);
+          aggregatedMetrics.averageWidth = getMean(widths);
+          aggregatedMetrics.standardDeviationWidth = getStdDev(widths, aggregatedMetrics.averageWidth);
+
+          const lengths = leafMetrics.map(l => l.comprimento);
+          aggregatedMetrics.averageLength = getMean(lengths);
+          aggregatedMetrics.standardDeviationLength = getStdDev(lengths, aggregatedMetrics.averageLength);
+
+          const ratios = leafMetrics.map(l => l.relacaoLarguraComprimento);
+          aggregatedMetrics.averageWidthToLengthRatio = getMean(ratios);
         }
 
         // --- Draw Contours for Visualization ---

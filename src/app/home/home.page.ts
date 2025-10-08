@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonNote, IonRow, IonText, IonTitle, IonToolbar, IonImg, IonCheckbox, AlertController, IonSpinner } from '@ionic/angular/standalone';
+import { IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonNote, IonRow, IonTitle, IonToolbar, AlertController, IonImg, IonText, IonList, IonCheckbox, IonSpinner } from '@ionic/angular/standalone';
 import { DOCUMENT, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -17,7 +17,7 @@ import { ImageAnalysisService, LeafMetric, AggregatedMetrics } from '../services
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, FormsModule, CommonModule, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton, IonIcon, IonNote, IonButtons, IonGrid, IonRow, IonCol, IonList, IonText, IonImg, IonCheckbox, IonSpinner],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, FormsModule, CommonModule, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton, IonIcon, IonNote, IonButtons, IonGrid, IonRow, IonCol, IonImg, IonText, IonList, IonCheckbox, IonSpinner],
 })
 export class HomePage {
   // Variáveis para armazenar os dados do formulário
@@ -56,6 +56,12 @@ export class HomePage {
 
   // UI State
   isAnalyzing = false;
+
+  // Set to store the IDs of leaves whose details are visible
+  visibleLeafDetails = new Set<number>();
+
+  // Controls visibility of the aggregated results section
+  aggregatedResultsVisible = false;
 
   constructor(
     private router: Router, 
@@ -191,6 +197,8 @@ export class HomePage {
     this.resultados = [];
     this.resultadosAgregados = {};
     this.isAnalyzing = false;
+    this.visibleLeafDetails.clear();
+    this.aggregatedResultsVisible = false;
     console.log('Dados limpos');
   }
 
@@ -206,6 +214,28 @@ export class HomePage {
       reader.onerror = () => reject(new Error('Failed to read the image file.'));
       reader.readAsDataURL(file);
     });
+  }
+
+  /**
+   * Toggles the visibility of a leaf's details.
+   * @param leafId The ID of the leaf.
+   */
+  toggleLeafDetails(leafId: number) {
+    if (this.visibleLeafDetails.has(leafId)) {
+      this.visibleLeafDetails.delete(leafId);
+    } else {
+      // By default, show details of the first leaf
+      if (this.resultados.length > 0 && this.visibleLeafDetails.size === 0 && leafId === this.resultados[0].id) {
+        this.visibleLeafDetails.add(leafId);
+      } else { this.visibleLeafDetails.add(leafId); }
+    }
+  }
+
+  /**
+   * Toggles the visibility of the aggregated results section.
+   */
+  toggleAggregatedResults() {
+    this.aggregatedResultsVisible = !this.aggregatedResultsVisible;
   }
 
   /**

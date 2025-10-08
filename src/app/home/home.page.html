@@ -147,9 +147,24 @@
             <ion-card-content>
               <!-- Resultados por folha -->
               <div *ngIf="resultados.length > 0">
-                <div *ngFor="let resultado of resultados">
-                  <h5>Folha {{ resultado.id }}</h5>
-                  <ion-list class="results-list">
+                <div *ngFor="let resultado of resultados" class="leaf-result-item">
+                  <ion-item button="true" detail="false" (click)="toggleLeafDetails(resultado.id)" lines="none" class="leaf-item-header">
+                    <ion-label>Folha {{ resultado.id }}</ion-label>
+                    <ion-icon slot="end" [name]="visibleLeafDetails.has(resultado.id) ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+                  </ion-item>
+                  <ion-list class="results-list" *ngIf="visibleLeafDetails.has(resultado.id)">
+                    <ion-item *ngIf="medidasSelecionadas.largura">
+                      <ion-label>Largura:</ion-label>
+                      <ion-note slot="end">{{ resultado.largura | number:'1.5-5' }} cm</ion-note>
+                    </ion-item>
+                    <ion-item *ngIf="medidasSelecionadas.comprimento">
+                      <ion-label>Comprimento:</ion-label>
+                      <ion-note slot="end">{{ resultado.comprimento | number:'1.5-5' }} cm</ion-note>
+                    </ion-item>
+                    <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento">
+                      <ion-label>Relação L/C:</ion-label>
+                      <ion-note slot="end">{{ resultado.relacaoLarguraComprimento | number:'1.5-5' }}</ion-note>
+                    </ion-item>
                     <ion-item *ngIf="medidasSelecionadas.area">
                       <ion-label>Área:</ion-label>
                       <ion-note slot="end">{{ resultado.area | number:'1.5-5' }} cm²</ion-note>
@@ -158,40 +173,48 @@
                       <ion-label>Perímetro:</ion-label>
                       <ion-note slot="end">{{ resultado.perimetro | number:'1.5-5' }} cm</ion-note>
                     </ion-item>
-                    <ion-item *ngIf="medidasSelecionadas.comprimento">
-                      <ion-label>Comprimento:</ion-label>
-                      <ion-note slot="end">{{ resultado.comprimento | number:'1.5-5' }} cm</ion-note>
-                    </ion-item>
-                    <ion-item *ngIf="medidasSelecionadas.largura">
-                      <ion-label>Largura:</ion-label>
-                      <ion-note slot="end">{{ resultado.largura | number:'1.5-5' }} cm</ion-note>
-                    </ion-item>
-                    <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento">
-                      <ion-label>Relação L/C:</ion-label>
-                      <ion-note slot="end">{{ resultado.relacaoLarguraComprimento | number:'1.2-2' }}</ion-note>
-                    </ion-item>
                   </ion-list>
                 </div>
                 
                 <!-- Resultados agregados -->
-                <div *ngIf="medidasSelecionadas.somarAreas || medidasSelecionadas.mediaDesvio">
-                  <h5>Resultados Agregados</h5>
-                  <ion-list class="results-list">
+                <div *ngIf="medidasSelecionadas.somarAreas || medidasSelecionadas.mediaDesvio" class="leaf-result-item">
+                  <ion-item button="true" detail="false" (click)="toggleAggregatedResults()" lines="none" class="leaf-item-header">
+                    <ion-label>De todas as folhas</ion-label>
+                    <ion-icon slot="end" [name]="aggregatedResultsVisible ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+                  </ion-item>
+
+                  <ion-list class="results-list" *ngIf="aggregatedResultsVisible">
                     <ion-item *ngIf="medidasSelecionadas.somarAreas">
                       <ion-label>Soma Total das Áreas:</ion-label>
                       <ion-note slot="end">{{ resultadosAgregados.totalArea | number:'1.2-2' }} cm²</ion-note>
                     </ion-item>
                     <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
                       <ion-label>Média da Área:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados.averageArea | number:'1.2-2' }} cm²</ion-note>
+                      <ion-note slot="end">{{ resultadosAgregados.averageArea | number:'1.5-5' }} cm²</ion-note>
                     </ion-item>
                     <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
-                      <ion-label>Desvio Padrão da Área:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados.standardDeviationArea | number:'1.2-2' }} cm²</ion-note>
+                      <ion-label>Average Width:</ion-label>
+                      <ion-note slot="end">{{ resultadosAgregados.averageWidth | number:'1.5-5' }} cm</ion-note>
+                    </ion-item>
+                    <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
+                      <ion-label>Width Deviation:</ion-label>
+                      <ion-note slot="end">{{ resultadosAgregados.standardDeviationWidth | number:'1.5-5' }} cm</ion-note>
+                    </ion-item>
+                    <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
+                      <ion-label>Average Length:</ion-label>
+                      <ion-note slot="end">{{ resultadosAgregados.averageLength | number:'1.5-5' }} cm</ion-note>
+                    </ion-item>
+                    <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
+                      <ion-label>Length Deviation:</ion-label>
+                      <ion-note slot="end">{{ resultadosAgregados.standardDeviationLength | number:'1.5-5' }} cm</ion-note>
+                    </ion-item>
+                    <ion-item *ngIf="medidasSelecionadas.mediaDesvio">
+                      <ion-label>Average Perimeter:</ion-label>
+                      <ion-note slot="end">{{ resultadosAgregados.averagePerimeter | number:'1.5-5' }} cm</ion-note>
                     </ion-item>
                     <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento && medidasSelecionadas.mediaDesvio">
                       <ion-label>Média da Relação L/C:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados.averageWidthToLengthRatio | number:'1.2-2' }}</ion-note>
+                      <ion-note slot="end">{{ resultadosAgregados.averageWidthToLengthRatio | number:'1.5-5' }}</ion-note>
                     </ion-item>
                   </ion-list>
                 </div>
@@ -249,9 +272,24 @@
       </ion-card-header>
       <ion-card-content>
         <!-- Resultados por folha -->
-        <div *ngFor="let resultado of resultados">
-          <h5>Folha {{ resultado.id }}</h5>
-          <ion-list>
+        <div *ngFor="let resultado of resultados" class="leaf-result-item">
+          <ion-item button="true" detail="false" (click)="toggleLeafDetails(resultado.id)" lines="none" class="leaf-item-header">
+            <ion-label>Folha {{ resultado.id }}</ion-label>
+            <ion-icon slot="end" [name]="visibleLeafDetails.has(resultado.id) ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+          </ion-item>
+          <ion-list *ngIf="visibleLeafDetails.has(resultado.id)">
+            <ion-item *ngIf="medidasSelecionadas.largura">
+              <ion-label>Largura:</ion-label>
+              <ion-note slot="end">{{ resultado.largura | number:'1.5-5' }} cm</ion-note>
+            </ion-item>
+            <ion-item *ngIf="medidasSelecionadas.comprimento">
+              <ion-label>Comprimento:</ion-label>
+              <ion-note slot="end">{{ resultado.comprimento | number:'1.5-5' }} cm</ion-note>
+            </ion-item>
+            <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento">
+              <ion-label>Relação L/C:</ion-label>
+              <ion-note slot="end">{{ resultado.relacaoLarguraComprimento | number:'1.5-5' }}</ion-note>
+            </ion-item>
             <ion-item *ngIf="medidasSelecionadas.area">
               <ion-label>Área:</ion-label>
               <ion-note slot="end">{{ resultado.area | number:'1.5-5' }} cm²</ion-note>
@@ -260,25 +298,17 @@
               <ion-label>Perímetro:</ion-label>
               <ion-note slot="end">{{ resultado.perimetro | number:'1.5-5' }} cm</ion-note>
             </ion-item>
-            <ion-item *ngIf="medidasSelecionadas.comprimento">
-              <ion-label>Comprimento:</ion-label>
-              <ion-note slot="end">{{ resultado.comprimento | number:'1.5-5' }} cm</ion-note>
-            </ion-item>
-            <ion-item *ngIf="medidasSelecionadas.largura">
-              <ion-label>Largura:</ion-label>
-              <ion-note slot="end">{{ resultado.largura | number:'1.5-5' }} cm</ion-note>
-            </ion-item>
-            <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento">
-              <ion-label>Relação L/C:</ion-label>
-              <ion-note slot="end">{{ resultado.relacaoLarguraComprimento | number:'1.2-2' }}</ion-note>
-            </ion-item>
           </ion-list>
         </div>
         
         <!-- Resultados agregados -->
-        <div *ngIf="medidasSelecionadas.somarAreas || medidasSelecionadas.mediaDesvio">
-          <h5>Resultados Agregados</h5>
-          <ion-list>
+        <div *ngIf="medidasSelecionadas.somarAreas || medidasSelecionadas.mediaDesvio" class="leaf-result-item">
+          <ion-item button="true" detail="false" (click)="toggleAggregatedResults()" lines="none" class="leaf-item-header">
+            <ion-label>De todas as folhas</ion-label>
+            <ion-icon slot="end" [name]="aggregatedResultsVisible ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+          </ion-item>
+
+          <ion-list *ngIf="aggregatedResultsVisible">
             <ion-item *ngIf="medidasSelecionadas.somarAreas">
               <ion-label>Soma Total das Áreas:</ion-label>
               <ion-note slot="end">{{ resultadosAgregados.totalArea | number:'1.2-2' }} cm²</ion-note>

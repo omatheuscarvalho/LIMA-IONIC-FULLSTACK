@@ -79,6 +79,24 @@ ion-card-title {
   --min-height: 36px;
 }
 
+.leaf-result-item {
+  border: 1px solid var(--ion-color-step-200, #e0e0e0);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.leaf-item-header {
+  --background: var(--ion-color-light-tint, #f9f9f9);
+  --padding-start: 16px;
+  --inner-padding-end: 16px;
+  font-weight: 500;
+}
+
+:host-context(.dark) .leaf-item-header {
+  --background: var(--ion-color-step-150, #262626);
+}
+
 .export-button {
   margin-top: 8px;
 }

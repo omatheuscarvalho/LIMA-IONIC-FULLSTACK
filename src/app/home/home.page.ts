@@ -1,15 +1,15 @@
 import { Component, Inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonNote, IonRow, IonText, IonTitle, IonToolbar, IonImg, IonCheckbox, AlertController } from '@ionic/angular/standalone';
+import { IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonNote, IonRow, IonText, IonTitle, IonToolbar, IonImg, IonCheckbox, AlertController, IonSpinner } from '@ionic/angular/standalone';
 import { DOCUMENT, CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http'; // 1. Importar HttpClient
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
-import { camera, download, help, home, moon, sunny, time, trash, logOut, person } from 'ionicons/icons';
+import { camera, download, help, home, moon, sunny, time, trash, logOut, person, calculator, image as imageIcon } from 'ionicons/icons';
 import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 import { AuthService } from '../auth/auth.service';
 import { ThemeService } from '../services/theme.service';
+import { ImageAnalysisService, LeafMetric, AggregatedMetrics } from '../services/image-analysis.service';
 
 
 @Component({
@@ -17,7 +17,7 @@ import { ThemeService } from '../services/theme.service';
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, FormsModule, CommonModule, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton, IonIcon, IonNote, IonButtons, IonGrid, IonRow, IonCol, IonList, IonText, IonImg, IonCheckbox, HttpClientModule], // 2. Adicionar HttpClientModule
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, FormsModule, CommonModule, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton, IonIcon, IonNote, IonButtons, IonGrid, IonRow, IonCol, IonList, IonText, IonImg, IonCheckbox, IonSpinner],
 })
 export class HomePage {
   // Variáveis para armazenar os dados do formulário
@@ -45,13 +45,8 @@ export class HomePage {
   selectedImageFile: File | null = null;
   
   // Resultados das medições
-  resultados: any[] = [];
-  resultadosAgregados = {
-    somaAreas: 0,
-    mediaArea: 0,
-    desvioArea: 0,
-    relacaoLarguraComprimento: 0
-  };
+  resultados: LeafMetric[] = [];
+  resultadosAgregados: AggregatedMetrics = {};
 
   // Controle do tema
   darkMode = false;
@@ -59,15 +54,18 @@ export class HomePage {
   // Histórico de análises
   historico: any[] = [];
 
+  // UI State
+  isAnalyzing = false;
+
   constructor(
     private router: Router, 
     @Inject(DOCUMENT) private document: Document,
     private authService: AuthService,
     private alertController: AlertController,
     private themeService: ThemeService,
-    private http: HttpClient // 3. Injetar o HttpClient
+    private imageAnalysisService: ImageAnalysisService // Injetar o serviço de análise de imagem
   ) {
-    addIcons({ camera, trash, download, sunny, moon, home, time, help, logOut, person });
+    addIcons({ camera, trash, download, sunny, moon, home, time, help, logOut, person, calculator, image: imageIcon });
     this.carregarHistorico();
     
     // Subscrever ao estado do dark mode
@@ -130,76 +128,38 @@ export class HomePage {
     }
 
     if (!this.areaEscala || this.areaEscala <= 0) {
-      this.presentErrorAlert('Atenção', 'Por favor, informe um valor válido para a área do padrão de escala.');
+      this.presentErrorAlert('Atenção', 'Por favor, informe um valor válido para a área do padrão de escala (maior que zero).');
       return;
     }
+
+    this.isAnalyzing = true;
+    this.imagemProcessada = null;
+    this.resultados = [];
+    this.resultadosAgregados = {};
 
     console.log('Iniciando análise da imagem...');
 
     try {
-      // 1. Converte a imagem para base64
-      const base64Image = await this.convertFileToBase64(this.selectedImageFile);
+      const imgElement = await this.createImageElement(this.selectedImageFile);
+      const result = await this.imageAnalysisService.processImageDirect(imgElement, this.areaEscala);
 
-      // 2. Define o endereço do seu servidor Python.
-      const backendUrl = 'http://127.0.0.1:5000/analyze'; // <-- MUDE PARA O ENDEREÇO DO SEU SERVIDOR
+      if (result.error) {
+        this.presentErrorAlert('Analysis Error', result.error);
+        return;
+      }
 
-      // 3. Cria o corpo da requisição
-      const payload = {
-        base64_image: base64Image,
-        real_area_square: this.areaEscala
-      };
+      this.resultados = result.leaves;
+      this.resultadosAgregados = result.aggregatedMetrics;
+      this.imagemProcessada = result.processedImage;
 
-      console.log('Enviando imagem para o servidor de análise...');
+      console.log(`Analysis complete: ${result.numberOfLeaves} leaves detected.`);
+      this.adicionarAoHistorico();
 
-      // 4. Faz a requisição HTTP POST para o backend
-      this.http.post<any>(backendUrl, payload).subscribe({
-        next: (analysisResult) => {
-          if (analysisResult.error) {
-            console.error('Erro retornado pelo servidor Python:', analysisResult.error);
-            this.presentErrorAlert('Erro na Análise', `O servidor retornou um erro: ${analysisResult.error}`);
-            return;
-          }
-
-          console.log('Análise recebida do servidor:', analysisResult);
-
-          // Limpa resultados anteriores
-          this.resultados = [];
-
-          // Mapeia os resultados do Python para o formato da interface
-          this.resultados = analysisResult.leaves.map((leaf: any) => ({
-            id: leaf.id,
-            area: leaf.area,
-            perimetro: leaf.perimeter,
-            comprimento: leaf.length,
-            largura: leaf.width,
-            relacaoLarguraComprimento: leaf.widthToLengthRatio
-          }));
-
-          // Atualiza resultados agregados com os dados da análise
-          this.resultadosAgregados = {
-            somaAreas: analysisResult.aggregatedMetrics.totalArea,
-            mediaArea: analysisResult.aggregatedMetrics.averageArea,
-            desvioArea: analysisResult.aggregatedMetrics.standardDeviationArea,
-            relacaoLarguraComprimento: analysisResult.aggregatedMetrics.averageWidthToLengthRatio
-          };
-
-          // Exibe a imagem processada com contornos, se disponível
-          if (analysisResult.processedImage) {
-            this.imagemProcessada = 'data:image/png;base64,' + analysisResult.processedImage;
-          }
-
-          console.log(`Análise concluída: ${analysisResult.numberOfLeaves} folhas detectadas`);
-          this.adicionarAoHistorico();
-        },
-        error: (err) => {
-          console.error('Erro ao conectar com o servidor de análise:', err);
-          this.presentErrorAlert('Erro de Conexão', 'Não foi possível conectar ao servidor de análise. Verifique se ele está em execução e se o endereço está correto.');
-        }
-      });
-
-    } catch (error) {
-      console.error('Erro ao processar a imagem localmente:', error);
-      this.presentErrorAlert('Erro Local', 'Ocorreu um erro ao preparar a imagem para análise.');
+    } catch (error: any) {
+      console.error('Error during analysis calculation:', error);
+      this.presentErrorAlert('Error', error.message || 'An unknown error occurred during analysis.');
+    } finally {
+      this.isAnalyzing = false;
     }
   }
 
@@ -229,13 +189,23 @@ export class HomePage {
     this.hasImage = false;
     this.selectedImageFile = null;
     this.resultados = [];
-    this.resultadosAgregados = {
-      somaAreas: 0,
-      mediaArea: 0,
-      desvioArea: 0,
-      relacaoLarguraComprimento: 0
-    };
+    this.resultadosAgregados = {};
+    this.isAnalyzing = false;
     console.log('Dados limpos');
+  }
+
+  private createImageElement(file: File): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = (err) => reject(new Error('Failed to load image from file.'));
+        img.src = e.target.result;
+      };
+      reader.onerror = () => reject(new Error('Failed to read the image file.'));
+      reader.readAsDataURL(file);
+    });
   }
 
   /**
@@ -246,22 +216,22 @@ export class HomePage {
     
     // Calcular soma das áreas
     const areas = this.resultados.map(r => r.area);
-    this.resultadosAgregados.somaAreas = areas.reduce((sum, area) => sum + area, 0);
+    this.resultadosAgregados.totalArea = areas.reduce((sum, area) => sum + area, 0);
     
     // Calcular média e desvio padrão
-    this.resultadosAgregados.mediaArea = this.resultadosAgregados.somaAreas / areas.length;
+    this.resultadosAgregados.averageArea = (this.resultadosAgregados.totalArea ?? 0) / areas.length;
     
     // Calcular desvio padrão
     const somaDiferencasQuadradas = areas.reduce((sum, area) => {
-      const diferenca = area - this.resultadosAgregados.mediaArea;
+      const diferenca = area - (this.resultadosAgregados.averageArea ?? 0);
       return sum + (diferenca * diferenca);
     }, 0);
     
-    this.resultadosAgregados.desvioArea = Math.sqrt(somaDiferencasQuadradas / areas.length);
+    this.resultadosAgregados.standardDeviationArea = Math.sqrt(somaDiferencasQuadradas / areas.length);
     
     // Calcular média da relação largura/comprimento
-    const relacoes = this.resultados.map(r => r.largura / r.comprimento);
-    this.resultadosAgregados.relacaoLarguraComprimento = 
+    const relacoes = this.resultados.map(r => r.relacaoLarguraComprimento);
+    this.resultadosAgregados.averageWidthToLengthRatio = 
       relacoes.reduce((sum, rel) => sum + rel, 0) / relacoes.length;
   }
   
@@ -275,7 +245,7 @@ export class HomePage {
       replica: this.replica,
       nomeImagem: this.nomeImagem,
       resultados: [...this.resultados],
-      resultadosAgregados: {...this.resultadosAgregados}
+      resultadosAgregados: { ...this.resultadosAgregados }
     };
     this.historico.unshift(analise);
     if (this.historico.length > 50) {
@@ -335,19 +305,19 @@ export class HomePage {
     if (this.medidasSelecionadas.somarAreas) {
       linhas.push([
         this.nomeImagem, this.especie, this.tratamento, this.replica, this.areaEscala,
-        'Soma', this.resultadosAgregados.somaAreas, '', '', '', ''
+        'Soma', this.resultadosAgregados.totalArea ?? 0, '', '', '', ''
       ]);
     }
     
     if (this.medidasSelecionadas.mediaDesvio) {
       linhas.push([
         this.nomeImagem, this.especie, this.tratamento, this.replica, this.areaEscala,
-        'Média', this.resultadosAgregados.mediaArea, '', '', '', this.resultadosAgregados.relacaoLarguraComprimento
+        'Média', this.resultadosAgregados.averageArea ?? 0, '', '', '', this.resultadosAgregados.averageWidthToLengthRatio ?? 0
       ]);
       
       linhas.push([
         this.nomeImagem, this.especie, this.tratamento, this.replica, this.areaEscala,
-        'Desvio Padrão', this.resultadosAgregados.desvioArea, '', '', '', ''
+        'Desvio Padrão', this.resultadosAgregados.standardDeviationArea ?? 0, '', '', '', ''
       ]);
     }
     

@@ -36,7 +36,9 @@
               }
             ],
             "styles": ["src/global.scss", "src/theme/variables.scss"],
-            "scripts": [],
+            "scripts": [
+              "src/assets/opencv.js"
+            ],
             "browser": "src/main.ts",
             "allowedCommonJsDependencies": [
               "papaparse",

@@ -21,6 +21,14 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <!-- Overlay de Carregamento -->
+  <div *ngIf="isAnalyzing" class="loading-overlay">
+    <div class="loading-content">
+      <ion-spinner name="crescent" color="success"></ion-spinner>
+      <p>carregando análise</p>
+    </div>
+  </div>
+
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">L.I.M.A.</ion-title>

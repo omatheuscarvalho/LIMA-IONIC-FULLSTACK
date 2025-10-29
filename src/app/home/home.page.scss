@@ -205,3 +205,44 @@ ion-img {
     color: var(--ion-text-color);
   }
 }
+
+/* Estilos para o Alerta de Exclusão Moderno */
+::ng-deep .delete-selection-alert {
+  // Backdrop
+  --backdrop-opacity: 0.6;
+
+  .alert-wrapper {
+    background-color: var(--ion-color-step-50, #f2f2f2);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+
+  .alert-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ion-color-primary);
+  }
+
+  .alert-message {
+    color: var(--ion-text-color-step-600, #666);
+  }
+
+  // Estilo dos checkboxes
+  .alert-checkbox-label {
+    font-size: 16px;
+  }
+
+  .alert-button.alert-button-confirm {
+    font-weight: 600;
+    color: var(--ion-color-primary);
+  }
+
+  .alert-button.alert-button-cancel {
+    color: var(--ion-color-medium);
+  }
+
+  .alert-button.alert-button-danger {
+    color: var(--ion-color-danger);
+    font-weight: bold;
+  }
+}

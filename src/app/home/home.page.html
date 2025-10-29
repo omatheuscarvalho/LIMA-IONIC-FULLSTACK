@@ -149,6 +149,11 @@
                    <ion-icon name="help"></ion-icon>
                    Ajuda
                  </ion-button>
+                 <!-- Botão para ativar modo de exclusão -->
+                 <ion-button fill="clear" (click)="presentDeleteSelectionAlert()" *ngIf="resultados.length > 0" color="danger">
+                   <ion-icon name="trash"></ion-icon>
+                   Excluir
+                 </ion-button>
                </ion-buttons>
              </ion-card-title>
           </ion-card-header>
@@ -266,8 +271,10 @@
       <ion-card-header>
         <ion-card-title>Resultados</ion-card-title>
       </ion-card-header>
-      <ion-card-content>
+      <ion-card-content> 
         <!-- Resultados por folha -->
+        <!-- NOTA: A lógica de exclusão não foi adicionada aqui para manter a simplicidade na vista móvel.
+             Se desejar, a mesma lógica com checkboxes pode ser replicada. -->
         <div *ngFor="let resultado of resultados" class="leaf-result-item">
           <ion-item button="true" detail="false" (click)="toggleLeafDetails(resultado.id)" lines="none" class="leaf-item-header">
             <ion-label>Folha {{ resultado.id }}</ion-label>

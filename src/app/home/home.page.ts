@@ -227,10 +227,7 @@ export class HomePage {
     if (this.visibleLeafDetails.has(leafId)) {
       this.visibleLeafDetails.delete(leafId);
     } else {
-      // By default, show details of the first leaf
-      if (this.resultados.length > 0 && this.visibleLeafDetails.size === 0 && leafId === this.resultados[0].id) {
-        this.visibleLeafDetails.add(leafId);
-      } else { this.visibleLeafDetails.add(leafId); }
+      this.visibleLeafDetails.add(leafId);
     }
   }
 
@@ -241,6 +238,70 @@ export class HomePage {
     this.aggregatedResultsVisible = !this.aggregatedResultsVisible;
   }
 
+  async presentDeleteSelectionAlert() {
+    // Cria as opções do checkbox a partir dos resultados atuais
+    const alertInputs = this.resultados.map(leaf => ({
+      name: `leaf-${leaf.id}`,
+      type: 'checkbox' as const, // O tipo precisa ser 'checkbox'
+      label: `Folha ${leaf.id}`,
+      value: leaf.id,
+      checked: false
+    }));
+
+    const alert = await this.alertController.create({
+      header: 'Excluir Folhas',
+      cssClass: 'delete-selection-alert', // Classe CSS para estilização
+      message: 'Selecione as folhas que deseja remover da análise.',
+      inputs: alertInputs,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'alert-button-cancel',
+        },
+        {
+          text: 'Excluir',
+          cssClass: 'alert-button-confirm',
+          handler: (selectedLeafIds: number[]) => {
+            if (selectedLeafIds && selectedLeafIds.length > 0) {
+              // Em vez de excluir diretamente, chama o alerta de confirmação final
+              this.presentFinalConfirmationAlert(selectedLeafIds);
+            }
+          }
+        },
+      ]
+    });
+
+    await alert.present();
+  }
+
+  private async presentFinalConfirmationAlert(idsToDelete: number[]) {
+    const alert = await this.alertController.create({
+      header: 'Confirmar Exclusão',
+      message: `Tem certeza que deseja excluir ${idsToDelete.length} folha(s) selecionada(s)? Esta ação não pode ser desfeita.`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Confirmar',
+          cssClass: 'alert-button-danger',
+          handler: () => this.deleteSelectedLeaves(idsToDelete),
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private deleteSelectedLeaves(idsToDelete: number[]) {
+    // Filtra o array de resultados, mantendo apenas as folhas não selecionadas
+    this.resultados = this.resultados.filter(leaf => !idsToDelete.includes(leaf.id));
+
+    // Recalcula os resultados agregados com base nos dados restantes
+    this.calcularResultadosAgregados();
+
+    // Atualiza o histórico com a análise corrigida
+    this.adicionarAoHistorico();
+    console.log(`${idsToDelete.length} folha(s) foram excluídas.`);
+  }
   /**
    * Calcula os resultados agregados com base nos resultados individuais
    */

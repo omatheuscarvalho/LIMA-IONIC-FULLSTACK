@@ -267,3 +267,93 @@ ion-item.compacto {
   --ion-grid-row-padding: 6px;
   --ion-grid-column-padding: 6px;
 }
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.results-header ion-buttons {
+  display: flex;
+  gap: 4px;
+}
+.leaf-item-card {
+  border: 1px solid var(--ion-color-medium, #ccc);
+  border-radius: 6px;
+  margin-top: 8px;
+}
+
+.leaf-details-list {
+  padding-left: 4px;
+  border-left: 2px solid var(--ion-color-primary);
+  margin-bottom: 6px;
+}
+.mobile-stack {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .mobile-stack {
+    flex-direction: column;
+  }
+
+  .results-card {
+    order: 2;
+  }
+
+  .image-card {
+    order: 1;
+  }
+}
+
+/* Força exibição do card de resultados no mobile */
+@media (max-width: 767px) {
+  .results-card {
+    display: block !important;
+  }
+  .results-card-mobile {
+    display: block !important; /* se existir, mostra também */
+  }
+}
+
+/* Borda e separador por folha */
+.leaf-result-item {
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 8px;
+  padding: 6px;
+  margin-bottom: 10px;
+  background: var(--ion-background-color);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.leaf-item-header {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Header dos resultados alinhado à direita */
+.results-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  width:100%;
+}
+.results-header ion-buttons {
+  display:flex;
+  gap:6px;
+}
+
+/* Ajuste fino para evitar overflow de texto nos ion-labels */
+.results-list ion-item ion-label,
+.leaf-item-header ion-label {
+  white-space: normal;
+  word-break: break-word;
+}

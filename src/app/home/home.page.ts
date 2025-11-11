@@ -149,8 +149,10 @@ export class HomePage {
     console.log('Iniciando análise da imagem...');
 
     try {
-      const imgElement = await this.createImageElement(this.selectedImageFile);
-      const result = await this.imageAnalysisService.processImageDirect(imgElement, this.areaEscala);
+      // MODIFICAÇÃO: Usar a string base64 (imagemSelecionada) que já foi carregada,
+      // em vez de tentar reler o 'selectedImageFile', o que falha no Android.
+      const imgElement = await this.createImageElementFromBase64(this.imagemSelecionada!);
+      const result = await this.imageAnalysisService.processImageDirect(imgElement, this.areaEscala); // O serviço já espera um HTMLImageElement
 
       if (result.error) {
         this.presentErrorAlert('Analysis Error', result.error);
@@ -205,17 +207,19 @@ export class HomePage {
     console.log('Dados limpos');
   }
 
-  private createImageElement(file: File): Promise<HTMLImageElement> {
+  /**
+   * Cria um HTMLImageElement a partir de uma string de imagem base64 (Data URL).
+   * Este método é mais robusto para ambientes móveis (Android/iOS).
+   * @param base64String A string da imagem no formato Data URL.
+   */
+  private createImageElementFromBase64(base64String: string): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = (err) => reject(new Error('Failed to load image from file.'));
-        img.src = e.target.result;
+      const img = new Image();
+      img.onload = () => {
+        resolve(img);
       };
-      reader.onerror = () => reject(new Error('Failed to read the image file.'));
-      reader.readAsDataURL(file);
+      img.onerror = (err) => reject(new Error('Falha ao carregar a imagem a partir do base64.'));
+      img.src = base64String;
     });
   }
 

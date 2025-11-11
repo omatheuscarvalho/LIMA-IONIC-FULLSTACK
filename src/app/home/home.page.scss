@@ -38,8 +38,10 @@ ion-card-title {
 }
 
 .compact-item {
-  --min-height: 60px;
-  margin-bottom: 4px;
+  --padding-start: 0px;
+  --inner-padding-end: 0px;
+  --inner-padding-start: 0px;
+  --min-height: 38px; 
 }
 
 .section-label {
@@ -245,4 +247,23 @@ ion-img {
     color: var(--ion-color-danger);
     font-weight: bold;
   }
+}
+ion-item ion-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+ion-note[slot="end"] {
+  margin-left: 8px;
+}
+ion-item.compacto {
+  --padding-start: 0px;
+  --inner-padding-end: 0px;
+  --inner-padding-start: 0px;
+  --min-height: 38px; 
+}
+.leaf-grid {
+  --ion-grid-padding: 0;
+  --ion-grid-row-padding: 6px;
+  --ion-grid-column-padding: 6px;
 }

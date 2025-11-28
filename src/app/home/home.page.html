@@ -152,7 +152,7 @@
             <ion-card-content>
 
               <!-- Lista individual -->
-              <div *ngFor="let r of resultados">
+              <div *ngFor="let r of resultados; trackBy: trackByLeaf">
                 <ion-item button detail="false" lines="none" (click)="toggleLeafDetails(r.id)" class="leaf-item-card">
                   <ion-label>Folha {{ r.id }}</ion-label>
 

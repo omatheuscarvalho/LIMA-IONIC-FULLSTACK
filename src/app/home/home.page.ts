@@ -219,6 +219,12 @@ export class HomePage {
     this.visibleLeafDetails.has(id) ? this.visibleLeafDetails.delete(id) : this.visibleLeafDetails.add(id);
   }
 
+  // trackBy function for ngFor to prevent DOM reuse issues when IDs are renumbered
+  trackByLeaf(index: number, item: any) {
+    // prefer stable uid if present
+    return item?.uid ?? item?.id ?? index;
+  }
+
   // Clique no ícone de lixeira de uma única folha: abre confirmação sem acionar toggle
   onDeleteClick(id: number, event: Event) {
     event.stopPropagation();

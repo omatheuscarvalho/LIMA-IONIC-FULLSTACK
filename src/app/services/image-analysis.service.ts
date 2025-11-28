@@ -15,6 +15,8 @@ export interface LeafMetric {
   cy?: number;
   // Contour flattened array [x1,y1,x2,y2,...] - used to redraw contours with OpenCV later
   contour?: number[];
+  // Stable UID used by the frontend *ngFor trackBy to avoid DOM reuse issues
+  uid?: string;
 }
 
 export interface AggregatedMetrics {
@@ -163,6 +165,9 @@ export class ImageAnalysisService {
             for (let p = 0; p < leaf.data32S.length; p++) ptsFlat.push(leaf.data32S[p]);
           }
 
+          // generate a stable uid for this leaf (unique within this analysis)
+          const uid = `${Date.now()}-${Math.random().toString(36).slice(2,8)}-${i}`;
+
           leafMetrics.push({
             id: i + 1,
             area: areaPx * scalingFactorArea,
@@ -172,7 +177,8 @@ export class ImageAnalysisService {
             relacaoLarguraComprimento: lengthCm > 0 ? widthCm / lengthCm : 0,
             cx: cX_metric,
             cy: cY_metric,
-            contour: ptsFlat
+            contour: ptsFlat,
+            uid
           });
         }
 

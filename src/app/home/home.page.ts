@@ -98,7 +98,7 @@ export class HomePage {
     private cdr: ChangeDetectorRef,
   ) {
     // Registrar ícones (sem duplicatas)
-    addIcons({person,logOut,calculator,trash,time,help,download,camera,sunny,moon,home,image:imageIcon});
+    addIcons({ person, logOut, calculator, trash, time, help, download, camera, sunny, moon, home, image: imageIcon });
 
     this.carregarHistorico();
     this.themeService.darkMode$.subscribe(v => this.darkMode = v);
@@ -219,6 +219,12 @@ export class HomePage {
     this.visibleLeafDetails.has(id) ? this.visibleLeafDetails.delete(id) : this.visibleLeafDetails.add(id);
   }
 
+  // Clique no ícone de lixeira de uma única folha: abre confirmação sem acionar toggle
+  onDeleteClick(id: number, event: Event) {
+    event.stopPropagation();
+    this.presentFinalConfirmationAlert([id]);
+  }
+
   toggleAggregatedResults() {
     this.aggregatedResultsVisible = !this.aggregatedResultsVisible;
   }
@@ -303,8 +309,40 @@ export class HomePage {
   }
 
   private deleteSelectedLeaves(idsToDelete: number[]) {
+    // Remove as folhas selecionadas
     this.resultados = this.resultados.filter(leaf => !idsToDelete.includes(leaf.id));
+
+    // Renumera as folhas restantes (1..n) para redefinir a contagem
+    this.resultados = this.resultados.map((leaf, idx) => ({ ...leaf, id: idx + 1 }));
+
+    // Limpa quaisquer detalhes/toggles que poderiam referenciar ids antigos
+    this.visibleLeafDetails.clear();
+
+    // Recalcula métricas agregadas com os resultados atualizados
     this.recalcAggregated();
+
+    // Atualiza a imagem processada: redesenha os rótulos sobre a imagem base
+    // usa o imagemSelecionada (base) para gerar uma nova imagem com apenas os labels atuais
+    if (this.imagemSelecionada) {
+      const baseImg = this.imagemSelecionada;
+      // chamada assíncrona — tenta redesenhar contornos + labels usando OpenCV (mesmo estilo)
+      this.imageService.drawContoursAndLabelsOnImage(baseImg, this.resultados)
+        // se falhar (ex.: contornos não persistidos), regrada com drawLabelsOnImage como fallback
+        .catch(() => this.imageService.drawLabelsOnImage(baseImg, this.resultados))
+        .then(base64 => {
+          this.imagemProcessada = base64 || this.imagemSelecionada;
+          // força re-render da view
+          Promise.resolve().then(() => this.cdr.detectChanges());
+          this.adicionarAoHistorico();
+        })
+        .catch(err => {
+          // se falhar, apenas atualiza agregados e histórico
+          console.warn('Falha ao regenerar imagem processada:', err);
+          Promise.resolve().then(() => this.cdr.detectChanges());
+          this.adicionarAoHistorico();
+        });
+      return; // histórico será atualizado na promise
+    }
 
     // re-render obrigatório aqui
     Promise.resolve().then(() => this.cdr.detectChanges());
@@ -362,35 +400,75 @@ export class HomePage {
       return;
     }
 
+    // Cabeçalhos
     const header = [
-      'Nome da Imagem', 'Espécie', 'Tratamento', 'Réplica', 'Área do Padrão de Escala (cm²)',
-      'Folha', 'Área (cm²)', 'Perímetro (cm)', 'Comprimento (cm)', 'Largura (cm)', 'Relação L/C'
+      'Folha',
+      'Área (cm²)',
+      'Perímetro (cm)',
+      'Comprimento (cm)',
+      'Largura (cm)',
+      'Relação L/C'
     ];
 
-    const linhas = this.resultados.map(r => [
-      this.nomeImagem, this.especie, this.tratamento, this.replica, this.areaEscala,
-      `Folha ${r.id}`, r.area, r.perimetro, r.comprimento, r.largura, r.relacaoLarguraComprimento
-    ]);
+    // Linhas individuais
+    const linhas = this.resultados.map(r => ({
+      Folha: `Folha ${r.id}`,
+      'Área (cm²)': r.area ?? '',
+      'Perímetro (cm)': r.perimetro ?? '',
+      'Comprimento (cm)': r.comprimento ?? '',
+      'Largura (cm)': r.largura ?? '',
+      'Relação L/C': r.relacaoLarguraComprimento ?? ''
+    }));
 
-    if (this.medidasSelecionadas.somarAreas) {
-      linhas.push([this.nomeImagem, this.especie, this.tratamento, this.replica, this.areaEscala, 'Soma', this.resultadosAgregados?.totalArea ?? 0, '', '', '', '']);
+    // Informações de metadados (cabecalho separado)
+    const metadados = [
+      ['Nome da Imagem', this.nomeImagem],
+      ['Espécie', this.especie],
+      ['Tratamento', this.tratamento],
+      ['Réplica', this.replica],
+      ['Área de Escala (cm²)', this.areaEscala]
+    ];
+
+    // Estatísticas agregadas
+    const agregados: any[] = [];
+    if (this.medidasSelecionadas.somarAreas || this.medidasSelecionadas.mediaDesvio) {
+      agregados.push([]);
+      agregados.push(['---- Estatísticas Agregadas ----']);
+
+      if (this.medidasSelecionadas.somarAreas) {
+        agregados.push(['Soma Total das Áreas (cm²)', this.resultadosAgregados?.totalArea ?? 0]);
+      }
+      if (this.medidasSelecionadas.mediaDesvio) {
+        agregados.push(['Média da Área (cm²)', this.resultadosAgregados?.averageArea ?? 0]);
+        agregados.push(['Média da Relação L/C', this.resultadosAgregados?.averageWidthToLengthRatio ?? 0]);
+        agregados.push(['Desvio Padrão (Área)', this.resultadosAgregados?.standardDeviationArea ?? 0]);
+      }
     }
 
-    if (this.medidasSelecionadas.mediaDesvio) {
-      linhas.push([this.nomeImagem, this.especie, this.tratamento, this.replica, this.areaEscala, 'Média', this.resultadosAgregados?.averageArea ?? 0, '', '', '', this.resultadosAgregados?.averageWidthToLengthRatio ?? 0]);
-      linhas.push([this.nomeImagem, this.especie, this.tratamento, this.replica, this.areaEscala, 'Desvio Padrão', this.resultadosAgregados?.standardDeviationArea ?? 0, '', '', '', '']);
-    }
+    // Montagem final do CSV
+    const csv = Papa.unparse(linhas, {
+      delimiter: ';', // ✅ aqui, e não no objeto fields/data
+      quotes: true
+    });
 
-    const csv = Papa.unparse({ fields: header, data: linhas });
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    // Inserir metadados antes do CSV e agregados depois
+    const csvFinal =
+      metadados.map(m => m.join(';')).join('\n') +
+      '\n\n---- Resultados Individuais ----\n' +
+      csv +
+      (agregados.length ? '\n\n' + agregados.map(a => a.join(';')).join('\n') : '');
+
+    const blob = new Blob([csvFinal], { type: 'text/csv;charset=utf-8' });
     const filename = `LIMA_${this.especie}_${this.tratamento}_${new Date().toISOString().split('T')[0]}.csv`;
+
     try {
       saveAs(blob, filename);
-      console.log('Arquivo CSV exportado com sucesso');
+      console.log('CSV exportado com sucesso!');
     } catch (error) {
-      console.error('Erro ao exportar arquivo CSV:', error);
+      console.error('Erro ao exportar CSV:', error);
     }
   }
+
 
   async showAlert(header: string, message: string) {
     const a = await this.alertCtrl.create({ header, message, buttons: ['OK'] });

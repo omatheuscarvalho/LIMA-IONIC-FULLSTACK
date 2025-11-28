@@ -10,6 +10,11 @@ export interface LeafMetric {
   comprimento: number;
   largura: number;
   relacaoLarguraComprimento: number;
+  // Centroid coordinates (pixels) - useful for re-drawing labels without re-running full analysis
+  cx?: number;
+  cy?: number;
+  // Contour flattened array [x1,y1,x2,y2,...] - used to redraw contours with OpenCV later
+  contour?: number[];
 }
 
 export interface AggregatedMetrics {
@@ -147,6 +152,17 @@ export class ImageAnalysisService {
           const widthCm = Math.min(w_px, l_px) * scalingFactorLinear;
           const lengthCm = Math.max(w_px, l_px) * scalingFactorLinear;
 
+          // calcule o centróide agora e armazene para uso posterior na UI
+          const M_metrics = cv.moments(leaf, false);
+          const cX_metric = Math.round(M_metrics.m10 / (M_metrics.m00 || 1));
+          const cY_metric = Math.round(M_metrics.m01 / (M_metrics.m00 || 1));
+
+          // extract contour points into flat array
+          const ptsFlat: number[] = [];
+          if (leaf && leaf.data32S && leaf.data32S.length) {
+            for (let p = 0; p < leaf.data32S.length; p++) ptsFlat.push(leaf.data32S[p]);
+          }
+
           leafMetrics.push({
             id: i + 1,
             area: areaPx * scalingFactorArea,
@@ -154,6 +170,9 @@ export class ImageAnalysisService {
             comprimento: lengthCm,
             largura: widthCm,
             relacaoLarguraComprimento: lengthCm > 0 ? widthCm / lengthCm : 0,
+            cx: cX_metric,
+            cy: cY_metric,
+            contour: ptsFlat
           });
         }
 
@@ -215,6 +234,7 @@ export class ImageAnalysisService {
           const color = new cv.Scalar(255, 0, 0, 255); // Cor vermelha
           const thickness = 6; // Aumenta a espessura para um efeito de "negrito"
           cv.putText(processedImageMat, text, org, fontFace, fontScale, color, thickness);
+
         }
 
         const canvas = document.createElement('canvas');
@@ -228,6 +248,7 @@ export class ImageAnalysisService {
           numberOfLeaves: leafMetrics.length,
         });
 
+
       } catch (err: any) {
         console.error("Error during OpenCV.js processing:", err);
         reject(new Error(`Analysis failed: ${err.message || err}`));
@@ -237,6 +258,123 @@ export class ImageAnalysisService {
         squares.forEach((s: any) => s.delete());
         leaves.forEach((l: any) => l.delete());
       }
+    });
+  }
+
+  /**
+   * Desenha os rótulos (números) das folhas em uma imagem base (base64).
+   * Usa as coordenadas de centróide (cx, cy) presentes em cada LeafMetric.
+   * Retorna uma dataURL PNG com as marcações atualizadas.
+   */
+  async drawLabelsOnImage(base64Image: string, leavesToMark: LeafMetric[]): Promise<string> {
+    return new Promise((resolve, reject) => {
+      if (!base64Image) return resolve(null as any);
+
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || img.width;
+          canvas.height = img.naturalHeight || img.height;
+          const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+          // Desenha imagem base
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          // Estilo de marcadores / texto
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+
+          // primeiro desenha um 'outline' branco grosso para melhorar contraste
+          ctx.lineWidth = Math.max(4, Math.round(canvas.width * 0.003));
+          ctx.font = `${Math.max(14, Math.round(canvas.width * 0.025))}px sans-serif`;
+
+          for (const lf of leavesToMark || []) {
+            if (typeof lf.cx !== 'number' || typeof lf.cy !== 'number') continue;
+
+            // circle marker
+            ctx.beginPath();
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.arc(lf.cx, lf.cy, Math.max(8, Math.round(canvas.width * 0.01)), 0, Math.PI * 2);
+            ctx.fill();
+
+            // text (id) with stroke
+            ctx.fillStyle = '#ff0000';
+            ctx.lineWidth = Math.max(3, Math.round(canvas.width * 0.006));
+            ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+            ctx.strokeText(String(lf.id), lf.cx, lf.cy);
+            ctx.fillText(String(lf.id), lf.cx, lf.cy);
+          }
+
+          resolve(canvas.toDataURL('image/png'));
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = (e) => reject(new Error('Falha ao carregar imagem para desenhar labels'));
+      img.src = base64Image;
+    });
+  }
+
+  /**
+   * Redesenha contornos e rótulos (números) usando OpenCV para manter o mesmo estilo
+   * que o processamento original (mesma cor / espessura / fonte do putText).
+   */
+  async drawContoursAndLabelsOnImage(base64Image: string, leavesToMark: LeafMetric[]): Promise<string> {
+    return new Promise((resolve, reject) => {
+      if (!base64Image) return resolve(null as any);
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        let mats: any[] = [];
+        try {
+          const src = cv.imread(img);
+          mats.push(src);
+
+          const processed = src.clone();
+          mats.push(processed);
+
+          // Para cada folha, recria a Mat de pontos do contorno e desenha
+          for (let i = 0; i < (leavesToMark || []).length; i++) {
+            const lf = leavesToMark[i];
+            if (!lf || !lf.contour || lf.contour.length === 0) continue;
+
+            const pts = cv.matFromArray(lf.contour.length / 2, 1, cv.CV_32SC2, lf.contour);
+            mats.push(pts);
+            const vec = new cv.MatVector();
+            vec.push_back(pts);
+
+            // desenha o contorno com mesma cor/espessura (0,0,255,255) e thickness 4
+            cv.drawContours(processed, vec, -1, new cv.Scalar(0, 0, 255, 255), 4);
+
+            // desenha o número (mesmos parâmetros que processImageDirect)
+            const cX = lf.cx ?? 0;
+            const cY = lf.cy ?? 0;
+            const text = `${i + 1}`;
+            const org = new cv.Point(cX - 25, cY + 25);
+            const fontFace = cv.FONT_HERSHEY_SIMPLEX;
+            const fontScale = 2.5;
+            const color = new cv.Scalar(255, 0, 0, 255);
+            const thickness = 6;
+            cv.putText(processed, text, org, fontFace, fontScale, color, thickness);
+
+            vec.delete();
+            // pts will be deleted in mats cleanup
+          }
+
+          const canvas = document.createElement('canvas');
+          cv.imshow(canvas, processed);
+          const out = canvas.toDataURL('image/png');
+          resolve(out);
+        } catch (err) {
+          reject(err);
+        } finally {
+          try { mats.forEach(m => m.delete()); } catch (_) {}
+        }
+      };
+      img.onerror = (e) => reject(new Error('Falha ao carregar imagem para desenhar contours com OpenCV'));
+      img.src = base64Image;
     });
   }
 

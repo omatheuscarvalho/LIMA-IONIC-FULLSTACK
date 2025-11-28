@@ -155,7 +155,14 @@
               <div *ngFor="let r of resultados">
                 <ion-item button detail="false" lines="none" (click)="toggleLeafDetails(r.id)" class="leaf-item-card">
                   <ion-label>Folha {{ r.id }}</ion-label>
+
+                  <!-- toggle de expandir/contraír -->
                   <ion-icon slot="end" [name]="visibleLeafDetails.has(r.id) ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+
+                  <!-- botão de excluir rápido (para cada folha) (posicionado no fim) -->
+                  <ion-button slot="end" fill="clear" color="danger" (click)="onDeleteClick(r.id, $event)">
+                    <ion-icon name="trash"></ion-icon>
+                  </ion-button>
                 </ion-item>
 
                 <ion-list class="leaf-details-list" *ngIf="visibleLeafDetails.has(r.id)">

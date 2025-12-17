@@ -123,183 +123,305 @@
       }
     }
   }
-
-  /* Badges de Metadados */
-  .metadata-badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-
-    .badge {
-      background: var(--ion-color-step-100);
-      color: var(--ion-text-color);
-      font-size: 0.7rem;
-      padding: 2px 8px;
-      border-radius: 6px;
-      border: 1px solid var(--ion-color-step-200);
-
-      &.empty {
-        opacity: 0.5;
-      }
-    }
   }
+/* Variáveis para consistência */
+:root {
+  --border-color: var(--ion-color-step-150, #e0e0e0);
+  --header-bg: var(--ion-color-step-50, #f8f9fa);
+  --text-muted: var(--ion-color-medium, #666);
+}
 
-  /* Destaque de Área */
-  .area-highlight {
-    font-weight: 700;
-    color: var(--ion-color-primary);
-    font-size: 1rem;
-    
-    .unit {
-      font-size: 0.75rem;
-      font-weight: 400;
-      color: var(--ion-color-medium);
-    }
-  }
+.history-page {
+  --background: var(--ion-background-color);
+}
 
-  /* Botões de Ação na Tabela */
-  .action-btn {
-    background: transparent;
-    padding: 6px;
-    border-radius: 50%;
-    
-    ion-icon {
-      font-size: 1.2rem;
-    }
+/* ================================================= */
+/* ESTILOS DA LISTA PRINCIPAL (TELA DE HISTÓRICO)    */
+/* ================================================= */
 
-    &.export-btn { color: var(--ion-color-primary); }
-    &.delete-btn { color: var(--ion-color-danger); }
-    
-    &:hover { background: var(--ion-color-step-100); }
-  }
+.main-card {
+  margin: 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
 
-  /* Responsividade Mobile */
-  @media (max-width: 768px) {
-    .table-row {
-      /* Remove colunas menos importantes no mobile */
-      grid-template-columns: 1fr auto; 
-    }
-
-    .col-metadata, .col-date, .col-area {
-      display: none; /* Esconde colunas secundárias */
-    }
-    
-    /* Reintroduz a data abaixo do nome se necessário, ou mantém simples */
+.empty-state {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--text-muted);
+  
+  ion-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    opacity: 0.5;
   }
 }
 
-/* ============================================ */
-/* MODAL DE DETALHES (Consistente com Tema)     */
-/* ============================================ */
+/* Container da Tabela Principal */
+.history-list-container {
+  margin-top: 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--ion-card-background);
+}
 
+/* Definição do Grid da Lista Principal */
+.history-header, .history-row {
+  display: grid;
+  /* Grid responsivo: Imagem | Detalhes | Data | Resultado | Ações */
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 60px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+}
+
+.history-header {
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.history-row {
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--ion-color-step-50);
+  }
+}
+
+/* Colunas Específicas */
+.h-col {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Imagem e ID */
+.col-img {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    background: #eee;
+    overflow: hidden;
+    flex-shrink: 0;
+    
+    img { width: 100%; height: 100%; object-fit: cover; }
+  }
+
+  .thumb-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .t-name { font-weight: 600; font-size: 0.9rem; }
+    .t-id { font-size: 0.75rem; color: var(--text-muted); }
+  }
+}
+
+/* Badges */
+.col-info .badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+
+  .badge {
+    font-size: 0.7rem;
+    background: var(--ion-color-light);
+    border: 1px solid var(--border-color);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--ion-text-color);
+    
+    &.empty { opacity: 0.5; border: none; background: transparent; }
+  }
+}
+
+.col-date { font-size: 0.85rem; color: var(--text-muted); }
+
+.col-result .highlight {
+  font-weight: 700;
+  color: var(--ion-color-primary);
+}
+
+/* Responsividade da Lista Principal */
+@media (max-width: 768px) {
+  .history-header, .history-row {
+    grid-template-columns: 1fr 80px 40px; /* Simplifica para Mobile */
+  }
+  .col-info, .col-date { display: none; } /* Esconde colunas menos importantes */
+}
+
+
+/* ================================================= */
+/* ESTILOS DO MODAL (RELATÓRIO TÉCNICO)              */
+/* ================================================= */
+
+.modal-bg {
+  --background: var(--ion-background-color);
+}
+
+/* Banner */
 .detail-banner {
   width: 100%;
-  height: 200px;
+  height: 180px;
   position: relative;
-  
+  background: #000;
+
   .banner-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    opacity: 0.7;
+  }
+
+  .banner-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    color: white;
+
+    h2 { margin: 0; font-size: 1.2rem; font-weight: 700; }
+    p { margin: 4px 0 0; font-family: monospace; font-size: 0.9rem; opacity: 0.9; }
   }
 }
 
-.modal-body {
-  padding-bottom: 80px; /* Espaço para o footer fixo */
+/* Corpo do Modal */
+.report-section {
+  margin-bottom: 24px;
 }
 
-/* Card de Informações Gerais */
-.info-card {
-  margin: 0;
-  margin-bottom: 16px;
-  border-radius: 12px;
-  box-shadow: none;
-  border: 1px solid var(--ion-color-step-150);
+.section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ion-color-medium);
+  margin-bottom: 8px;
+  border-left: 4px solid var(--ion-color-primary);
+  padding-left: 8px;
+  letter-spacing: 0.05em;
 }
 
-.info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  
-  .info-item {
-    display: flex;
-    flex-direction: column;
-
-    .info-label {
-      font-size: 0.75rem;
-      color: var(--ion-color-medium);
-      text-transform: uppercase;
-    }
-    .info-value {
-      font-size: 1rem;
-      color: var(--ion-text-color);
-      font-weight: 500;
-    }
-  }
-}
-
-/* Edição */
-.edit-grid ion-item {
-  --padding-start: 0;
-  --inner-padding-end: 0;
-}
-
-/* Cards de Estatísticas (Agregados) */
-.aggregated-grid {
-  display: flex;
-  gap: 10px;
-  
-  .agg-item {
-    flex: 1;
-    background: var(--ion-color-step-50);
-    padding: 12px;
-    border-radius: 10px;
-    text-align: center;
-    border: 1px solid var(--ion-color-step-100);
-
-    .agg-label {
-      font-size: 0.7rem;
-      color: var(--ion-color-medium);
-      text-transform: uppercase;
-    }
-    .agg-value {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: var(--ion-color-primary);
-    }
-  }
-}
-
-/* Tabela Interna do Modal (Resultados) */
-.results-table-wrapper {
-  overflow-x: auto;
-  border: 1px solid var(--ion-color-step-150);
+/* 1. Dados da Amostra (Estilo Lista/Log) */
+.data-box {
+  background: var(--ion-card-background);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
+  padding: 12px;
+
+  .data-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--border-color);
+    font-size: 0.9rem;
+
+    &:last-child { border-bottom: none; }
+    
+    .label { color: var(--text-muted); }
+    .value { font-weight: 600; font-family: monospace; }
+  }
 }
 
-.results-table {
-  width: 100%;
-  min-width: 500px; /* Força scroll horizontal */
-  
-  .table-row {
-    display: grid;
-    grid-template-columns: 50px repeat(5, 1fr); /* ID fixo + 5 colunas iguais */
-    
-    &.header {
-      background: var(--ion-color-step-50);
-      font-weight: 600;
-      color: var(--ion-color-medium);
-      font-size: 0.8rem;
-    }
+/* 2. Tabela de Estatísticas Agregadas */
+.stats-table-container {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--ion-card-background);
+}
 
-    .col {
-      padding: 10px;
-      text-align: center;
-      border-bottom: 1px solid var(--ion-color-step-100);
-      font-size: 0.9rem;
-      color: var(--ion-text-color);
-    }
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  th, td {
+    padding: 10px 12px;
+    text-align: right;
+    border-bottom: 1px solid var(--border-color);
   }
+
+  th {
+    background: var(--header-bg);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+  
+  /* Primeira coluna alinhada à esquerda */
+  th:first-child, td:first-child { text-align: left; }
+
+  .param { font-weight: 500; color: var(--ion-color-medium-shade); }
+  
+  .highlight {
+    background: rgba(var(--ion-color-primary-rgb), 0.05);
+    td { color: var(--ion-color-primary); font-weight: 700; }
+  }
+
+  tfoot {
+    background: var(--header-bg);
+    font-weight: 700;
+    td { border-bottom: none; }
+    .total-value { font-family: monospace; font-size: 1rem; color: var(--ion-color-dark); }
+  }
+}
+
+/* 3. Tabela de Resultados Individuais (Scrollavel) */
+.results-scroll {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--ion-card-background);
+}
+
+.individual-table {
+  width: 100%;
+  min-width: 500px; /* Garante scroll em telas pequenas */
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  th, td {
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+  }
+
+  th {
+    background: var(--header-bg);
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  
+  /* Linhas alternadas (zebradas) para facilitar leitura */
+  tbody tr:nth-child(even) {
+    background: rgba(0,0,0,0.02);
+  }
+
+  .leaf-id { font-weight: 700; color: var(--text-muted); border-right: 1px solid var(--border-color); }
+  .area-val { font-weight: 700; color: var(--ion-color-dark); }
 }
 

@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
-import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCardSubtitle, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonModal, IonText, IonTitle, IonToolbar, IonSearchbar, IonInput, IonGrid, IonRow, IonCol, IonFooter } from '@ionic/angular/standalone';
+import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonModal, IonText, IonTitle, IonToolbar, IonSearchbar, IonInput, IonGrid, IonRow, IonCol, IonFooter } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { close, download, trash, time, pencil, checkmark, createOutline, closeCircleOutline, checkmarkCircleOutline, trashOutline, downloadOutline } from 'ionicons/icons';
+import { close, download, trash, time, pencil, checkmark, createOutline, closeCircleOutline, checkmarkCircleOutline, trashOutline, downloadOutline, trashBinOutline } from 'ionicons/icons';
 import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 
@@ -24,9 +24,6 @@ import { saveAs } from 'file-saver';
     IonButtons, 
     IonBackButton, 
     IonCard, 
-    IonCardHeader, 
-    IonCardTitle, 
-    IonCardSubtitle,
     IonCardContent, 
     IonItem, 
     IonLabel, 
@@ -51,7 +48,7 @@ export class HistoryPage implements OnInit {
   editModel: any = null;
 
   constructor(private router: Router, private alertController: AlertController) {
-    addIcons({download,trash,close,createOutline,closeCircleOutline,checkmarkCircleOutline,trashOutline,downloadOutline,pencil,checkmark,time});
+    addIcons({downloadOutline,trashOutline,trashBinOutline,close,createOutline,download,trash,closeCircleOutline,checkmarkCircleOutline,pencil,checkmark,time});
   }
 
   ngOnInit() {

@@ -3,9 +3,53 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
-import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCardSubtitle, IonContent, IonHeader, IonIcon, IonModal, IonText, IonTitle, IonToolbar, IonSearchbar, IonGrid, IonRow, IonCol, IonFooter } from '@ionic/angular/standalone';
+import { 
+  IonBackButton, 
+  IonButton, 
+  IonButtons, 
+  IonCard, 
+  IonCardContent, 
+  IonCardHeader, 
+  IonCardTitle, 
+  IonCardSubtitle, 
+  IonContent, 
+  IonHeader, 
+  IonIcon, 
+  IonModal, 
+  IonText, 
+  IonTitle, 
+  IonToolbar, 
+  IonSearchbar, 
+  IonGrid, 
+  IonRow, 
+  IonCol, 
+  IonFooter,
+  IonList,    // Adicionado
+  IonItem,    // Adicionado
+  IonLabel,   // Adicionado
+  IonInput,   // Adicionado
+  IonNote     // Adicionado
+} from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { close, download, trash, time, pencil, checkmark, createOutline, closeCircleOutline, checkmarkCircleOutline, trashOutline, downloadOutline, trashBinOutline, analyticsOutline, leafOutline, documentTextOutline } from 'ionicons/icons';
+import { 
+  close, 
+  download, 
+  trash, 
+  time, 
+  pencil, 
+  checkmark, 
+  createOutline, 
+  closeCircleOutline, 
+  checkmarkCircleOutline, 
+  trashOutline, 
+  downloadOutline, 
+  trashBinOutline, 
+  analyticsOutline, 
+  leafOutline, 
+  documentTextOutline,
+  closeCircle, // Adicionado
+  arrowBack    // Adicionado
+} from 'ionicons/icons';
 import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 
@@ -36,19 +80,44 @@ import { saveAs } from 'file-saver';
     IonGrid,
     IonRow,
     IonCol,
-    IonFooter
+    IonFooter,
+    IonList,    // Importado
+    IonItem,    // Importado
+    IonLabel,   // Importado
+    IonInput,   // Importado
+    IonNote     // Importado
   ]
 })
 export class HistoryPage implements OnInit {
   historico: any[] = [];
+  filteredHistorico: any[] = []; // Adicionado para manter consistência com o HTML
   analiseDetalhada: any = null;
   searchTerm: string = '';
+  
   // edição do modal
   editingDetalhe: boolean = false;
   editModel: any = null;
 
   constructor(private router: Router, private alertController: AlertController) {
-    addIcons({documentTextOutline,downloadOutline,trashOutline,trashBinOutline,close,createOutline,analyticsOutline,leafOutline,download,trash,closeCircleOutline,checkmarkCircleOutline,pencil,checkmark,time});
+    addIcons({
+      documentTextOutline,
+      downloadOutline,
+      trashOutline,
+      trashBinOutline,
+      close,
+      createOutline,
+      closeCircle,
+      checkmark,
+      analyticsOutline,
+      leafOutline,
+      download,
+      trash,
+      closeCircleOutline,
+      checkmarkCircleOutline,
+      pencil,
+      time,
+      arrowBack
+    });
   }
 
   ngOnInit() {
@@ -56,42 +125,74 @@ export class HistoryPage implements OnInit {
   }
 
   carregarHistorico() {
-    const historicoSalvo = localStorage.getItem('historico');
+    // Usando a chave correta 'historico_analises' que definimos na Home anteriormente
+    // Se o seu app usa 'historico', mantenha 'historico'. 
+    // Vou usar um fallback para garantir.
+    const historicoSalvo = localStorage.getItem('historico_analises') || localStorage.getItem('historico');
+    
     if (historicoSalvo) {
-      this.historico = JSON.parse(historicoSalvo);
+      try {
+        this.historico = JSON.parse(historicoSalvo);
+        // Ordenar por data (mais recente primeiro)
+        this.historico.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
+      } catch (e) {
+        console.error('Erro ao fazer parse do histórico', e);
+        this.historico = [];
+      }
     }
+    
+    // Inicializa a lista filtrada
+    this.filteredHistorico = [...this.historico];
   }
 
-  get filteredHistorico() {
-    if (!this.searchTerm || this.searchTerm.trim() === '') return this.historico;
+  // Método chamado pelo ionChange ou ngModelChange do Searchbar
+  ngDoCheck() {
+    this.filtrar();
+  }
+
+  filtrar() {
+    if (!this.searchTerm || this.searchTerm.trim() === '') {
+      this.filteredHistorico = [...this.historico];
+      return;
+    }
+    
     const term = this.searchTerm.toLowerCase();
-    return this.historico.filter(h => {
-      return (h.especie && h.especie.toLowerCase().includes(term)) ||
-             (h.tratamento && h.tratamento.toLowerCase().includes(term)) ||
-             (h.nomeImagem && h.nomeImagem.toLowerCase().includes(term));
+    this.filteredHistorico = this.historico.filter(h => {
+      const especie = h.especie ? h.especie.toLowerCase() : '';
+      const tratamento = h.tratamento ? h.tratamento.toLowerCase() : '';
+      const nome = h.nomeImagem ? h.nomeImagem.toLowerCase() : '';
+      
+      return especie.includes(term) || tratamento.includes(term) || nome.includes(term);
     });
   }
 
   trackByHistorico(index: number, item: any) {
-    return item?.id ?? item?.nomeImagem ?? index;
+    return item?.id ?? index;
   }
 
   getThumbnail(analise: any): string | null {
     if (!analise) return null;
-    // possíveis campos que podem armazenar a imagem processada
-    return analise.thumbnail || analise.imagemProcessada || analise.imagem || null;
+    // Tenta pegar a imagem processada (base64) ou a original
+    return analise.imagemProcessada || analise.imagemBase64 || analise.imagem || null;
   }
 
   async onDeleteAnalise(analise: any) {
     const alert = await this.alertController.create({
       header: 'Confirmar exclusão',
-      message: `Deseja excluir esta análise (${analise.nomeImagem || analise.especie || ''})? Esta ação não pode ser desfeita.`,
+      message: `Deseja excluir esta análise (#${analise.id})? Esta ação não pode ser desfeita.`,
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
-        { text: 'Excluir', cssClass: 'danger', handler: () => {
-            this.historico = this.historico.filter(h => h !== analise);
-            localStorage.setItem('historico', JSON.stringify(this.historico));
-            if (this.analiseDetalhada === analise) this.analiseDetalhada = null;
+        { 
+          text: 'Excluir', 
+          role: 'destructive', // Estilo vermelho nativo do Ionic
+          handler: () => {
+            this.historico = this.historico.filter(h => h.id !== analise.id);
+            this.atualizarStorage();
+            
+            // Se a análise excluída for a que está aberta no modal, fecha o modal
+            if (this.analiseDetalhada && this.analiseDetalhada.id === analise.id) {
+              this.fecharDetalhes();
+            }
           }
         }
       ]
@@ -101,14 +202,20 @@ export class HistoryPage implements OnInit {
 
   async limparHistorico() {
     if (!this.historico || this.historico.length === 0) return;
+    
     const alert = await this.alertController.create({
-      header: 'Limpar histórico',
-      message: 'Deseja realmente limpar todo o histórico? Esta ação não pode ser desfeita.',
+      header: 'Limpar tudo',
+      message: 'Deseja realmente apagar TODO o histórico? Esta ação não pode ser desfeita.',
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
-        { text: 'Confirmar', cssClass: 'danger', handler: () => {
-            localStorage.removeItem('historico');
+        { 
+          text: 'Apagar Tudo', 
+          role: 'destructive', 
+          handler: () => {
             this.historico = [];
+            this.filteredHistorico = [];
+            localStorage.removeItem('historico_analises');
+            localStorage.removeItem('historico'); // Limpa a chave legado também
             this.analiseDetalhada = null;
           }
         }
@@ -119,67 +226,94 @@ export class HistoryPage implements OnInit {
 
   expandirAnalise(analise: any) {
     this.analiseDetalhada = analise;
+    this.editingDetalhe = false;
   }
 
   fecharDetalhes() {
     this.analiseDetalhada = null;
+    this.editingDetalhe = false;
+    this.editModel = null;
+  }
+
+  atualizarStorage() {
+    // Salva na chave principal
+    localStorage.setItem('historico_analises', JSON.stringify(this.historico));
+    this.filtrar(); // Atualiza a visualização
   }
 
   exportarAnalise(analise: any) {
-    // Preparar cabeçalho com metadados
+    if (!analise) return;
+
+    // Preparar metadados
     const metadados = [
-      ['Nome da Imagem', analise.nomeImagem || ''],
+      ['L.I.M.A. - Relatório de Análise'],
+      ['ID', analise.id || ''],
+      ['Data', new Date(analise.data).toLocaleString()],
+      ['Imagem', analise.nomeImagem || ''],
       ['Espécie', analise.especie || ''],
       ['Tratamento', analise.tratamento || ''],
       ['Réplica', analise.replica || ''],
-      ['Área do Padrão de Escala (cm²)', analise.areaEscala || ''],
-      ['Data da Análise', new Date(analise.data).toLocaleString()],
-      [''] // Linha em branco para separar metadados dos dados
+      ['Área Padrão (cm²)', analise.areaEscala || analise.scalePatternArea || ''],
+      [''] // Linha em branco
     ];
 
     // Preparar cabeçalho das colunas de dados
-    const cabecalhoDados = ['Folha'];
-    if (analise.resultados[0].area !== undefined) cabecalhoDados.push('Área (cm²)');
-    if (analise.resultados[0].perimetro !== undefined) cabecalhoDados.push('Perímetro (cm)');
-    if (analise.resultados[0].comprimento !== undefined) cabecalhoDados.push('Comprimento (cm)');
-    if (analise.resultados[0].largura !== undefined) cabecalhoDados.push('Largura (cm)');
-    if (analise.resultados[0].relacaoLarguraComprimento !== undefined) cabecalhoDados.push('Relação L/C');
+    const cabecalhoDados = ['Folha', 'Área (cm²)', 'Perímetro (cm)', 'Comprimento (cm)', 'Largura (cm)', 'Relação L/C'];
 
-    // Preparar linhas de dados
-    const linhasDados = analise.resultados.map((resultado: any) => {
-      const linha = [`Folha ${resultado.id}`];
-      if (resultado.area !== undefined) linha.push(resultado.area);
-      if (resultado.perimetro !== undefined) linha.push(resultado.perimetro);
-      if (resultado.comprimento !== undefined) linha.push(resultado.comprimento);
-      if (resultado.largura !== undefined) linha.push(resultado.largura);
-      if (resultado.relacaoLarguraComprimento !== undefined) linha.push(resultado.relacaoLarguraComprimento);
-      return linha;
-    });
-
-    // Adicionar linha em branco e resultados agregados se existirem
-    const linhasAgregadas = [];
-    if (analise.resultadosAgregados) {
-      linhasAgregadas.push(['']); // Linha em branco
-      linhasAgregadas.push(['Resultados Agregados']);
-      
-      if (analise.resultadosAgregados.somaAreas !== undefined) {
-        linhasAgregadas.push(['Soma das Áreas (cm²)', analise.resultadosAgregados.somaAreas]);
-      }
-      
-      if (analise.resultadosAgregados.mediaArea !== undefined) {
-        linhasAgregadas.push(['Média da Área (cm²)', analise.resultadosAgregados.mediaArea]);
-      }
-      
-      if (analise.resultadosAgregados.desvioArea !== undefined) {
-        linhasAgregadas.push(['Desvio Padrão da Área (cm²)', analise.resultadosAgregados.desvioArea]);
-      }
-      
-      if (analise.resultadosAgregados.relacaoLarguraComprimento !== undefined) {
-        linhasAgregadas.push(['Média da Relação L/C', analise.resultadosAgregados.relacaoLarguraComprimento]);
-      }
+    // Preparar linhas de dados individuais
+    let linhasDados: any[] = [];
+    if (analise.resultados && Array.isArray(analise.resultados)) {
+      linhasDados = analise.resultados.map((r: any) => {
+        return [
+          `Folha ${r.id}`,
+          (r.area || 0).toString().replace('.', ','),
+          (r.perimetro || 0).toString().replace('.', ','),
+          (r.comprimento || 0).toString().replace('.', ','),
+          (r.largura || 0).toString().replace('.', ','),
+          (r.relacaoLarguraComprimento || 0).toString().replace('.', ',')
+        ];
+      });
     }
 
-    // Combinar todos os dados
+    // Adicionar estatísticas agregadas
+    const linhasAgregadas = [];
+    const agg = analise.resultadosAgregados;
+    
+    if (agg) {
+      linhasAgregadas.push(['']);
+      linhasAgregadas.push(['ESTATÍSTICAS AGREGADAS']);
+      linhasAgregadas.push(['Parâmetro', 'Média', 'Desvio Padrão']);
+      
+      // Helper para formatar número
+      const fmt = (n: any) => (n !== undefined && n !== null) ? Number(n).toFixed(4).replace('.', ',') : '-';
+      
+      // Verifica chaves novas (inglês) ou antigas (português)
+      linhasAgregadas.push([
+        'Largura', 
+        fmt(agg.averageWidth || agg.mediaLargura), 
+        fmt(agg.standardDeviationWidth || agg.desvioLargura)
+      ]);
+      linhasAgregadas.push([
+        'Comprimento', 
+        fmt(agg.averageLength || agg.mediaComprimento), 
+        fmt(agg.standardDeviationLength || agg.desvioComprimento)
+      ]);
+      linhasAgregadas.push([
+        'Área', 
+        fmt(agg.averageArea || agg.mediaArea), 
+        fmt(agg.standardDeviationArea || agg.desvioArea)
+      ]);
+      linhasAgregadas.push([
+        'Perímetro', 
+        fmt(agg.averagePerimeter || agg.mediaPerimetro), 
+        fmt(agg.standardDeviationPerimeter || agg.desvioPerimetro)
+      ]);
+      
+      linhasAgregadas.push(['']);
+      linhasAgregadas.push(['Soma Total Áreas', fmt(agg.somaAreas || agg.totalArea)]);
+    }
+
+    // Combinar tudo
     const dadosCompletos = [
       ...metadados,
       cabecalhoDados,
@@ -188,28 +322,31 @@ export class HistoryPage implements OnInit {
     ];
 
     // Converter para CSV
-    const csv = Papa.unparse(dadosCompletos);
+    const csv = Papa.unparse(dadosCompletos, { delimiter: ';' }); // Ponto e vírgula é melhor para Excel BR
     
-    // Criar nome do arquivo
-    const dataFormatada = new Date().toISOString().split('T')[0];
-    const nomeArquivo = `LIMA_${analise.especie || 'analise'}_${dataFormatada}.csv`;
+    // Criar arquivo
+    const nomeLimpo = (analise.especie || 'analise').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const dataStr = new Date().toISOString().slice(0,10);
+    const nomeArquivo = `LIMA_${nomeLimpo}_${analise.id}_${dataStr}.csv`;
     
-    // Criar blob e fazer download
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, nomeArquivo);
   }
 
-  // --- edição ---
+  // --- MÉTODOS DE EDIÇÃO ---
+
   toggleEditDetalhe() {
     if (!this.analiseDetalhada) return;
+    
     this.editingDetalhe = true;
-    // cópia rasa suficiente para editar campos de metadados
+    
+    // Copia os valores atuais para o modelo de edição
     this.editModel = {
       especie: this.analiseDetalhada.especie,
       tratamento: this.analiseDetalhada.tratamento,
       replica: this.analiseDetalhada.replica,
       nomeImagem: this.analiseDetalhada.nomeImagem,
-      areaEscala: this.analiseDetalhada.areaEscala
+      areaEscala: this.analiseDetalhada.areaEscala !== undefined ? this.analiseDetalhada.areaEscala : this.analiseDetalhada.scalePatternArea
     };
   }
 
@@ -220,34 +357,32 @@ export class HistoryPage implements OnInit {
 
   saveEditDetalhe() {
     if (!this.analiseDetalhada || !this.editModel) return;
-    // aplicar placeholders se necessário
-    this.analiseDetalhada.especie = (this.editModel.especie && this.editModel.especie.trim() !== '') ? this.editModel.especie : 'Não informada';
-    this.analiseDetalhada.tratamento = (this.editModel.tratamento && this.editModel.tratamento.trim() !== '') ? this.editModel.tratamento : 'Não informado';
-    this.analiseDetalhada.replica = (this.editModel.replica && this.editModel.replica.trim() !== '') ? this.editModel.replica : 'Não informada';
-    this.analiseDetalhada.nomeImagem = this.editModel.nomeImagem || this.analiseDetalhada.nomeImagem;
-    this.analiseDetalhada.areaEscala = this.editModel.areaEscala ?? this.analiseDetalhada.areaEscala;
 
-    // atualizar o array historico e persistir
+    // Atualiza o objeto local (referência na memória)
+    this.analiseDetalhada.especie = this.editModel.especie;
+    this.analiseDetalhada.tratamento = this.editModel.tratamento;
+    this.analiseDetalhada.replica = this.editModel.replica;
+    this.analiseDetalhada.nomeImagem = this.editModel.nomeImagem;
+    
+    // Atualiza a área (tratando nulos)
+    if (this.editModel.areaEscala !== undefined && this.editModel.areaEscala !== null) {
+      this.analiseDetalhada.areaEscala = this.editModel.areaEscala;
+    }
+
+    // Encontra o índice no array principal e atualiza
     const idx = this.historico.findIndex(h => h.id === this.analiseDetalhada.id);
     if (idx >= 0) {
-      this.historico[idx] = { ...this.historico[idx], ...this.analiseDetalhada };
-      localStorage.setItem('historico', JSON.stringify(this.historico));
+      this.historico[idx] = this.analiseDetalhada;
+      this.atualizarStorage();
     }
 
     this.editingDetalhe = false;
     this.editModel = null;
   }
 
-  // Garantir que, quando o modal for fechado por backdrop ou botão físico,
-  // o estado local seja limpo e não deixe a UI travada com overlay invisível.
   onModalDidDismiss(event?: any) {
-    // limpar flags de edição e modelo temporário
-    if (this.editingDetalhe) {
-      this.editingDetalhe = false;
-      this.editModel = null;
-    }
-
-    // limpar detalhe aberto
+    this.editingDetalhe = false;
+    this.editModel = null;
     this.analiseDetalhada = null;
   }
 }

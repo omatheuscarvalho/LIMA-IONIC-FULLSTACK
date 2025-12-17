@@ -1,130 +1,5 @@
 /* history.page.scss */
 
-/* Variáveis locais para consistência */
-:root {
-  --table-border-color: var(--ion-color-step-150, rgba(0,0,0,0.12));
-  --table-header-bg: var(--ion-color-step-50, #f8f9fa);
-  --row-hover-bg: var(--ion-color-step-50, rgba(0,0,0,0.04));
-}
-
-.history-page {
-  /* Card Principal do Histórico */
-  .header-card {
-    margin: 0;
-    margin-bottom: 16px;
-    border-radius: 16px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-  }
-
-  /* Searchbar customizada */
-  ion-searchbar {
-    padding-inline: 0;
-    --box-shadow: none;
-    --background: var(--ion-color-step-50, #f2f2f2);
-    border-radius: 10px;
-  }
-
-  /* ============================================ */
-  /* TABELA DE HISTÓRICO (GRID LAYOUT)            */
-  /* ============================================ */
-  .table-container {
-    margin-top: 16px;
-    border: 1px solid var(--table-border-color);
-    border-radius: 12px;
-    overflow: hidden; /* Para respeitar o border-radius */
-    background: var(--ion-card-background);
-  }
-
-  .table-header {
-    background: var(--table-header-bg);
-    border-bottom: 1px solid var(--table-border-color);
-    font-weight: 700;
-    color: var(--ion-color-medium);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  /* Definição do Grid da Tabela */
-  .table-row {
-    display: grid;
-    /* Colunas: Imagem(3fr) | Meta(2fr) | Data(1.5fr) | Área(1.5fr) | Ações(auto) */
-    grid-template-columns: 3fr 2fr 1.5fr 1.5fr 80px; 
-    gap: 12px;
-    padding: 12px 16px;
-    align-items: center;
-    transition: background-color 0.2s;
-
-    &.data-row {
-      cursor: pointer;
-      border-bottom: 1px solid var(--table-border-color);
-
-      &:last-child {
-        border-bottom: none;
-      }
-
-      &:hover {
-        background-color: var(--row-hover-bg);
-      }
-    }
-  }
-
-  /* Células e Colunas */
-  .col-image, .col-metadata, .col-date, .col-area {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
-  .col-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 4px;
-  }
-
-  /* Grupo Imagem + Texto */
-  .img-file-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    
-    .thumb-small {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      overflow: hidden;
-      flex-shrink: 0;
-      background: var(--ion-color-step-100);
-      
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-    }
-
-    .file-info {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-
-      .file-name {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: var(--ion-text-color);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .file-id {
-        font-size: 0.7rem;
-        color: var(--ion-color-medium);
-      }
-    }
-  }
-  }
-/* Variáveis para consistência */
 :root {
   --border-color: var(--ion-color-step-150, #e0e0e0);
   --header-bg: var(--ion-color-step-50, #f8f9fa);
@@ -134,10 +9,6 @@
 .history-page {
   --background: var(--ion-background-color);
 }
-
-/* ================================================= */
-/* ESTILOS DA LISTA PRINCIPAL (TELA DE HISTÓRICO)    */
-/* ================================================= */
 
 .main-card {
   margin: 0;
@@ -157,23 +28,31 @@
   }
 }
 
-/* Container da Tabela Principal */
+/* ================================================= */
+/* TABELA PRINCIPAL (GRID REFEITO)                   */
+/* ================================================= */
+
 .history-list-container {
   margin-top: 16px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  overflow: hidden;
+  overflow: hidden; /* Importante para bordas arredondadas */
   background: var(--ion-card-background);
 }
 
-/* Definição do Grid da Lista Principal */
+/* Definição das Colunas da Tabela
+   Colunas: Análise | Espécie | Tratamento | Réplica | Data | Ações
+   Total: 6 colunas
+*/
 .history-header, .history-row {
   display: grid;
-  /* Grid responsivo: Imagem | Detalhes | Data | Resultado | Ações */
-  grid-template-columns: 2fr 1.5fr 1fr 1fr 60px;
-  gap: 10px;
+  /* Ajuste de Espaçamento: 
+     Análise (maior), Textos (iguais), Réplica (menor), Data (médio), Ações (fixo) 
+  */
+  grid-template-columns: 1.8fr 1fr 1fr 0.8fr 1fr 80px; 
+  gap: 12px;
   align-items: center;
-  padding: 10px 12px;
+  padding: 10px 16px;
 }
 
 .history-header {
@@ -183,12 +62,14 @@
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .history-row {
   border-bottom: 1px solid var(--border-color);
   cursor: pointer;
   transition: background 0.2s;
+  min-height: 56px; /* Altura mínima para ficar clicável */
 
   &:last-child {
     border-bottom: none;
@@ -199,24 +80,26 @@
   }
 }
 
-/* Colunas Específicas */
+/* Estilos de Colunas */
 .h-col {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  font-size: 0.85rem;
+  color: var(--ion-text-color);
 }
 
-/* Imagem e ID */
+/* Coluna 1: Imagem e Nome */
 .col-img {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 
   .thumb {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     border-radius: 6px;
-    background: #eee;
+    background: var(--ion-color-step-100);
     overflow: hidden;
     flex-shrink: 0;
     
@@ -227,55 +110,57 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    min-width: 0;
 
-    .t-name { font-weight: 600; font-size: 0.9rem; }
-    .t-id { font-size: 0.75rem; color: var(--text-muted); }
+    .t-name { font-weight: 600; font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; }
+    .t-id { font-size: 0.7rem; color: var(--text-muted); }
   }
 }
 
-/* Badges */
-.col-info .badges {
+/* Colunas de Texto (Espécie, Tratamento, Réplica) */
+.col-txt {
+  font-weight: 500;
+}
+
+/* Coluna Data */
+.col-date {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* Coluna Ações */
+.col-actions {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 4px;
-
-  .badge {
-    font-size: 0.7rem;
-    background: var(--ion-color-light);
-    border: 1px solid var(--border-color);
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: var(--ion-text-color);
-    
-    &.empty { opacity: 0.5; border: none; background: transparent; }
-  }
 }
 
-.col-date { font-size: 0.85rem; color: var(--text-muted); }
-
-.col-result .highlight {
-  font-weight: 700;
-  color: var(--ion-color-primary);
-}
-
-/* Responsividade da Lista Principal */
-@media (max-width: 768px) {
+/* RESPONSIVIDADE */
+@media (max-width: 900px) {
+  /* Em telas médias, reduzimos o tamanho da fonte */
   .history-header, .history-row {
-    grid-template-columns: 1fr 80px 40px; /* Simplifica para Mobile */
+     padding: 10px 8px;
+     gap: 8px;
   }
-  .col-info, .col-date { display: none; } /* Esconde colunas menos importantes */
 }
 
-
-/* ================================================= */
-/* ESTILOS DO MODAL (RELATÓRIO TÉCNICO)              */
-/* ================================================= */
-
-.modal-bg {
-  --background: var(--ion-background-color);
+@media (max-width: 768px) {
+  /* Mobile: Escondemos as colunas do meio (Espécie/Trat/Réplica) 
+     para não quebrar o layout, focando no essencial.
+  */
+  .history-header, .history-row {
+    grid-template-columns: 1fr 90px 60px; /* Imagem | Data | Ações */
+  }
+  
+  .col-txt { display: none; } /* Esconde as colunas de texto no mobile */
 }
 
-/* Banner */
+/* ================================================= */
+/* MODAL E RELATÓRIO */
+/* ================================================= */
+
+.modal-bg { --background: var(--ion-background-color); }
+
 .detail-banner {
   width: 100%;
   height: 180px;
@@ -286,15 +171,13 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.7;
+    opacity: 0.6;
   }
 
   .banner-overlay {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 20px;
+    bottom: 0; left: 0; width: 100%;
+    padding: 16px;
     background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
     color: white;
 
@@ -303,7 +186,7 @@
   }
 }
 
-/* Corpo do Modal */
+/* Conteúdo do Modal */
 .report-section {
   margin-bottom: 24px;
 }
@@ -316,10 +199,9 @@
   margin-bottom: 8px;
   border-left: 4px solid var(--ion-color-primary);
   padding-left: 8px;
-  letter-spacing: 0.05em;
 }
 
-/* 1. Dados da Amostra (Estilo Lista/Log) */
+/* Caixa de Dados (View Mode) */
 .data-box {
   background: var(--ion-card-background);
   border: 1px solid var(--border-color);
@@ -329,7 +211,7 @@
   .data-row {
     display: flex;
     justify-content: space-between;
-    padding: 6px 0;
+    padding: 8px 0;
     border-bottom: 1px dashed var(--border-color);
     font-size: 0.9rem;
 
@@ -340,7 +222,24 @@
   }
 }
 
-/* 2. Tabela de Estatísticas Agregadas */
+/* Inputs de Edição (Edit Mode) */
+.edit-list {
+  background: transparent;
+  padding: 0;
+}
+
+.edit-item {
+  --background: transparent;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+
+  ion-label { color: var(--ion-color-primary); font-weight: 600; }
+  ion-input { font-family: monospace; font-weight: 600; }
+}
+
+/* Tabela Estatísticas */
 .stats-table-container {
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -365,11 +264,10 @@
     font-weight: 600;
     font-size: 0.75rem;
     text-transform: uppercase;
+    text-align: right;
   }
   
-  /* Primeira coluna alinhada à esquerda */
   th:first-child, td:first-child { text-align: left; }
-
   .param { font-weight: 500; color: var(--ion-color-medium-shade); }
   
   .highlight {
@@ -385,7 +283,7 @@
   }
 }
 
-/* 3. Tabela de Resultados Individuais (Scrollavel) */
+/* Tabela Resultados Individuais */
 .results-scroll {
   width: 100%;
   overflow-x: auto;
@@ -396,7 +294,7 @@
 
 .individual-table {
   width: 100%;
-  min-width: 500px; /* Garante scroll em telas pequenas */
+  min-width: 500px;
   border-collapse: collapse;
   font-size: 0.85rem;
 
@@ -413,15 +311,8 @@
     font-size: 0.7rem;
     text-transform: uppercase;
   }
-
-  tr:last-child td { border-bottom: none; }
   
-  /* Linhas alternadas (zebradas) para facilitar leitura */
-  tbody tr:nth-child(even) {
-    background: rgba(0,0,0,0.02);
-  }
-
+  tbody tr:nth-child(even) { background: rgba(0,0,0,0.02); }
   .leaf-id { font-weight: 700; color: var(--text-muted); border-right: 1px solid var(--border-color); }
   .area-val { font-weight: 700; color: var(--ion-color-dark); }
 }
-

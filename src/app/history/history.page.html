@@ -25,12 +25,14 @@
         </div>
 
         <div class="history-list-container" *ngIf="filteredHistorico.length > 0">
+          
           <div class="history-header">
             <div class="h-col col-img">Análise</div>
-            <div class="h-col col-info">Detalhes</div>
+            <div class="h-col col-txt">Espécie</div>
+            <div class="h-col col-txt">Tratamento</div>
+            <div class="h-col col-txt">Réplica</div>
             <div class="h-col col-date">Data</div>
-            <div class="h-col col-result">Resultado</div>
-            <div class="h-col col-actions"></div>
+            <div class="h-col col-actions">Ações</div>
           </div>
           
           <div class="history-body">
@@ -46,20 +48,20 @@
                 </div>
               </div>
 
-              <div class="h-col col-info">
-                <div class="badges">
-                  <span class="badge" *ngIf="analise.especie">{{ analise.especie }}</span>
-                  <span class="badge" *ngIf="analise.tratamento">{{ analise.tratamento }}</span>
-                  <span class="badge empty" *ngIf="!analise.especie && !analise.tratamento">-</span>
-                </div>
+              <div class="h-col col-txt" title="{{ analise.especie }}">
+                {{ analise.especie || '—' }}
+              </div>
+
+              <div class="h-col col-txt" title="{{ analise.tratamento }}">
+                {{ analise.tratamento || '—' }}
+              </div>
+
+              <div class="h-col col-txt">
+                {{ analise.replica || '—' }}
               </div>
 
               <div class="h-col col-date">
                 {{ analise.data | date:'dd/MM/yy' }}
-              </div>
-
-              <div class="h-col col-result">
-                <span class="highlight">{{ analise.areaEscala | number:'1.2-2' }} <small>cm²</small></span>
               </div>
 
               <div class="h-col col-actions">
@@ -95,11 +97,22 @@
               <ion-icon slot="icon-only" name="close"></ion-icon>
             </ion-button>
           </ion-buttons>
-          <ion-title>Detalhes da Análise</ion-title>
+          <ion-title>Detalhes</ion-title>
+          
           <ion-buttons slot="end">
-             <ion-button (click)="exportarAnalise(analiseDetalhada)">
-              <ion-icon slot="icon-only" name="download-outline"></ion-icon>
+            <ion-button *ngIf="!editingDetalhe" (click)="toggleEditDetalhe()">
+              <ion-icon slot="icon-only" name="create-outline"></ion-icon>
             </ion-button>
+
+            <ng-container *ngIf="editingDetalhe">
+              <ion-button (click)="cancelEditDetalhe()" color="light">
+                <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+              </ion-button>
+              <ion-button (click)="saveEditDetalhe()" color="secondary" strong>
+                <ion-icon slot="start" name="checkmark"></ion-icon>
+                Salvar
+              </ion-button>
+            </ng-container>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
@@ -118,23 +131,53 @@
 
           <div class="report-section">
             <div class="section-title">Dados da Amostra</div>
+            
             <div class="data-box">
-              <div class="data-row">
-                <span class="label">Espécie:</span>
-                <span class="value">{{ analiseDetalhada.especie || '—' }}</span>
-              </div>
-              <div class="data-row">
-                <span class="label">Tratamento:</span>
-                <span class="value">{{ analiseDetalhada.tratamento || '—' }}</span>
-              </div>
-              <div class="data-row">
-                <span class="label">Réplica:</span>
-                <span class="value">{{ analiseDetalhada.replica || '—' }}</span>
-              </div>
-              <div class="data-row">
-                <span class="label">Área Padrão (Scale):</span>
-                <span class="value">{{ analiseDetalhada.areaEscala | number:'1.4-4' }}</span>
-              </div>
+              
+              <ng-container *ngIf="!editingDetalhe">
+                <div class="data-row">
+                  <span class="label">Espécie:</span>
+                  <span class="value">{{ analiseDetalhada.especie || '—' }}</span>
+                </div>
+                <div class="data-row">
+                  <span class="label">Tratamento:</span>
+                  <span class="value">{{ analiseDetalhada.tratamento || '—' }}</span>
+                </div>
+                <div class="data-row">
+                  <span class="label">Réplica:</span>
+                  <span class="value">{{ analiseDetalhada.replica || '—' }}</span>
+                </div>
+                <div class="data-row">
+                  <span class="label">Área Padrão (Scale):</span>
+                  <span class="value">{{ (analiseDetalhada.areaEscala !== undefined ? analiseDetalhada.areaEscala : analiseDetalhada.scalePatternArea) | number:'1.4-4' }}</span>
+                </div>
+              </ng-container>
+
+              <ng-container *ngIf="editingDetalhe">
+                <ion-list lines="none" class="edit-list">
+                  <ion-item class="edit-item">
+                    <ion-label position="stacked">Nome da Imagem</ion-label>
+                    <ion-input [(ngModel)]="editModel.nomeImagem"></ion-input>
+                  </ion-item>
+                  <ion-item class="edit-item">
+                    <ion-label position="stacked">Espécie</ion-label>
+                    <ion-input [(ngModel)]="editModel.especie"></ion-input>
+                  </ion-item>
+                  <ion-item class="edit-item">
+                    <ion-label position="stacked">Tratamento</ion-label>
+                    <ion-input [(ngModel)]="editModel.tratamento"></ion-input>
+                  </ion-item>
+                  <ion-item class="edit-item">
+                    <ion-label position="stacked">Réplica</ion-label>
+                    <ion-input [(ngModel)]="editModel.replica"></ion-input>
+                  </ion-item>
+                  <ion-item class="edit-item">
+                    <ion-label position="stacked">Área Padrão (cm²)</ion-label>
+                    <ion-input type="number" [(ngModel)]="editModel.areaEscala"></ion-input>
+                  </ion-item>
+                </ion-list>
+              </ng-container>
+
             </div>
           </div>
 

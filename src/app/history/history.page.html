@@ -7,121 +7,267 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
-  <ion-card>
+<ion-content [fullscreen]="true" class="ion-padding history-page">
+  <ion-card class="header-card">
     <ion-card-header>
       <ion-card-title>Histórico de Análises</ion-card-title>
+      <ion-card-subtitle class="muted">Registros das suas análises salvos localmente</ion-card-subtitle>
     </ion-card-header>
     <ion-card-content>
-      <ion-list *ngIf="historico.length > 0">
-        <ion-item *ngFor="let analise of historico" detail="true" (click)="expandirAnalise(analise)">
-          <ion-label>
-            <h2>{{ analise.especie }} - {{ analise.tratamento }}</h2>
-            <p>Data: {{ analise.data | date:'dd/MM/yyyy HH:mm' }}</p>
-            <p>Imagem: {{ analise.nomeImagem }}</p>
-          </ion-label>
-        </ion-item>
-      </ion-list>
+      <ion-searchbar [(ngModel)]="searchTerm" placeholder="Pesquisar por espécie, tratamento ou nome da imagem" debounce="300"></ion-searchbar>
       
-      <div *ngIf="historico.length === 0" class="ion-text-center ion-padding">
-        <ion-text color="medium">Nenhuma análise no histórico</ion-text>
+      <div *ngIf="filteredHistorico.length === 0" class="ion-text-center ion-padding empty-state">
+        <ion-text color="medium">Nenhuma análise encontrada</ion-text>
       </div>
-      
-      <ion-button expand="block" color="danger" [disabled]="historico.length === 0" (click)="limparHistorico()" class="ion-margin-top">
-        <ion-icon slot="start" name="trash"></ion-icon>
-        Limpar Histórico
-      </ion-button>
+
+      <!-- Tabela de Histórico - Estrutura Densa -->
+      <div class="table-container" *ngIf="filteredHistorico.length > 0">
+        <div class="table-header">
+          <div class="table-row">
+            <div class="col-image">Análise</div>
+            <div class="col-metadata">Espécie / Tratamento</div>
+            <div class="col-date">Data</div>
+            <div class="col-area">Resultado</div>
+            <div class="col-actions">Ações</div>
+          </div>
+        </div>
+        
+        <div class="table-body">
+          <div class="table-row" *ngFor="let analise of filteredHistorico; trackBy: trackByHistorico" (click)="expandirAnalise(analise)" class="data-row">
+            <!-- Coluna: Imagem + Nome -->
+            <div class="col-image">
+              <div class="img-file-group">
+                <div class="thumb-small" *ngIf="getThumbnail(analise)">
+                  <img [src]="getThumbnail(analise)" alt="thumbnail" />
+                </div>
+                <div class="file-info">
+                  <div class="file-name" title="{{ analise.nomeImagem || 'Sem nome' }}">
+                    {{ (analise.nomeImagem || 'Sem nome') | slice:0:20 }}{{ (analise.nomeImagem || '').length > 20 ? '...' : '' }}
+                  </div>
+                  <div class="file-id">#{{ analise.id || '?' }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Coluna: Espécie e Tratamento (em badges) -->
+            <div class="col-metadata">
+              <div class="metadata-badges">
+                <span class="badge" [class.empty]="!analise.especie">
+                  {{ analise.especie || '—' }}
+                </span>
+                <span class="badge" [class.empty]="!analise.tratamento">
+                  {{ analise.tratamento || '—' }}
+                </span>
+                <span class="badge" [class.empty]="!analise.replica">
+                  {{ analise.replica || '—' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Coluna: Data -->
+            <div class="col-date">
+              <div class="date-time">{{ analise.data | date:'dd/MM/yyyy' }} <span class="time">{{ analise.data | date:'HH:mm' }}</span></div>
+            </div>
+
+            <!-- Coluna: Área (Principal) -->
+            <div class="col-area">
+              <div class="area-highlight">
+                {{ analise.areaEscala !== undefined && analise.areaEscala !== null ? (analise.areaEscala | number:'1.2-2') : '—' }}
+                <span class="unit">cm²</span>
+              </div>
+            </div>
+
+            <!-- Coluna: Ações -->
+            <div class="col-actions" (click)="$event.stopPropagation()">
+              <button class="action-btn export-btn" (click)="exportarAnalise(analise)" title="Exportar em CSV" aria-label="Exportar">
+                <ion-icon name="download"></ion-icon>
+              </button>
+              <button class="action-btn delete-btn" (click)="onDeleteAnalise(analise)" title="Excluir análise" aria-label="Excluir">
+                <ion-icon name="trash"></ion-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <ion-button expand="block" color="danger" [disabled]="historico.length === 0" (click)="limparHistorico()" class="ion-margin-top small-button">
+          <ion-icon slot="start" name="trash"></ion-icon>
+          Limpar Histórico
+        </ion-button>
+      </div>
     </ion-card-content>
   </ion-card>
   
-  <!-- Modal de detalhes da análise -->
-  <ion-modal [isOpen]="analiseDetalhada !== null">
+  <!-- Modal de detalhes da análise - REDESENHADO -->
+  <ion-modal [isOpen]="analiseDetalhada !== null" (didDismiss)="onModalDidDismiss($event)">
     <ng-template>
       <ion-header>
         <ion-toolbar color="primary">
           <ion-title>Detalhes da Análise</ion-title>
           <ion-buttons slot="end">
+            <ion-button *ngIf="!editingDetalhe" (click)="toggleEditDetalhe()" title="Editar">
+              <ion-icon slot="icon-only" name="pencil"></ion-icon>
+            </ion-button>
+            <ion-button *ngIf="editingDetalhe" (click)="saveEditDetalhe()" color="success">
+              <ion-icon slot="start" name="checkmark"></ion-icon>
+              Salvar
+            </ion-button>
+            <ion-button *ngIf="editingDetalhe" (click)="cancelEditDetalhe()">
+              Cancelar
+            </ion-button>
             <ion-button (click)="fecharDetalhes()">
               <ion-icon slot="icon-only" name="close"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
-      <ion-content class="ion-padding" *ngIf="analiseDetalhada">
-        <ion-list>
-          <ion-item>
-            <ion-label>
-              <h2>Informações</h2>
-              <p>Espécie: {{ analiseDetalhada.especie }}</p>
-              <p>Tratamento: {{ analiseDetalhada.tratamento }}</p>
-              <p>Réplica: {{ analiseDetalhada.replica }}</p>
-              <p>Data: {{ analiseDetalhada.data | date:'dd/MM/yyyy HH:mm' }}</p>
-              <p>Imagem: {{ analiseDetalhada.nomeImagem }}</p>
-              <p>Área do Padrão de Escala: {{ analiseDetalhada.areaEscala }} cm²</p>
-            </ion-label>
-          </ion-item>
-          
-          <ion-item-divider>
-            <ion-label>Resultados</ion-label>
-          </ion-item-divider>
-          
-          <!-- Resultados por folha -->
-          <div *ngFor="let resultado of analiseDetalhada.resultados">
-            <ion-item-divider>
-              <ion-label>Folha {{ resultado.id }}</ion-label>
-            </ion-item-divider>
-            
-            <ion-item *ngIf="resultado.area">
-              <ion-label>Área:</ion-label>
-              <ion-note slot="end">{{ resultado.area }} cm²</ion-note>
-            </ion-item>
-            <ion-item *ngIf="resultado.perimetro">
-              <ion-label>Perímetro:</ion-label>
-              <ion-note slot="end">{{ resultado.perimetro }} cm</ion-note>
-            </ion-item>
-            <ion-item *ngIf="resultado.comprimento">
-              <ion-label>Comprimento:</ion-label>
-              <ion-note slot="end">{{ resultado.comprimento }} cm</ion-note>
-            </ion-item>
-            <ion-item *ngIf="resultado.largura">
-              <ion-label>Largura:</ion-label>
-              <ion-note slot="end">{{ resultado.largura }} cm</ion-note>
-            </ion-item>
-            <ion-item *ngIf="resultado.relacaoLarguraComprimento">
-              <ion-label>Relação L/C:</ion-label>
-              <ion-note slot="end">{{ resultado.relacaoLarguraComprimento | number:'1.2-2' }}</ion-note>
-            </ion-item>
+
+      <ion-content class="modal-detail-content" *ngIf="analiseDetalhada">
+        <!-- Banner com imagem -->
+        <div class="detail-banner" *ngIf="getThumbnail(analiseDetalhada)">
+          <img [src]="getThumbnail(analiseDetalhada)" alt="thumbnail" class="banner-img" />
+        </div>
+
+        <div class="modal-body ion-padding">
+          <!-- Card: Informações Gerais -->
+          <ion-card class="info-card">
+            <ion-card-header>
+              <ion-card-title>Informações da Análise</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ng-container *ngIf="!editingDetalhe">
+                <div class="info-grid">
+                  <div class="info-item">
+                    <div class="info-label">Espécie</div>
+                    <div class="info-value">{{ analiseDetalhada.especie || 'Não informada' }}</div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-label">Tratamento</div>
+                    <div class="info-value">{{ analiseDetalhada.tratamento || 'Não informado' }}</div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-label">Réplica</div>
+                    <div class="info-value">{{ analiseDetalhada.replica || 'Não informada' }}</div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-label">Imagem</div>
+                    <div class="info-value">{{ analiseDetalhada.nomeImagem || '—' }}</div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-label">Área do Padrão</div>
+                    <div class="info-value">{{ analiseDetalhada.areaEscala || '—' }} cm²</div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-label">Data</div>
+                    <div class="info-value">{{ analiseDetalhada.data | date:'dd/MM/yyyy HH:mm' }}</div>
+                  </div>
+                </div>
+              </ng-container>
+
+              <ng-container *ngIf="editingDetalhe">
+                <ion-grid class="edit-grid">
+                  <ion-row>
+                    <ion-col size="12" size-md="6">
+                      <ion-item lines="none" class="edit-item">
+                        <ion-label position="stacked" class="edit-label">Espécie</ion-label>
+                        <ion-input [(ngModel)]="editModel.especie" placeholder="Digite a espécie" class="edit-input"></ion-input>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col size="12" size-md="6">
+                      <ion-item lines="none" class="edit-item">
+                        <ion-label position="stacked" class="edit-label">Tratamento</ion-label>
+                        <ion-input [(ngModel)]="editModel.tratamento" placeholder="Digite o tratamento" class="edit-input"></ion-input>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col size="12" size-md="6">
+                      <ion-item lines="none" class="edit-item">
+                        <ion-label position="stacked" class="edit-label">Réplica</ion-label>
+                        <ion-input [(ngModel)]="editModel.replica" placeholder="Digite a réplica" class="edit-input"></ion-input>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col size="12" size-md="6">
+                      <ion-item lines="none" class="edit-item">
+                        <ion-label position="stacked" class="edit-label">Nome da Imagem</ion-label>
+                        <ion-input [(ngModel)]="editModel.nomeImagem" placeholder="Nome do arquivo" class="edit-input"></ion-input>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col size="12" size-md="6">
+                      <ion-item lines="none" class="edit-item">
+                        <ion-label position="stacked" class="edit-label">Área do Padrão (cm²)</ion-label>
+                        <ion-input type="number" [(ngModel)]="editModel.areaEscala" placeholder="0.00" class="edit-input"></ion-input>
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                </ion-grid>
+              </ng-container>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Card: Resultados por Folha -->
+          <ion-card class="results-card" *ngIf="analiseDetalhada.resultados && analiseDetalhada.resultados.length > 0">
+            <ion-card-header>
+              <ion-card-title>Resultados por Folha</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="results-table-wrapper">
+                <div class="results-table">
+                  <div class="table-row header">
+                    <div class="col col-folha">Folha</div>
+                    <div class="col">Área (cm²)</div>
+                    <div class="col">Perímetro (cm)</div>
+                    <div class="col">Comprimento (cm)</div>
+                    <div class="col">Largura (cm)</div>
+                    <div class="col col-ratio">L/C</div>
+                  </div>
+                  <div class="table-row" *ngFor="let r of analiseDetalhada.resultados">
+                    <div class="col col-folha"><strong>{{ r.id }}</strong></div>
+                    <div class="col">{{ r.area ? (r.area | number:'1.2-2') : '—' }}</div>
+                    <div class="col">{{ r.perimetro ? (r.perimetro | number:'1.2-2') : '—' }}</div>
+                    <div class="col">{{ r.comprimento ? (r.comprimento | number:'1.2-2') : '—' }}</div>
+                    <div class="col">{{ r.largura ? (r.largura | number:'1.2-2') : '—' }}</div>
+                    <div class="col col-ratio">{{ r.relacaoLarguraComprimento ? (r.relacaoLarguraComprimento | number:'1.2-2') : '—' }}</div>
+                  </div>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Card: Resultados Agregados -->
+          <ion-card class="aggregated-card" *ngIf="analiseDetalhada.resultadosAgregados">
+            <ion-card-header>
+              <ion-card-title>Resultados Agregados</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="aggregated-grid">
+                <div class="agg-item" *ngIf="analiseDetalhada.resultadosAgregados.somaAreas || analiseDetalhada.resultadosAgregados.totalArea">
+                  <div class="agg-label">Soma das Áreas</div>
+                  <div class="agg-value">{{ (analiseDetalhada.resultadosAgregados.somaAreas ?? analiseDetalhada.resultadosAgregados.totalArea ?? 0) | number:'1.2-2' }} cm²</div>
+                </div>
+                <div class="agg-item" *ngIf="analiseDetalhada.resultadosAgregados.mediaArea || analiseDetalhada.resultadosAgregados.averageArea">
+                  <div class="agg-label">Média da Área</div>
+                  <div class="agg-value">{{ (analiseDetalhada.resultadosAgregados.mediaArea ?? analiseDetalhada.resultadosAgregados.averageArea ?? 0) | number:'1.2-2' }} cm²</div>
+                </div>
+                <div class="agg-item" *ngIf="analiseDetalhada.resultadosAgregados.desvioArea || analiseDetalhada.resultadosAgregados.standardDeviationArea">
+                  <div class="agg-label">Desvio Padrão</div>
+                  <div class="agg-value">{{ (analiseDetalhada.resultadosAgregados.desvioArea ?? analiseDetalhada.resultadosAgregados.standardDeviationArea ?? 0) | number:'1.2-2' }} cm²</div>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Botões de ação -->
+          <div class="action-buttons">
+            <ion-button expand="block" fill="solid" color="primary" (click)="exportarAnalise(analiseDetalhada)">
+              <ion-icon slot="start" name="download"></ion-icon>
+              Exportar
+            </ion-button>
+            <ion-button expand="block" fill="outline" color="danger" (click)="onDeleteAnalise(analiseDetalhada)">
+              <ion-icon slot="start" name="trash"></ion-icon>
+              Excluir
+            </ion-button>
           </div>
-          
-          <!-- Resultados agregados -->
-          <div *ngIf="analiseDetalhada.resultadosAgregados">
-            <ion-item-divider>
-              <ion-label>Resultados Agregados</ion-label>
-            </ion-item-divider>
-            
-            <ion-item *ngIf="analiseDetalhada.resultadosAgregados.somaAreas">
-              <ion-label>Soma das Áreas:</ion-label>
-              <ion-note slot="end">{{ analiseDetalhada.resultadosAgregados.somaAreas | number:'1.2-2' }} cm²</ion-note>
-            </ion-item>
-            <ion-item *ngIf="analiseDetalhada.resultadosAgregados.mediaArea">
-              <ion-label>Média da Área:</ion-label>
-              <ion-note slot="end">{{ analiseDetalhada.resultadosAgregados.mediaArea | number:'1.2-2' }} cm²</ion-note>
-            </ion-item>
-            <ion-item *ngIf="analiseDetalhada.resultadosAgregados.desvioArea">
-              <ion-label>Desvio Padrão da Área:</ion-label>
-              <ion-note slot="end">{{ analiseDetalhada.resultadosAgregados.desvioArea | number:'1.2-2' }} cm²</ion-note>
-            </ion-item>
-            <ion-item *ngIf="analiseDetalhada.resultadosAgregados.relacaoLarguraComprimento">
-              <ion-label>Média da Relação L/C:</ion-label>
-              <ion-note slot="end">{{ analiseDetalhada.resultadosAgregados.relacaoLarguraComprimento | number:'1.2-2' }}</ion-note>
-            </ion-item>
-          </div>
-        </ion-list>
-        
-        <ion-button expand="block" color="tertiary" class="ion-margin-top" (click)="exportarAnalise(analiseDetalhada)">
-          <ion-icon slot="start" name="download"></ion-icon>
-          Exportar Esta Análise
-        </ion-button>
+        </div>
       </ion-content>
     </ng-template>
   </ion-modal>

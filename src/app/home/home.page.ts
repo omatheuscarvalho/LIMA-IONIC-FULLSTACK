@@ -358,12 +358,16 @@ export class HomePage {
 
   // ------- histórico -------
   adicionarAoHistorico() {
+    // sempre recarrega o histórico do localStorage antes de adicionar
+    // para evitar reescrever entradas removidas a partir de outra tela
+    this.carregarHistorico();
+
     const analise = {
       id: Date.now(),
       data: new Date(),
-      especie: this.especie,
-      tratamento: this.tratamento,
-      replica: this.replica,
+      especie: (this.especie && this.especie.trim() !== '') ? this.especie : 'Não informada',
+      tratamento: (this.tratamento && this.tratamento.trim() !== '') ? this.tratamento : 'Não informado',
+      replica: (this.replica && this.replica.trim() !== '') ? this.replica : 'Não informada',
       nomeImagem: this.nomeImagem,
       resultados: [...this.resultados],
       resultadosAgregados: this.resultadosAgregados ? { ...this.resultadosAgregados } : null

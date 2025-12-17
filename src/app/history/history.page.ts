@@ -2,9 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonContent, IonHeader, IonIcon, IonItem, IonItemDivider, IonLabel, IonList, IonModal, IonNote, IonText, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import { AlertController } from '@ionic/angular';
+import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCardSubtitle, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonModal, IonText, IonTitle, IonToolbar, IonSearchbar, IonInput, IonGrid, IonRow, IonCol, IonFooter } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { close, download, trash } from 'ionicons/icons';
+import { close, download, trash, time, pencil, checkmark, createOutline, closeCircleOutline, checkmarkCircleOutline, trashOutline, downloadOutline } from 'ionicons/icons';
 import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 
@@ -25,24 +26,32 @@ import { saveAs } from 'file-saver';
     IonCard, 
     IonCardHeader, 
     IonCardTitle, 
+    IonCardSubtitle,
     IonCardContent, 
-    IonList, 
     IonItem, 
     IonLabel, 
     IonText, 
     IonButton, 
     IonIcon, 
     IonModal, 
-    IonNote,
-    IonItemDivider
+    IonSearchbar,
+    IonInput,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonFooter
   ]
 })
 export class HistoryPage implements OnInit {
   historico: any[] = [];
   analiseDetalhada: any = null;
+  searchTerm: string = '';
+  // edição do modal
+  editingDetalhe: boolean = false;
+  editModel: any = null;
 
-  constructor(private router: Router) {
-    addIcons({ trash, close, download });
+  constructor(private router: Router, private alertController: AlertController) {
+    addIcons({download,trash,close,createOutline,closeCircleOutline,checkmarkCircleOutline,trashOutline,downloadOutline,pencil,checkmark,time});
   }
 
   ngOnInit() {
@@ -56,9 +65,59 @@ export class HistoryPage implements OnInit {
     }
   }
 
-  limparHistorico() {
-    localStorage.removeItem('historico');
-    this.historico = [];
+  get filteredHistorico() {
+    if (!this.searchTerm || this.searchTerm.trim() === '') return this.historico;
+    const term = this.searchTerm.toLowerCase();
+    return this.historico.filter(h => {
+      return (h.especie && h.especie.toLowerCase().includes(term)) ||
+             (h.tratamento && h.tratamento.toLowerCase().includes(term)) ||
+             (h.nomeImagem && h.nomeImagem.toLowerCase().includes(term));
+    });
+  }
+
+  trackByHistorico(index: number, item: any) {
+    return item?.id ?? item?.nomeImagem ?? index;
+  }
+
+  getThumbnail(analise: any): string | null {
+    if (!analise) return null;
+    // possíveis campos que podem armazenar a imagem processada
+    return analise.thumbnail || analise.imagemProcessada || analise.imagem || null;
+  }
+
+  async onDeleteAnalise(analise: any) {
+    const alert = await this.alertController.create({
+      header: 'Confirmar exclusão',
+      message: `Deseja excluir esta análise (${analise.nomeImagem || analise.especie || ''})? Esta ação não pode ser desfeita.`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        { text: 'Excluir', cssClass: 'danger', handler: () => {
+            this.historico = this.historico.filter(h => h !== analise);
+            localStorage.setItem('historico', JSON.stringify(this.historico));
+            if (this.analiseDetalhada === analise) this.analiseDetalhada = null;
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async limparHistorico() {
+    if (!this.historico || this.historico.length === 0) return;
+    const alert = await this.alertController.create({
+      header: 'Limpar histórico',
+      message: 'Deseja realmente limpar todo o histórico? Esta ação não pode ser desfeita.',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        { text: 'Confirmar', cssClass: 'danger', handler: () => {
+            localStorage.removeItem('historico');
+            this.historico = [];
+            this.analiseDetalhada = null;
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
   expandirAnalise(analise: any) {
@@ -141,5 +200,57 @@ export class HistoryPage implements OnInit {
     // Criar blob e fazer download
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
     saveAs(blob, nomeArquivo);
+  }
+
+  // --- edição ---
+  toggleEditDetalhe() {
+    if (!this.analiseDetalhada) return;
+    this.editingDetalhe = true;
+    // cópia rasa suficiente para editar campos de metadados
+    this.editModel = {
+      especie: this.analiseDetalhada.especie,
+      tratamento: this.analiseDetalhada.tratamento,
+      replica: this.analiseDetalhada.replica,
+      nomeImagem: this.analiseDetalhada.nomeImagem,
+      areaEscala: this.analiseDetalhada.areaEscala
+    };
+  }
+
+  cancelEditDetalhe() {
+    this.editingDetalhe = false;
+    this.editModel = null;
+  }
+
+  saveEditDetalhe() {
+    if (!this.analiseDetalhada || !this.editModel) return;
+    // aplicar placeholders se necessário
+    this.analiseDetalhada.especie = (this.editModel.especie && this.editModel.especie.trim() !== '') ? this.editModel.especie : 'Não informada';
+    this.analiseDetalhada.tratamento = (this.editModel.tratamento && this.editModel.tratamento.trim() !== '') ? this.editModel.tratamento : 'Não informado';
+    this.analiseDetalhada.replica = (this.editModel.replica && this.editModel.replica.trim() !== '') ? this.editModel.replica : 'Não informada';
+    this.analiseDetalhada.nomeImagem = this.editModel.nomeImagem || this.analiseDetalhada.nomeImagem;
+    this.analiseDetalhada.areaEscala = this.editModel.areaEscala ?? this.analiseDetalhada.areaEscala;
+
+    // atualizar o array historico e persistir
+    const idx = this.historico.findIndex(h => h.id === this.analiseDetalhada.id);
+    if (idx >= 0) {
+      this.historico[idx] = { ...this.historico[idx], ...this.analiseDetalhada };
+      localStorage.setItem('historico', JSON.stringify(this.historico));
+    }
+
+    this.editingDetalhe = false;
+    this.editModel = null;
+  }
+
+  // Garantir que, quando o modal for fechado por backdrop ou botão físico,
+  // o estado local seja limpo e não deixe a UI travada com overlay invisível.
+  onModalDidDismiss(event?: any) {
+    // limpar flags de edição e modelo temporário
+    if (this.editingDetalhe) {
+      this.editingDetalhe = false;
+      this.editModel = null;
+    }
+
+    // limpar detalhe aberto
+    this.analiseDetalhada = null;
   }
 }

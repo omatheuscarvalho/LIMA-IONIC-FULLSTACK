@@ -9,26 +9,21 @@ import {
   IonButtons, 
   IonCard, 
   IonCardContent, 
-  IonCardHeader, 
-  IonCardTitle, 
-  IonCardSubtitle, 
   IonContent, 
   IonHeader, 
   IonIcon, 
   IonModal, 
-  IonText, 
+  IonText,
   IonTitle, 
   IonToolbar, 
-  IonSearchbar, 
-  IonGrid, 
-  IonRow, 
-  IonCol, 
+  IonSearchbar,
+  IonGrid,
+  IonRow,
+  IonCol,
   IonFooter,
-  IonList,    // Adicionado
-  IonItem,    // Adicionado
-  IonLabel,   // Adicionado
-  IonInput,   // Adicionado
-  IonNote     // Adicionado
+  IonItem,
+  IonLabel,
+  IonInput
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
@@ -68,11 +63,8 @@ import { saveAs } from 'file-saver';
     IonButtons, 
     IonBackButton, 
     IonCard, 
-    IonCardContent, 
-    IonCardHeader,
-    IonCardTitle,
-    IonCardSubtitle,
-    IonText, 
+    IonCardContent,
+    IonText,
     IonButton, 
     IonIcon, 
     IonModal, 
@@ -81,11 +73,9 @@ import { saveAs } from 'file-saver';
     IonRow,
     IonCol,
     IonFooter,
-    IonList,    // Importado
-    IonItem,    // Importado
-    IonLabel,   // Importado
-    IonInput,   // Importado
-    IonNote     // Importado
+    IonItem,
+    IonLabel,
+    IonInput
   ]
 })
 export class HistoryPage implements OnInit {
@@ -133,6 +123,23 @@ export class HistoryPage implements OnInit {
     if (historicoSalvo) {
       try {
         this.historico = JSON.parse(historicoSalvo);
+        
+        // Tenta recuperar as imagens do cache
+        try {
+          const imagensCache = sessionStorage.getItem('historico_imagens');
+          if (imagensCache) {
+            const imagens = JSON.parse(imagensCache);
+            this.historico.forEach((analise: any) => {
+              // Se a análise não tem imagem, tenta restaurar do cache
+              if ((!analise.imagemProcessada && !analise.imagemBase64 && !analise.imagem) && imagens[analise.id]) {
+                analise.imagemProcessada = imagens[analise.id];
+              }
+            });
+          }
+        } catch {
+          // Ignora erros ao recuperar imagens do cache
+        }
+        
         // Ordenar por data (mais recente primeiro)
         this.historico.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
       } catch (e) {
@@ -172,8 +179,25 @@ export class HistoryPage implements OnInit {
 
   getThumbnail(analise: any): string | null {
     if (!analise) return null;
-    // Tenta pegar a imagem processada (base64) ou a original
-    return analise.imagemProcessada || analise.imagemBase64 || analise.imagem || null;
+    
+    // Primeiro tenta pegar do objeto (se já foi carregada)
+    if (analise.imagemProcessada) return analise.imagemProcessada;
+    if (analise.imagemBase64) return analise.imagemBase64;
+    if (analise.imagem) return analise.imagem;
+    
+    // Tenta recuperar do sessionStorage
+    try {
+      const img = sessionStorage.getItem(`img_${analise.id}`);
+      if (img) {
+        // Armazena no objeto para não precisar buscar novamente
+        analise.imagemProcessada = img;
+        return img;
+      }
+    } catch (e) {
+      // Ignora erros ao acessar sessionStorage
+    }
+    
+    return null;
   }
 
   async onDeleteAnalise(analise: any) {
@@ -225,6 +249,7 @@ export class HistoryPage implements OnInit {
   }
 
   expandirAnalise(analise: any) {
+    // Armazena apenas a referência do ID para encontrar depois
     this.analiseDetalhada = analise;
     this.editingDetalhe = false;
   }
@@ -236,9 +261,73 @@ export class HistoryPage implements OnInit {
   }
 
   atualizarStorage() {
-    // Salva na chave principal
-    localStorage.setItem('historico_analises', JSON.stringify(this.historico));
-    this.filtrar(); // Atualiza a visualização
+    try {
+      // Sanitiza os dados antes de salvar (remove imagens para economizar espaço)
+      const dadosLimpos = this.historico.map(analise => {
+        try {
+          // Cria uma cópia apenas com os dados essenciais, removendo imagens
+          const copia: any = {
+            id: analise.id,
+            data: analise.data,
+            especie: analise.especie,
+            tratamento: analise.tratamento,
+            replica: analise.replica,
+            nomeImagem: analise.nomeImagem,
+            areaEscala: analise.areaEscala,
+            resultados: analise.resultados,
+            resultadosAgregados: analise.resultadosAgregados
+          };
+          
+          // Salva a imagem em sessionStorage se existir
+          if (analise.imagemProcessada) {
+            try {
+              sessionStorage.setItem(`img_${analise.id}`, analise.imagemProcessada);
+            } catch {
+              // SessionStorage cheio, ignora
+            }
+          }
+          
+          return copia;
+        } catch {
+          return analise;
+        }
+      });
+      
+      // Salva na chave principal (sem imagens)
+      const dadosStr = JSON.stringify(dadosLimpos);
+      
+      // Se ainda estiver muito grande, remove as análises mais antigas
+      if (dadosStr.length > 3000000) { // ~3MB
+        const dadosMenores = dadosLimpos.slice(0, 15);
+        localStorage.setItem('historico_analises', JSON.stringify(dadosMenores));
+      } else {
+        localStorage.setItem('historico_analises', dadosStr);
+      }
+      
+      this.filtrar(); // Atualiza a visualização
+    } catch (err: any) {
+      console.error('Erro ao salvar histórico no localStorage:', err?.message || err);
+      
+      // Estratégia de emergência: remove as análises mais antigas
+      try {
+        const dadosMenores = this.historico.slice(0, 10).map(a => ({
+          id: a.id,
+          data: a.data,
+          especie: a.especie,
+          tratamento: a.tratamento,
+          replica: a.replica,
+          nomeImagem: a.nomeImagem,
+          areaEscala: a.areaEscala,
+          resultados: a.resultados,
+          resultadosAgregados: a.resultadosAgregados
+        }));
+        localStorage.setItem('historico_analises', JSON.stringify(dadosMenores));
+      } catch (e2) {
+        console.error('Erro crítico ao salvar histórico');
+        // Último recurso: limpa tudo
+        localStorage.removeItem('historico_analises');
+      }
+    }
   }
 
   exportarAnalise(analise: any) {
@@ -358,23 +447,28 @@ export class HistoryPage implements OnInit {
   saveEditDetalhe() {
     if (!this.analiseDetalhada || !this.editModel) return;
 
-    // Atualiza o objeto local (referência na memória)
-    this.analiseDetalhada.especie = this.editModel.especie;
-    this.analiseDetalhada.tratamento = this.editModel.tratamento;
-    this.analiseDetalhada.replica = this.editModel.replica;
-    this.analiseDetalhada.nomeImagem = this.editModel.nomeImagem;
-    
-    // Atualiza a área (tratando nulos)
-    if (this.editModel.areaEscala !== undefined && this.editModel.areaEscala !== null) {
-      this.analiseDetalhada.areaEscala = this.editModel.areaEscala;
-    }
-
-    // Encontra o índice no array principal e atualiza
+    // Encontra o índice no array principal
     const idx = this.historico.findIndex(h => h.id === this.analiseDetalhada.id);
-    if (idx >= 0) {
-      this.historico[idx] = this.analiseDetalhada;
-      this.atualizarStorage();
-    }
+    if (idx < 0) return;
+
+    // Cria um novo objeto limpo com apenas os dados essenciais
+    const analiseAtualizada = {
+      ...this.historico[idx], // Mantém todos os dados originais
+      especie: this.editModel.especie,
+      tratamento: this.editModel.tratamento,
+      replica: this.editModel.replica,
+      nomeImagem: this.editModel.nomeImagem,
+      areaEscala: this.editModel.areaEscala !== undefined && this.editModel.areaEscala !== null ? this.editModel.areaEscala : this.historico[idx].areaEscala
+    };
+
+    // Atualiza no array
+    this.historico[idx] = analiseAtualizada;
+    
+    // Atualiza a visualização do modal
+    this.analiseDetalhada = analiseAtualizada;
+    
+    // Salva no storage
+    this.atualizarStorage();
 
     this.editingDetalhe = false;
     this.editModel = null;

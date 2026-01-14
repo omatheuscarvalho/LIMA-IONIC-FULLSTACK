@@ -362,23 +362,50 @@ export class HomePage {
     // para evitar reescrever entradas removidas a partir de outra tela
     this.carregarHistorico();
 
+    // Salva a imagem processada em sessionStorage antes de criar a análise
+    const idAnalise = Date.now();
+    if (this.imagemProcessada) {
+      try {
+        sessionStorage.setItem(`img_${idAnalise}`, this.imagemProcessada);
+      } catch (e) {
+        console.warn('Erro ao salvar imagem em sessionStorage');
+      }
+    }
+
     const analise = {
-      id: Date.now(),
+      id: idAnalise,
       data: new Date(),
       especie: (this.especie && this.especie.trim() !== '') ? this.especie : 'Não informada',
       tratamento: (this.tratamento && this.tratamento.trim() !== '') ? this.tratamento : 'Não informado',
       replica: (this.replica && this.replica.trim() !== '') ? this.replica : 'Não informada',
       nomeImagem: this.nomeImagem,
+      areaEscala: this.areaEscala || null,
       resultados: [...this.resultados],
       resultadosAgregados: this.resultadosAgregados ? { ...this.resultadosAgregados } : null
     };
     this.historico.unshift(analise);
-    if (this.historico.length > 50) this.historico = this.historico.slice(0, 50);
+    if (this.historico.length > 30) this.historico = this.historico.slice(0, 30);
     this.salvarHistorico();
   }
 
   salvarHistorico() {
-    localStorage.setItem('historico', JSON.stringify(this.historico));
+    try {
+      const dados = JSON.stringify(this.historico);
+      // Se os dados forem muito grandes, limpa análises antigas
+      if (dados.length > 3000000) { // ~3MB
+        this.historico = this.historico.slice(0, 15);
+      }
+      localStorage.setItem('historico', JSON.stringify(this.historico));
+    } catch (e: any) {
+      console.error('Erro ao salvar histórico:', e?.message);
+      // Se falhar, limpa as análises mais antigas
+      this.historico = this.historico.slice(0, 10);
+      try {
+        localStorage.setItem('historico', JSON.stringify(this.historico));
+      } catch (e2) {
+        console.error('Erro crítico ao salvar histórico');
+      }
+    }
   }
 
   carregarHistorico() {

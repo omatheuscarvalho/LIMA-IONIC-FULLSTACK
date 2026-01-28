@@ -20,7 +20,18 @@ import {
   IonGrid,
   IonRow,
   IonCol,
-  IonFooter
+  IonFooter,
+  IonSegment,
+  IonSegmentButton,
+  IonAccordion,
+  IonAccordionGroup,
+  IonBadge,
+  IonCardHeader,
+  IonCardTitle,
+  IonLabel,
+  IonItem,
+  IonInput,
+  IonList
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
@@ -40,7 +51,11 @@ import {
   leafOutline, 
   documentTextOutline,
   closeCircle, // Adicionado
-  arrowBack    // Adicionado
+  arrowBack,    // Adicionado
+  imageOutline,
+  listOutline,
+  expand,
+  contract
 } from 'ionicons/icons';
 import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
@@ -69,7 +84,18 @@ import { saveAs } from 'file-saver';
     IonGrid,
     IonRow,
     IonCol,
-    IonFooter
+    IonFooter,
+    IonSegment,
+    IonSegmentButton,
+    IonAccordion,
+    IonAccordionGroup,
+    IonBadge,
+    IonCardHeader,
+    IonCardTitle,
+    IonLabel,
+    IonItem,
+    IonInput,
+    IonList
   ]
 })
 export class HistoryPage implements OnInit {
@@ -81,6 +107,12 @@ export class HistoryPage implements OnInit {
   // edição do modal
   editingDetalhe: boolean = false;
   editModel: any = null;
+
+  // Variável para controlar a aba selecionada no modal
+  selectedSegment: string = 'resumo';
+
+  // Modal de imagem ampliada
+  imagemAmpliada: string | null = null;
 
   constructor(private router: Router, private alertController: AlertController) {
     addIcons({
@@ -100,7 +132,11 @@ export class HistoryPage implements OnInit {
       checkmarkCircleOutline,
       pencil,
       time,
-      arrowBack
+      arrowBack,
+      imageOutline,
+      listOutline,
+      expand,
+      contract
     });
   }
 
@@ -256,6 +292,22 @@ export class HistoryPage implements OnInit {
     this.analiseDetalhada = null;
     this.editingDetalhe = false;
     this.editModel = null;
+    this.selectedSegment = 'resumo'; // Resetar para a aba principal
+  }
+
+  onModalDidDismiss(event: any) {
+    // Método chamado quando o modal é fechado
+    this.fecharDetalhes();
+  }
+
+  abrirImagemAmpliada() {
+    if (this.analiseDetalhada) {
+      this.imagemAmpliada = this.getThumbnail(this.analiseDetalhada);
+    }
+  }
+
+  fecharImagemAmpliada() {
+    this.imagemAmpliada = null;
   }
 
   atualizarStorage() {
@@ -434,8 +486,7 @@ export class HistoryPage implements OnInit {
       especie: this.analiseDetalhada.especie,
       tratamento: this.analiseDetalhada.tratamento,
       replica: this.analiseDetalhada.replica,
-      nomeImagem: this.analiseDetalhada.nomeImagem,
-      areaEscala: this.analiseDetalhada.areaEscala !== undefined ? this.analiseDetalhada.areaEscala : this.analiseDetalhada.scalePatternArea
+      nomeImagem: this.analiseDetalhada.nomeImagem
     };
   }
 
@@ -457,8 +508,7 @@ export class HistoryPage implements OnInit {
       especie: this.editModel.especie,
       tratamento: this.editModel.tratamento,
       replica: this.editModel.replica,
-      nomeImagem: this.editModel.nomeImagem,
-      areaEscala: this.editModel.areaEscala !== undefined && this.editModel.areaEscala !== null ? this.editModel.areaEscala : this.historico[idx].areaEscala
+      nomeImagem: this.editModel.nomeImagem
     };
 
     // Atualiza no array
@@ -472,11 +522,5 @@ export class HistoryPage implements OnInit {
 
     this.editingDetalhe = false;
     this.editModel = null;
-  }
-
-  onModalDidDismiss(event?: any) {
-    this.editingDetalhe = false;
-    this.editModel = null;
-    this.analiseDetalhada = null;
   }
 }

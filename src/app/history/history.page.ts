@@ -20,10 +20,7 @@ import {
   IonGrid,
   IonRow,
   IonCol,
-  IonFooter,
-  IonItem,
-  IonLabel,
-  IonInput
+  IonFooter
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
@@ -72,10 +69,7 @@ import { saveAs } from 'file-saver';
     IonGrid,
     IonRow,
     IonCol,
-    IonFooter,
-    IonItem,
-    IonLabel,
-    IonInput
+    IonFooter
   ]
 })
 export class HistoryPage implements OnInit {
@@ -177,6 +171,10 @@ export class HistoryPage implements OnInit {
     return item?.id ?? index;
   }
 
+  trackByLeaf(index: number, item: any) {
+    return item?.id ?? item?.uid ?? index;
+  }
+
   getThumbnail(analise: any): string | null {
     if (!analise) return null;
     
@@ -262,10 +260,10 @@ export class HistoryPage implements OnInit {
 
   atualizarStorage() {
     try {
-      // Sanitiza os dados antes de salvar (remove imagens para economizar espaço)
+      // Sanitiza os dados antes de salvar (mantém imagens para exibir miniaturas)
       const dadosLimpos = this.historico.map(analise => {
         try {
-          // Cria uma cópia apenas com os dados essenciais, removendo imagens
+          // Cria uma cópia com os dados essenciais, incluindo a imagem
           const copia: any = {
             id: analise.id,
             data: analise.data,
@@ -275,10 +273,11 @@ export class HistoryPage implements OnInit {
             nomeImagem: analise.nomeImagem,
             areaEscala: analise.areaEscala,
             resultados: analise.resultados,
-            resultadosAgregados: analise.resultadosAgregados
+            resultadosAgregados: analise.resultadosAgregados,
+            imagemProcessada: analise.imagemProcessada // Mantém a imagem para as miniaturas
           };
           
-          // Salva a imagem em sessionStorage se existir
+          // Salva a imagem em sessionStorage também para backup
           if (analise.imagemProcessada) {
             try {
               sessionStorage.setItem(`img_${analise.id}`, analise.imagemProcessada);
@@ -293,12 +292,12 @@ export class HistoryPage implements OnInit {
         }
       });
       
-      // Salva na chave principal (sem imagens)
+      // Salva na chave principal (com imagens)
       const dadosStr = JSON.stringify(dadosLimpos);
       
       // Se ainda estiver muito grande, remove as análises mais antigas
-      if (dadosStr.length > 3000000) { // ~3MB
-        const dadosMenores = dadosLimpos.slice(0, 15);
+      if (dadosStr.length > 5000000) { // ~5MB (aumentado para acomodar imagens)
+        const dadosMenores = dadosLimpos.slice(0, 10);
         localStorage.setItem('historico_analises', JSON.stringify(dadosMenores));
       } else {
         localStorage.setItem('historico_analises', dadosStr);
@@ -310,7 +309,7 @@ export class HistoryPage implements OnInit {
       
       // Estratégia de emergência: remove as análises mais antigas
       try {
-        const dadosMenores = this.historico.slice(0, 10).map(a => ({
+        const dadosMenores = this.historico.slice(0, 5).map(a => ({
           id: a.id,
           data: a.data,
           especie: a.especie,
@@ -319,7 +318,8 @@ export class HistoryPage implements OnInit {
           nomeImagem: a.nomeImagem,
           areaEscala: a.areaEscala,
           resultados: a.resultados,
-          resultadosAgregados: a.resultadosAgregados
+          resultadosAgregados: a.resultadosAgregados,
+          imagemProcessada: a.imagemProcessada // Mantém a imagem mesmo na emergência
         }));
         localStorage.setItem('historico_analises', JSON.stringify(dadosMenores));
       } catch (e2) {

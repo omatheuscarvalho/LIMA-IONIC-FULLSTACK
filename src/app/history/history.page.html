@@ -38,7 +38,7 @@
             <div class="col-image">
               <div class="img-file-group">
                 <div class="thumb-small">
-                  <img [src]="getThumbnail(analise) || 'assets/placeholder-leaf.png'" alt="img" />
+                  <img [src]="getThumbnail(analise) || 'assets/placeholder-image.png'" alt="img" />
                 </div>
                 <div class="file-info">
                   <div class="file-name" [title]="analise.nomeImagem">{{ analise.nomeImagem || 'Sem nome' }}</div>
@@ -110,109 +110,112 @@
       </ion-header>
 
       <ion-content class="modal-body" *ngIf="analiseDetalhada">
-        <div class="detail-banner" *ngIf="getThumbnail(analiseDetalhada)">
-          <img [src]="getThumbnail(analiseDetalhada)" class="banner-img" />
+        <!-- Linha Superior: Miniatura + Informações -->
+        <div class="top-section">
+          <div class="image-column">
+            <div class="image-container" *ngIf="getThumbnail(analiseDetalhada)">
+              <img [src]="getThumbnail(analiseDetalhada)" class="analysis-image" alt="Imagem analisada" />
+            </div>
+          </div>
+          <div class="info-column">
+            <div class="sample-card">
+              <div class="sample-header">
+                <h3 class="sample-title">{{ analiseDetalhada.nomeImagem || 'Análise sem nome' }}</h3>
+                <div class="sample-meta">
+                  <span class="meta-date">{{ analiseDetalhada.data | date:'dd/MM/yyyy' }}</span>
+                  <span class="meta-time">{{ analiseDetalhada.data | date:'HH:mm' }}</span>
+                </div>
+              </div>
+              <div class="sample-details">
+                <div class="detail-row">
+                  <span class="detail-icon">🌱</span>
+                  <div class="detail-content">
+                    <span class="detail-label">Espécie</span>
+                    <span class="detail-value">{{ analiseDetalhada.especie || 'Não informada' }}</span>
+                  </div>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-icon">🧪</span>
+                  <div class="detail-content">
+                    <span class="detail-label">Tratamento</span>
+                    <span class="detail-value">{{ analiseDetalhada.tratamento || 'Não informado' }}</span>
+                  </div>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-icon">🔄</span>
+                  <div class="detail-content">
+                    <span class="detail-label">Réplica</span>
+                    <span class="detail-value">{{ analiseDetalhada.replica || 'Não informada' }}</span>
+                  </div>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-icon">📏</span>
+                  <div class="detail-content">
+                    <span class="detail-label">Área Padrão</span>
+                    <span class="detail-value">{{ analiseDetalhada.areaEscala | number:'1.2-2' }} cm²</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="ion-padding">
-
-          <ion-card class="info-card">
-            <ion-card-content>
-              <ng-container *ngIf="!editingDetalhe">
-                <div class="info-grid">
-                  <div class="info-item">
-                    <span class="info-label">Espécie</span>
-                    <span class="info-value">{{ analiseDetalhada.especie || '—' }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Tratamento</span>
-                    <span class="info-value">{{ analiseDetalhada.tratamento || '—' }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Réplica</span>
-                    <span class="info-value">{{ analiseDetalhada.replica || '—' }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Área Padrão</span>
-                    <span class="info-value">{{ analiseDetalhada.areaEscala | number:'1.2-2' }} cm²</span>
-                  </div>
-                </div>
-              </ng-container>
-
-              <ion-grid *ngIf="editingDetalhe" class="edit-grid">
-                <ion-row>
-                  <ion-col size="6">
-                    <ion-item>
-                      <ion-label position="stacked">Espécie</ion-label>
-                      <ion-input [(ngModel)]="editModel.especie"></ion-input>
-                    </ion-item>
-                  </ion-col>
-                  <ion-col size="6">
-                    <ion-item>
-                      <ion-label position="stacked">Tratamento</ion-label>
-                      <ion-input [(ngModel)]="editModel.tratamento"></ion-input>
-                    </ion-item>
-                  </ion-col>
-                  <ion-col size="6">
-                    <ion-item>
-                      <ion-label position="stacked">Réplica</ion-label>
-                      <ion-input [(ngModel)]="editModel.replica"></ion-input>
-                    </ion-item>
-                  </ion-col>
-                  <ion-col size="6">
-                    <ion-item>
-                      <ion-label position="stacked">Área Padrão</ion-label>
-                      <ion-input type="number" [(ngModel)]="editModel.areaEscala"></ion-input>
-                    </ion-item>
-                  </ion-col>
-                </ion-row>
-              </ion-grid>
-            </ion-card-content>
-          </ion-card>
-
-          <div class="ion-padding-bottom" *ngIf="analiseDetalhada.resultadosAgregados">
-            <h6 class="ion-text-uppercase ion-text-medium ion-no-margin ion-margin-bottom" style="font-size: 0.8rem; letter-spacing: 0.5px;">Resumo Estatístico</h6>
-            <div class="aggregated-grid">
-              <div class="agg-item">
-                <div class="agg-label">Total Área</div>
-                <div class="agg-value">{{ (analiseDetalhada.resultadosAgregados.somaAreas || 0) | number:'1.2-2' }}</div>
-              </div>
-              <div class="agg-item">
-                <div class="agg-label">Média</div>
-                <div class="agg-value">{{ (analiseDetalhada.resultadosAgregados.mediaArea || 0) | number:'1.2-2' }}</div>
-              </div>
-              <div class="agg-item">
-                <div class="agg-label">Desvio P.</div>
-                <div class="agg-value">{{ (analiseDetalhada.resultadosAgregados.desvioArea || 0) | number:'1.2-2' }}</div>
-              </div>
+        <!-- Resumo Estatístico -->
+        <div class="stats-section">
+          <h4 class="section-title">Resumo Estatístico</h4>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value">{{ (analiseDetalhada.resultadosAgregados?.somaAreas || analiseDetalhada.resultadosAgregados?.totalArea || 0) | number:'1.2-2' }}</div>
+              <div class="stat-label">Soma das Áreas</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ (analiseDetalhada.resultadosAgregados?.mediaLargura || analiseDetalhada.resultadosAgregados?.averageWidth || 0) | number:'1.5-5' }}</div>
+              <div class="stat-label">Média Largura</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ (analiseDetalhada.resultadosAgregados?.mediaComprimento || analiseDetalhada.resultadosAgregados?.averageLength || 0) | number:'1.5-5' }}</div>
+              <div class="stat-label">Média Comprimento</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ (analiseDetalhada.resultadosAgregados?.mediaArea || analiseDetalhada.resultadosAgregados?.averageArea || 0) | number:'1.5-5' }}</div>
+              <div class="stat-label">Média Área</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ (analiseDetalhada.resultadosAgregados?.mediaPerimetro || analiseDetalhada.resultadosAgregados?.averagePerimeter || 0) | number:'1.5-5' }}</div>
+              <div class="stat-label">Média Perímetro</div>
             </div>
           </div>
+        </div>
 
-          <div *ngIf="analiseDetalhada.resultados?.length">
-             <h6 class="ion-text-uppercase ion-text-medium ion-no-margin ion-margin-bottom" style="font-size: 0.8rem; letter-spacing: 0.5px;">Medições Individuais</h6>
-            <div class="results-table-wrapper">
-              <div class="results-table">
-                <div class="table-row header">
-                  <div class="col">#</div>
-                  <div class="col">Área</div>
-                  <div class="col">Perím.</div>
-                  <div class="col">Comp.</div>
-                  <div class="col">Larg.</div>
-                  <div class="col">L/C</div>
+        <!-- Medições Individuais -->
+        <div class="measurements-section" *ngIf="analiseDetalhada.resultados?.length">
+          <h4 class="section-title">Medições Individuais</h4>
+          <div class="measurements-list">
+            <div class="measurement-item" *ngFor="let r of analiseDetalhada.resultados; trackBy: trackByLeaf">
+              <div class="measurement-header">
+                <span class="leaf-id">Folha {{ r.id }}</span>
+                <span class="leaf-area">{{ r.area | number:'1.2-2' }} cm²</span>
+              </div>
+              <div class="measurement-details">
+                <div class="detail-item">
+                  <span class="detail-label">Largura:</span>
+                  <span class="detail-value">{{ r.largura | number:'1.5-5' }} cm</span>
                 </div>
-                <div class="table-row" *ngFor="let r of analiseDetalhada.resultados">
-                  <div class="col"><b>{{ r.id }}</b></div>
-                  <div class="col">{{ r.area | number:'1.2-2' }}</div>
-                  <div class="col">{{ r.perimetro | number:'1.1-1' }}</div>
-                  <div class="col">{{ r.comprimento | number:'1.1-1' }}</div>
-                  <div class="col">{{ r.largura | number:'1.1-1' }}</div>
-                  <div class="col">{{ r.relacaoLarguraComprimento | number:'1.2-2' }}</div>
+                <div class="detail-item">
+                  <span class="detail-label">Comprimento:</span>
+                  <span class="detail-value">{{ r.comprimento | number:'1.5-5' }} cm</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Relação L/C:</span>
+                  <span class="detail-value">{{ r.relacaoLarguraComprimento | number:'1.5-5' }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Perímetro:</span>
+                  <span class="detail-value">{{ r.perimetro | number:'1.5-5' }} cm</span>
                 </div>
               </div>
             </div>
           </div>
-
-          <div style="height: 20px"></div>
         </div>
       </ion-content>
 

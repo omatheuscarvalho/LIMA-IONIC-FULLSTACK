@@ -381,7 +381,8 @@ export class HomePage {
       nomeImagem: this.nomeImagem,
       areaEscala: this.areaEscala || null,
       resultados: [...this.resultados],
-      resultadosAgregados: this.resultadosAgregados ? { ...this.resultadosAgregados } : null
+      resultadosAgregados: this.resultadosAgregados ? { ...this.resultadosAgregados } : null,
+      imagemProcessada: this.imagemProcessada // Adiciona a imagem processada ao objeto
     };
     this.historico.unshift(analise);
     if (this.historico.length > 30) this.historico = this.historico.slice(0, 30);
@@ -395,13 +396,13 @@ export class HomePage {
       if (dados.length > 3000000) { // ~3MB
         this.historico = this.historico.slice(0, 15);
       }
-      localStorage.setItem('historico', JSON.stringify(this.historico));
+      localStorage.setItem('historico_analises', JSON.stringify(this.historico));
     } catch (e: any) {
       console.error('Erro ao salvar histórico:', e?.message);
       // Se falhar, limpa as análises mais antigas
       this.historico = this.historico.slice(0, 10);
       try {
-        localStorage.setItem('historico', JSON.stringify(this.historico));
+        localStorage.setItem('historico_analises', JSON.stringify(this.historico));
       } catch (e2) {
         console.error('Erro crítico ao salvar histórico');
       }
@@ -409,13 +410,14 @@ export class HomePage {
   }
 
   carregarHistorico() {
-    const h = localStorage.getItem('historico');
+    const h = localStorage.getItem('historico_analises') || localStorage.getItem('historico');
     this.historico = h ? JSON.parse(h) : [];
   }
 
   limparHistorico() {
     this.historico = [];
-    localStorage.removeItem('historico');
+    localStorage.removeItem('historico_analises');
+    localStorage.removeItem('historico'); // Remove a chave antiga também
   }
 
   // ------- navegação / utilitários -------

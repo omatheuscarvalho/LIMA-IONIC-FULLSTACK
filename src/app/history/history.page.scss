@@ -1039,4 +1039,37 @@
     font-weight: 500;
     word-break: break-word;
   }
+}/* Formulário de Edição */
+.edit-form {
+  .edit-item {
+    --border-radius: 8px;
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    margin-bottom: 16px;
+    background: var(--ion-color-step-50);
+    border-radius: 8px;
+
+    ion-label {
+      --color: var(--ion-color-primary);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    ion-input {
+      --placeholder-color: var(--ion-color-medium);
+      --color: var(--ion-color-primary);
+      font-size: 0.95rem;
+    }
+  }
+
+  .edit-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+
+    ion-button {
+      --border-radius: 8px;
+      font-weight: 500;
+    }
+  }
 }

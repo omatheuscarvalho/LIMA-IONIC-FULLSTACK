@@ -142,22 +142,51 @@
                   </div>
                 </div>
                 <div class="analysis-details-section">
-                  <h3 class="analysis-title">{{ analiseDetalhada.nomeImagem || 'Sem nome' }}</h3>
-                  <div class="analysis-detail-item">
-                    <span class="detail-label">Espécie:</span>
-                    <span class="detail-value">{{ analiseDetalhada.especie || '—' }}</span>
+                  <div *ngIf="!editingDetalhe">
+                    <h3 class="analysis-title">{{ analiseDetalhada.nomeImagem || 'Sem nome' }}</h3>
+                    <div class="analysis-detail-item">
+                      <span class="detail-label">Espécie:</span>
+                      <span class="detail-value">{{ analiseDetalhada.especie || '—' }}</span>
+                    </div>
+                    <div class="analysis-detail-item">
+                      <span class="detail-label">Tratamento:</span>
+                      <span class="detail-value">{{ analiseDetalhada.tratamento || '—' }}</span>
+                    </div>
+                    <div class="analysis-detail-item">
+                      <span class="detail-label">Réplica:</span>
+                      <span class="detail-value">{{ analiseDetalhada.replica || '—' }}</span>
+                    </div>
+                    <div class="analysis-detail-item">
+                      <span class="detail-label">Área Padrão:</span>
+                      <span class="detail-value">{{ analiseDetalhada.areaEscala | number:'1.5-5' }} cm²</span>
+                    </div>
                   </div>
-                  <div class="analysis-detail-item">
-                    <span class="detail-label">Tratamento:</span>
-                    <span class="detail-value">{{ analiseDetalhada.tratamento || '—' }}</span>
-                  </div>
-                  <div class="analysis-detail-item">
-                    <span class="detail-label">Réplica:</span>
-                    <span class="detail-value">{{ analiseDetalhada.replica || '—' }}</span>
-                  </div>
-                  <div class="analysis-detail-item">
-                    <span class="detail-label">Área Padrão:</span>
-                    <span class="detail-value">{{ analiseDetalhada.areaEscala | number:'1.5-5' }} cm²</span>
+
+                  <!-- Formulário de Edição -->
+                  <div *ngIf="editingDetalhe" class="edit-form">
+                    <h3 class="analysis-title">Editar Informações</h3>
+                    <ion-item lines="none" class="edit-item">
+                      <ion-label position="stacked">Nome da Imagem</ion-label>
+                      <ion-input [(ngModel)]="editModel.nomeImagem" placeholder="Digite o nome da imagem"></ion-input>
+                    </ion-item>
+                    <ion-item lines="none" class="edit-item">
+                      <ion-label position="stacked">Espécie</ion-label>
+                      <ion-input [(ngModel)]="editModel.especie" placeholder="Digite a espécie"></ion-input>
+                    </ion-item>
+                    <ion-item lines="none" class="edit-item">
+                      <ion-label position="stacked">Tratamento</ion-label>
+                      <ion-input [(ngModel)]="editModel.tratamento" placeholder="Digite o tratamento"></ion-input>
+                    </ion-item>
+                    <ion-item lines="none" class="edit-item">
+                      <ion-label position="stacked">Réplica</ion-label>
+                      <ion-input [(ngModel)]="editModel.replica" placeholder="Digite a réplica"></ion-input>
+                    </ion-item>
+                    <div class="edit-actions ion-margin-top">
+                      <ion-button fill="outline" color="medium" (click)="cancelEditDetalhe()">
+                        <ion-icon slot="start" name="close-outline"></ion-icon>
+                        Cancelar
+                      </ion-button>
+                    </div>
                   </div>
                 </div>
               </div>

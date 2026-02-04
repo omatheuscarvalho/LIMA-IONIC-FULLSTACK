@@ -827,6 +827,11 @@
   letter-spacing: 0.5px;
 }
 
+.section-subtitle {
+  @extend .section-title; // Herda tudo de .classe-base
+  font-size: 0.75rem;
+}
+
 /* Dashboard de Estatísticas */
 .stats-dashboard {
   display: flex;

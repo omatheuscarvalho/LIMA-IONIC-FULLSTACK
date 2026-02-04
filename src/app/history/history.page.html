@@ -11,7 +11,8 @@
 
   <ion-card class="header-card">
     <ion-card-content>
-      <ion-searchbar [(ngModel)]="searchTerm" placeholder="Buscar por espécie, tratamento..." debounce="300"></ion-searchbar>
+      <ion-searchbar [(ngModel)]="searchTerm" placeholder="Buscar por espécie, tratamento..."
+        debounce="300"></ion-searchbar>
 
       <div *ngIf="filteredHistorico.length === 0" class="ion-text-center ion-padding empty-state">
         <ion-text color="medium">
@@ -25,15 +26,14 @@
             <div class="col-image">Arquivo</div>
             <div class="col-metadata">Detalhes</div>
             <div class="col-date">Data</div>
-            <div class="col-area">Área Total</div>
+            <div class="col-area">Área Padrão</div>
             <div class="col-actions"></div>
           </div>
         </div>
 
         <div class="table-body">
-          <div class="table-row data-row"
-               *ngFor="let analise of filteredHistorico; trackBy: trackByHistorico"
-               (click)="expandirAnalise(analise)">
+          <div class="table-row data-row" *ngFor="let analise of filteredHistorico; trackBy: trackByHistorico"
+            (click)="expandirAnalise(analise)">
 
             <div class="col-image">
               <div class="img-file-group">
@@ -102,7 +102,8 @@
             <ion-button *ngIf="!editingDetalhe && selectedSegment === 'resumo'" (click)="toggleEditDetalhe()">
               <ion-icon slot="icon-only" name="create-outline"></ion-icon>
             </ion-button>
-            <ion-button *ngIf="editingDetalhe && selectedSegment === 'resumo'" (click)="saveEditDetalhe()" color="secondary" strong>
+            <ion-button *ngIf="editingDetalhe && selectedSegment === 'resumo'" (click)="saveEditDetalhe()"
+              color="secondary" strong>
               Salvar
             </ion-button>
           </ion-buttons>
@@ -127,7 +128,8 @@
         <div *ngIf="selectedSegment === 'resumo'" class="fade-in">
 
           <div class="detail-banner" *ngIf="getThumbnail(analiseDetalhada)">
-            <img [src]="getThumbnail(analiseDetalhada)" class="banner-img" (click)="abrirImagemAmpliada()" style="cursor: pointer;" />
+            <img [src]="getThumbnail(analiseDetalhada)" class="banner-img" (click)="abrirImagemAmpliada()"
+              style="cursor: pointer;" />
           </div>
 
           <div class="ion-padding">
@@ -137,7 +139,8 @@
               <div class="analysis-info-card">
                 <div class="analysis-image-section">
                   <div class="analysis-thumbnail">
-                    <img [src]="getThumbnail(analiseDetalhada)" *ngIf="getThumbnail(analiseDetalhada)" (click)="abrirImagemAmpliada()" style="cursor: pointer;" />
+                    <img [src]="getThumbnail(analiseDetalhada)" *ngIf="getThumbnail(analiseDetalhada)"
+                      (click)="abrirImagemAmpliada()" style="cursor: pointer;" />
                     <ion-icon name="image-outline" *ngIf="!getThumbnail(analiseDetalhada)" size="large"></ion-icon>
                   </div>
                 </div>
@@ -165,9 +168,9 @@
                   <!-- Formulário de Edição -->
                   <div *ngIf="editingDetalhe" class="edit-form">
                     <h3 class="analysis-title">Editar Informações</h3>
-                    <ion-item lines="none" class="edit-item">
+                    <ion-item lines="none" class="edit-item"> <!-- Retirar possivelmente -->
                       <ion-label position="stacked">Nome da Imagem</ion-label>
-                      <ion-input [(ngModel)]="editModel.nomeImagem" placeholder="Digite o nome da imagem"></ion-input>
+                      <ion-input [(ngModel)]="editModel.nomeImagem" readonly></ion-input>
                     </ion-item>
                     <ion-item lines="none" class="edit-item">
                       <ion-label position="stacked">Espécie</ion-label>
@@ -192,7 +195,7 @@
               </div>
             </div>
 
-            
+
 
             <div *ngIf="analiseDetalhada.resultadosAgregados as agg" class="ion-margin-top">
               <h3 class="section-title">Resumo Estatístico</h3>
@@ -202,28 +205,63 @@
                   <div class="stat-icon"><ion-icon name="analytics-outline"></ion-icon></div>
                   <div class="stat-content">
                     <span class="stat-label">Soma das Áreas</span>
-                    <span class="stat-value">{{ (agg.somaAreas || agg.totalArea || 0) | number:'1.5-5' }} <small>cm²</small></span>
+                    <span class="stat-value">{{ (agg.somaAreas || agg.totalArea || 0) | number:'1.5-5' }}
+                      <small>cm²</small></span>
                   </div>
                 </div>
 
+                <h4 class="section-subtitle">Largura:</h4>
+
                 <div class="stat-grid">
                   <div class="mini-stat">
-                    <span class="label">Média Largura</span>
+                    <span class="label">Largura Média</span>
                     <span class="value">{{ (agg.mediaLargura || agg.averageWidth || 0) | number:'1.5-5' }}</span>
                   </div>
                   <div class="mini-stat">
-                    <span class="label">Média Comprimento</span>
+                    <span class="label">Desvio Padrão</span>
+                    <span class="value">{{ (agg.desvioLargura || agg.standardDeviationWidth || 0) | number:'1.5-5' }}</span>
+                  </div>
+                </div>
+
+                <h4 class="section-subtitle">Comprimento:</h4>
+
+                <div class="stat-grid">
+                  <div class="mini-stat">
+                    <span class="label">Comprimento Médio</span>
                     <span class="value">{{ (agg.mediaComprimento || agg.averageLength || 0) | number:'1.5-5' }}</span>
                   </div>
                   <div class="mini-stat">
-                    <span class="label">Média Área</span>
+                    <span class="label">Desvio Padrão</span>
+                    <span class="value">{{ (agg.desvioComprimento || agg.standardDeviationLength || 0) | number:'1.5-5' }}</span>
+                  </div>
+                </div>
+
+                <h4 class="section-subtitle">Área:</h4>
+
+                <div class="stat-grid">
+                  <div class="mini-stat">
+                    <span class="label">Área Média</span>
                     <span class="value">{{ (agg.mediaArea || agg.averageArea || 0) | number:'1.5-5' }}</span>
                   </div>
                   <div class="mini-stat">
-                    <span class="label">Média Perímetro</span>
-                    <span class="value">{{ (agg.mediaPerimetro || agg.averagePerimeter || 0) | number:'1.5-5' }}</span>
+                    <span class="label">Desvio Padrão</span>
+                    <span class="value">{{ (agg.desvioArea || agg.standardDeviationArea || 0) | number:'1.5-5' }}</span>
                   </div>
                 </div>
+
+                <h4 class="section-subtitle">Perímetro:</h4>
+
+                <div class="stat-grid">
+                  <div class="mini-stat">
+                    <span class="label">Perímetro Médio</span>
+                    <span class="value">{{ (agg.mediaPerimetro || agg.averagePerimeter || 0) | number:'1.5-5' }}</span>
+                  </div>
+                  <div class="mini-stat">
+                    <span class="label">Desvio Padrão</span>
+                    <span class="value">{{ (agg.desvioPerimetro || agg.standardDeviationPerimeter || 0) | number:'1.5-5' }}</span>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>

@@ -162,11 +162,7 @@
 
                   <!-- Formulário de Edição -->
                   <div *ngIf="editingDetalhe" class="edit-form">
-                    <h3 class="analysis-title">Editar Informações</h3>
-                    <ion-item lines="none" class="edit-item"> <!-- Retirar possivelmente -->
-                      <ion-label position="stacked">Nome da Imagem</ion-label>
-                      <ion-input [(ngModel)]="editModel.nomeImagem" readonly></ion-input>
-                    </ion-item>
+                    <h3 class="edit-title">Editar Informações da Amostra</h3>
                     <ion-item lines="none" class="edit-item">
                       <ion-label position="stacked">Espécie</ion-label>
                       <ion-input [(ngModel)]="editModel.especie" placeholder="Digite a espécie"></ion-input>
@@ -179,10 +175,14 @@
                       <ion-label position="stacked">Réplica</ion-label>
                       <ion-input [(ngModel)]="editModel.replica" placeholder="Digite a réplica"></ion-input>
                     </ion-item>
-                    <div class="edit-actions ion-margin-top">
-                      <ion-button fill="outline" color="medium" (click)="cancelEditDetalhe()">
+                    <div class="edit-actions">
+                      <ion-button fill="solid" color="medium" (click)="cancelEditDetalhe()">
                         <ion-icon slot="start" name="close-outline"></ion-icon>
                         Cancelar
+                      </ion-button>
+                      <ion-button fill="solid" color="primary" (click)="saveEditDetalhe()">
+                        <ion-icon slot="start" name="checkmark-outline"></ion-icon>
+                        Salvar
                       </ion-button>
                     </div>
                   </div>

@@ -58,8 +58,7 @@ import {
   contract, 
   closeOutline, 
   camera,
-  image as imageIcon
-} from 'ionicons/icons';
+  image as imageIcon, checkmarkOutline } from 'ionicons/icons';
 import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 
@@ -116,7 +115,7 @@ export class HistoryPage implements OnInit {
   imagemAmpliada: string | null = null;
 
   constructor(private router: Router, private alertController: AlertController) {
-    addIcons({camera,downloadOutline,trashOutline,trashBinOutline,close,createOutline,imageOutline,listOutline,closeOutline,analyticsOutline,image:imageIcon,documentTextOutline,closeCircle,checkmark,leafOutline,download,trash,closeCircleOutline,checkmarkCircleOutline,pencil,time,arrowBack,expand,contract});
+    addIcons({downloadOutline,trashOutline,trashBinOutline,close,createOutline,imageOutline,listOutline,closeOutline,checkmarkOutline,analyticsOutline,camera,image:imageIcon,documentTextOutline,closeCircle,checkmark,leafOutline,download,trash,closeCircleOutline,checkmarkCircleOutline,pencil,time,arrowBack,expand,contract});
   }
 
   ngOnInit() {

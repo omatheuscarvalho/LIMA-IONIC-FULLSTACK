@@ -87,7 +87,8 @@
               </div>
 
               <ion-grid class="ion-no-padding">
-                <ion-row>
+                <!-- Desktop: 3 botões lado a lado -->
+                <ion-row class="desktop-action-buttons">
 
                   <ion-col>
                     <ion-button expand="block" (click)="selecionarImagem()">
@@ -113,6 +114,43 @@
                   </ion-col>
 
                 </ion-row>
+
+                <!-- Mobile: 2 botões (Selecionar e Capturar) -->
+                <ion-row class="mobile-image-buttons">
+                  <ion-col>
+                    <ion-button expand="block" (click)="selecionarImagem()">
+                      <ion-icon slot="start" name="image"></ion-icon>
+                      Selecionar
+                    </ion-button>
+                  </ion-col>
+
+                  <ion-col>
+                    <ion-button expand="block" color="medium" (click)="capturarImagem()">
+                      <ion-icon slot="start" name="camera"></ion-icon>
+                      Capturar
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+
+                <!-- Mobile: 2 botões (Analisar e Limpar) -->
+                <ion-row class="mobile-action-buttons">
+                  <ion-col>
+                    <ion-button expand="block" color="success" (click)="calcular()" [disabled]="isAnalyzing">
+                      <ion-spinner *ngIf="isAnalyzing"></ion-spinner>
+                      <ion-icon *ngIf="!isAnalyzing" slot="start" name="calculator"></ion-icon>
+                      <span *ngIf="isAnalyzing" class="ml-2">Analisando...</span>
+                      <span *ngIf="!isAnalyzing">Analisar</span>
+                    </ion-button>
+                  </ion-col>
+
+                  <ion-col>
+                    <ion-button expand="block" color="light" (click)="resetAnalise()">
+                      <ion-icon slot="start" name="trash"></ion-icon>
+                      Limpar
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+
               </ion-grid>
 
             </ion-card-content>

@@ -50,12 +50,16 @@ import {
   analyticsOutline, 
   leafOutline, 
   documentTextOutline,
-  closeCircle, // Adicionado
-  arrowBack,    // Adicionado
+  closeCircle,
+  arrowBack,
   imageOutline,
   listOutline,
   expand,
-  contract, closeOutline } from 'ionicons/icons';
+  contract, 
+  closeOutline, 
+  camera,
+  image as imageIcon
+} from 'ionicons/icons';
 import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 
@@ -89,8 +93,6 @@ import { saveAs } from 'file-saver';
     IonAccordion,
     IonAccordionGroup,
     IonBadge,
-    IonCardHeader,
-    IonCardTitle,
     IonLabel,
     IonItem,
     IonInput,
@@ -114,7 +116,7 @@ export class HistoryPage implements OnInit {
   imagemAmpliada: string | null = null;
 
   constructor(private router: Router, private alertController: AlertController) {
-    addIcons({downloadOutline,trashOutline,trashBinOutline,close,createOutline,imageOutline,listOutline,closeOutline,analyticsOutline,documentTextOutline,closeCircle,checkmark,leafOutline,download,trash,closeCircleOutline,checkmarkCircleOutline,pencil,time,arrowBack,expand,contract});
+    addIcons({image:imageIcon,camera,downloadOutline,trashOutline,trashBinOutline,close,createOutline,imageOutline,listOutline,closeOutline,analyticsOutline,documentTextOutline,closeCircle,checkmark,leafOutline,download,trash,closeCircleOutline,checkmarkCircleOutline,pencil,time,arrowBack,expand,contract});
   }
 
   ngOnInit() {
@@ -209,6 +211,33 @@ export class HistoryPage implements OnInit {
     }
     
     return null;
+  }
+
+  selecionarImagem() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+
+    input.onchange = (event: any) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        // Navega para a página de análise com a imagem selecionada
+        this.router.navigate(['/home'], {
+          queryParams: { imagemBase64: e.target.result, nomeImagem: file.name }
+        });
+      };
+      reader.readAsDataURL(file);
+    };
+
+    input.click();
+  }
+
+  capturarImagem() {
+    // TODO: Implementar captura de imagem via câmera
+    // Funcionalidade a ser implementada
   }
 
   async onDeleteAnalise(analise: any) {

@@ -98,7 +98,7 @@ export class HomePage {
     private cdr: ChangeDetectorRef,
   ) {
     // Registrar ícones (sem duplicatas)
-    addIcons({ person, logOut, calculator, trash, time, help, download, camera, sunny, moon, home, image: imageIcon });
+    addIcons({person,logOut,calculator,trash,camera,time,help,download,sunny,moon,home,image:imageIcon});
 
     this.carregarHistorico();
     this.themeService.darkMode$.subscribe(v => this.darkMode = v);
@@ -169,6 +169,11 @@ export class HomePage {
     };
 
     input.click();
+  }
+
+  capturarImagem() {
+    // TODO: Implementar captura de imagem via câmera
+    // Funcionalidade a ser implementada
   }
 
   private createImg(base64: string): Promise<HTMLImageElement> {
@@ -381,8 +386,8 @@ export class HomePage {
       nomeImagem: this.nomeImagem,
       areaEscala: this.areaEscala || null,
       resultados: [...this.resultados],
-      resultadosAgregados: this.resultadosAgregados ? { ...this.resultadosAgregados } : null,
-      imagemProcessada: this.imagemProcessada // Adiciona a imagem processada ao objeto
+      resultadosAgregados: this.resultadosAgregados ? { ...this.resultadosAgregados } : null
+      // Não salvar imagemProcessada - está em sessionStorage com chave img_${idAnalise}
     };
     this.historico.unshift(analise);
     if (this.historico.length > 30) this.historico = this.historico.slice(0, 30);

@@ -267,6 +267,28 @@ ion-item.compacto {
   --ion-grid-row-padding: 6px;
   --ion-grid-column-padding: 6px;
 }
+
+/* Botões de ação para desktop e mobile */
+.desktop-action-buttons {
+  display: flex;
+}
+
+.mobile-image-buttons,
+.mobile-action-buttons {
+  display: none;
+}
+
+/* No mobile: mostrar botões mobile, ocultar desktop */
+@media (max-width: 768px) {
+  .desktop-action-buttons {
+    display: none;
+  }
+
+  .mobile-image-buttons,
+  .mobile-action-buttons {
+    display: flex;
+  }
+}
 .results-header {
   display: flex;
   justify-content: space-between;

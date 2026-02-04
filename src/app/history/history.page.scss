@@ -829,7 +829,9 @@
 
 .section-subtitle {
   @extend .section-title; // Herda tudo de .classe-base
-  font-size: 0.75rem;
+  font-size: 0.85rem;
+  margin-top: 10px;
+  margin-bottom: 1px;
 }
 
 /* Dashboard de Estatísticas */
@@ -893,26 +895,32 @@
 .stat-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 3px;
+  margin-bottom: 2px;
 }
 
 .mini-stat {
   background: var(--ion-color-light);
-  padding: 12px;
-  border-radius: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
   text-align: center;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  border: 1px solid var(--ion-color-step-150);
 
   .label {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--ion-color-medium);
+    margin-bottom: 0px;
+    font-weight: 500;
   }
 
   .value {
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 1.25rem;
+    font-weight: 700;
     color: var(--ion-color-dark);
+    letter-spacing: 0.3px;
   }
 }
 

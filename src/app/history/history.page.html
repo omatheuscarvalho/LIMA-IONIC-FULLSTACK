@@ -209,7 +209,7 @@
 
                 <div class="stat-grid">
                   <div class="mini-stat">
-                    <span class="label">Largura Média</span>
+                    <span class="label">Média</span>
                     <span class="value">{{ (agg.mediaLargura || agg.averageWidth || 0) | number:'1.5-5' }}</span>
                   </div>
                   <div class="mini-stat">
@@ -222,7 +222,7 @@
 
                 <div class="stat-grid">
                   <div class="mini-stat">
-                    <span class="label">Comprimento Médio</span>
+                    <span class="label">Média</span>
                     <span class="value">{{ (agg.mediaComprimento || agg.averageLength || 0) | number:'1.5-5' }}</span>
                   </div>
                   <div class="mini-stat">
@@ -235,7 +235,7 @@
 
                 <div class="stat-grid">
                   <div class="mini-stat">
-                    <span class="label">Área Média</span>
+                    <span class="label">Média</span>
                     <span class="value">{{ (agg.mediaArea || agg.averageArea || 0) | number:'1.5-5' }}</span>
                   </div>
                   <div class="mini-stat">
@@ -248,7 +248,7 @@
 
                 <div class="stat-grid">
                   <div class="mini-stat">
-                    <span class="label">Perímetro Médio</span>
+                    <span class="label">Média</span>
                     <span class="value">{{ (agg.mediaPerimetro || agg.averagePerimeter || 0) | number:'1.5-5' }}</span>
                   </div>
                   <div class="mini-stat">
@@ -332,13 +332,13 @@
           <ion-grid>
             <ion-row>
               <ion-col>
-                <ion-button expand="block" fill="outline" color="danger" (click)="onDeleteAnalise(analiseDetalhada)">
+                <ion-button expand="block" fill="solid" color="danger" (click)="onDeleteAnalise(analiseDetalhada)">
                   <ion-icon slot="start" name="trash-outline"></ion-icon>
                   Excluir
                 </ion-button>
               </ion-col>
               <ion-col>
-                <ion-button expand="block" color="primary" (click)="exportarAnalise(analiseDetalhada)">
+                <ion-button expand="block" fill="solid" color="primary" (click)="exportarAnalise(analiseDetalhada)">
                   <ion-icon slot="start" name="download-outline"></ion-icon>
                   Exportar CSV
                 </ion-button>

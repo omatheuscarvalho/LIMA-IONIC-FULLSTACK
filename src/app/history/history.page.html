@@ -11,24 +11,6 @@
 
   <ion-card class="header-card">
     <ion-card-content>
-      <!-- Botões mobile: Selecionar e Capturar -->
-      <ion-grid class="mobile-image-buttons">
-        <ion-row>
-          <ion-col>
-            <ion-button expand="block" (click)="selecionarImagem()">
-              <ion-icon slot="start" name="image"></ion-icon>
-              Galeria
-            </ion-button>
-          </ion-col>
-          <ion-col>
-            <ion-button expand="block" color="medium" (click)="capturarImagem()">
-              <ion-icon slot="start" name="camera"></ion-icon>
-              Capturar
-            </ion-button>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-
       <ion-searchbar [(ngModel)]="searchTerm" placeholder="Buscar por espécie, tratamento..."
         debounce="300"></ion-searchbar>
 
@@ -144,11 +126,6 @@
       <ion-content class="modal-body" *ngIf="analiseDetalhada">
 
         <div *ngIf="selectedSegment === 'resumo'" class="fade-in">
-
-          <div class="detail-banner" *ngIf="getThumbnail(analiseDetalhada)">
-            <img [src]="getThumbnail(analiseDetalhada)" class="banner-img" (click)="abrirImagemAmpliada()"
-              style="cursor: pointer;" />
-          </div>
 
           <div class="ion-padding">
 

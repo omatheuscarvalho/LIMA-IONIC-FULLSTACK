@@ -367,13 +367,22 @@ export class HomePage {
     // para evitar reescrever entradas removidas a partir de outra tela
     this.carregarHistorico();
 
-    // Salva a imagem processada em sessionStorage antes de criar a análise
+    // Salva a imagem processada em storage separado antes de criar a análise
     const idAnalise = Date.now();
+    let imagemKey: string | null = null;
     if (this.imagemProcessada) {
+      imagemKey = `img_${idAnalise}`;
       try {
-        sessionStorage.setItem(`img_${idAnalise}`, this.imagemProcessada);
+        // tenta salvar em localStorage (persistente)
+        localStorage.setItem(imagemKey, this.imagemProcessada);
       } catch (e) {
-        console.warn('Erro ao salvar imagem em sessionStorage');
+        try {
+          // fallback para sessionStorage se localStorage estourar
+          sessionStorage.setItem(imagemKey, this.imagemProcessada);
+        } catch (e2) {
+          // se falhar também, prossegue sem imagem
+          imagemKey = null;
+        }
       }
     }
 
@@ -386,8 +395,8 @@ export class HomePage {
       nomeImagem: this.nomeImagem,
       areaEscala: this.areaEscala || null,
       resultados: [...this.resultados],
-      resultadosAgregados: this.resultadosAgregados ? { ...this.resultadosAgregados } : null
-      // Não salvar imagemProcessada - está em sessionStorage com chave img_${idAnalise}
+      resultadosAgregados: this.resultadosAgregados ? { ...this.resultadosAgregados } : null,
+      imagemKey: imagemKey
     };
     this.historico.unshift(analise);
     if (this.historico.length > 30) this.historico = this.historico.slice(0, 30);

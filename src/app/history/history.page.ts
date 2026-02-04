@@ -116,7 +116,7 @@ export class HistoryPage implements OnInit {
   imagemAmpliada: string | null = null;
 
   constructor(private router: Router, private alertController: AlertController) {
-    addIcons({image:imageIcon,camera,downloadOutline,trashOutline,trashBinOutline,close,createOutline,imageOutline,listOutline,closeOutline,analyticsOutline,documentTextOutline,closeCircle,checkmark,leafOutline,download,trash,closeCircleOutline,checkmarkCircleOutline,pencil,time,arrowBack,expand,contract});
+    addIcons({camera,downloadOutline,trashOutline,trashBinOutline,close,createOutline,imageOutline,listOutline,closeOutline,analyticsOutline,image:imageIcon,documentTextOutline,closeCircle,checkmark,leafOutline,download,trash,closeCircleOutline,checkmarkCircleOutline,pencil,time,arrowBack,expand,contract});
   }
 
   ngOnInit() {
@@ -192,24 +192,48 @@ export class HistoryPage implements OnInit {
 
   getThumbnail(analise: any): string | null {
     if (!analise) return null;
-    
-    // Primeiro tenta pegar do objeto (se já foi carregada)
+
+    // Primeiro tenta pegar do objeto (cache em memória)
     if (analise.imagemProcessada) return analise.imagemProcessada;
     if (analise.imagemBase64) return analise.imagemBase64;
     if (analise.imagem) return analise.imagem;
-    
-    // Tenta recuperar do sessionStorage
+
+    // Se existir referência para a chave de imagem, tenta recuperar do localStorage/sessionStorage
+    if (analise.imagemKey) {
+      try {
+        const imgLocal = localStorage.getItem(analise.imagemKey);
+        if (imgLocal) {
+          analise.imagemProcessada = imgLocal;
+          return imgLocal;
+        }
+      } catch (e) {
+        // Ignora erros de localStorage
+      }
+
+      try {
+        const imgSession = sessionStorage.getItem(analise.imagemKey);
+        if (imgSession) {
+          analise.imagemProcessada = imgSession;
+          return imgSession;
+        }
+      } catch (e) {
+        // Ignora erros de sessionStorage
+      }
+    }
+
+    // Fallback: tenta pegar por id (compatibilidade com versões antigas)
     try {
-      const img = sessionStorage.getItem(`img_${analise.id}`);
-      if (img) {
-        // Armazena no objeto para não precisar buscar novamente
-        analise.imagemProcessada = img;
-        return img;
+      const imgFallback = localStorage.getItem(`img_${analise.id}`) || sessionStorage.getItem(`img_${analise.id}`);
+      if (imgFallback) {
+        analise.imagemProcessada = imgFallback;
+        // também grava referencia para futuras leituras
+        analise.imagemKey = `img_${analise.id}`;
+        return imgFallback;
       }
     } catch (e) {
-      // Ignora erros ao acessar sessionStorage
+      // ignora
     }
-    
+
     return null;
   }
 

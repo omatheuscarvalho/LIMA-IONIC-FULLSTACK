@@ -5,6 +5,7 @@ import { AuthService } from './auth/auth.service';
 import { ThemeService } from './services/theme.service';
 
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { Capacitor } from '@capacitor/core';
 import { Platform } from '@ionic/angular';
 
 @Component({
@@ -40,10 +41,14 @@ export class AppComponent implements OnInit, AfterViewInit {
     // Garante que o app Ionic esteja pronto
     await this.platform.ready();
 
-    // Impedir que o conteúdo sobreponha a status bar
-    await StatusBar.setOverlaysWebView({ overlay: false });
-
-    // Ajustar estilo da barra (troque Style.Dark se quiser o inverso)
-    await StatusBar.setStyle({ style: Style.Dark });
+    // StatusBar só em plataformas nativas (verifica disponibilidade do plugin)
+    if (Capacitor.isPluginAvailable('StatusBar')) {
+      try {
+        await StatusBar.setOverlaysWebView({ overlay: false });
+        await StatusBar.setStyle({ style: Style.Dark });
+      } catch (e) {
+        // silenciar erros em ambiente web
+      }
+    }
   }
 }

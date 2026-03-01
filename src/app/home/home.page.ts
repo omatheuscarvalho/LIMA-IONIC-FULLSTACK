@@ -233,7 +233,7 @@ export class HomePage {
   // Clique no ícone de lixeira de uma única folha: abre confirmação sem acionar toggle
   onDeleteClick(id: number, event: Event) {
     event.stopPropagation();
-    this.presentFinalConfirmationAlert([id]);
+    this.presentFinalConfirmationAlert([id], `a folha ${id}`);
   }
 
   toggleAggregatedResults() {
@@ -289,7 +289,7 @@ export class HomePage {
           cssClass: 'alert-button-confirm',
           handler: async (selectedLeafIds: number[]) => {
             if (selectedLeafIds && selectedLeafIds.length) {
-              await this.presentFinalConfirmationAlert(selectedLeafIds);
+              await this.presentFinalConfirmationAlert(selectedLeafIds, `${selectedLeafIds.length} folha(s) selecionada(s)`);
             }
             return true;
           }
@@ -300,10 +300,10 @@ export class HomePage {
     await alert.present();
   }
 
-  private async presentFinalConfirmationAlert(idsToDelete: number[]) {
+  private async presentFinalConfirmationAlert(idsToDelete: number[], messageExtra: string) {
     const alert = await this.alertCtrl.create({
       header: 'Confirmar Exclusão',
-      message: `Tem certeza que deseja excluir ${idsToDelete.length} folha(s) selecionada(s)? Esta ação não pode ser desfeita.`,
+      message: `Tem certeza que deseja excluir ${messageExtra}? Esta ação não pode ser desfeita.`,
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
         {

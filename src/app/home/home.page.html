@@ -236,7 +236,7 @@
               <!-- Agregados -->
               <div *ngIf="medidasSelecionadas.somarAreas || medidasSelecionadas.mediaDesvio">
                 <ion-item class="leaf-item-card" button detail="false" lines="none" (click)="toggleAggregatedResults()">
-                  <ion-label>De todas as folhas</ion-label>
+                  <ion-label>Resumo de todas as folhas</ion-label>
                   <ion-icon slot="end" [name]="aggregatedResultsVisible ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
                 </ion-item>
 
@@ -277,7 +277,17 @@
                       <ion-label>Desvio do Comprimento:</ion-label>
                       <ion-note slot="end">{{ resultadosAgregados?.standardDeviationLength | number:'1.5-5' }} cm</ion-note>
                     </ion-item>
+                    <ion-item>
 
+                    <ion-label>Desvio da Área:</ion-label>
+                      <ion-note slot="end">{{ resultadosAgregados?.standardDeviationArea | number:'1.5-5' }} cm²</ion-note>
+                    </ion-item>
+
+                    <ion-item>
+                      <ion-label>Desvio do Perímetro:</ion-label>
+                      <ion-note slot="end">{{ resultadosAgregados?.standardDeviationPerimeter | number:'1.5-5' }} cm</ion-note>
+                    </ion-item>
+                    
                     <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento">
                       <ion-label>Média da Relação L/C:</ion-label>
                       <ion-note slot="end">{{ resultadosAgregados?.averageWidthToLengthRatio | number:'1.5-5' }}</ion-note>

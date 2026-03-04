@@ -3,19 +3,19 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
-import { 
-  IonBackButton, 
-  IonButton, 
-  IonButtons, 
-  IonCard, 
-  IonCardContent, 
-  IonContent, 
-  IonHeader, 
-  IonIcon, 
-  IonModal, 
+import {
+  IonBackButton,
+  IonButton,
+  IonButtons,
+  IonCard,
+  IonCardContent,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonModal,
   IonText,
-  IonTitle, 
-  IonToolbar, 
+  IonTitle,
+  IonToolbar,
   IonSearchbar,
   IonGrid,
   IonRow,
@@ -34,31 +34,32 @@ import {
   IonList
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { 
-  close, 
-  download, 
-  trash, 
-  time, 
-  pencil, 
-  checkmark, 
-  createOutline, 
-  closeCircleOutline, 
-  checkmarkCircleOutline, 
-  trashOutline, 
-  downloadOutline, 
-  trashBinOutline, 
-  analyticsOutline, 
-  leafOutline, 
+import {
+  close,
+  download,
+  trash,
+  time,
+  pencil,
+  checkmark,
+  createOutline,
+  closeCircleOutline,
+  checkmarkCircleOutline,
+  trashOutline,
+  downloadOutline,
+  trashBinOutline,
+  analyticsOutline,
+  leafOutline,
   documentTextOutline,
   closeCircle,
   arrowBack,
   imageOutline,
   listOutline,
   expand,
-  contract, 
-  closeOutline, 
+  contract,
+  closeOutline,
   camera,
-  image as imageIcon, checkmarkOutline } from 'ionicons/icons';
+  image as imageIcon, checkmarkOutline
+} from 'ionicons/icons';
 import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 
@@ -68,20 +69,20 @@ import { saveAs } from 'file-saver';
   styleUrls: ['./history.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    IonContent, 
-    IonHeader, 
-    IonTitle, 
-    IonToolbar, 
-    IonButtons, 
-    IonBackButton, 
-    IonCard, 
+    CommonModule,
+    FormsModule,
+    IonContent,
+    IonHeader,
+    IonTitle,
+    IonToolbar,
+    IonButtons,
+    IonBackButton,
+    IonCard,
     IonCardContent,
     IonText,
-    IonButton, 
-    IonIcon, 
-    IonModal, 
+    IonButton,
+    IonIcon,
+    IonModal,
     IonSearchbar,
     IonGrid,
     IonRow,
@@ -103,7 +104,7 @@ export class HistoryPage implements OnInit {
   filteredHistorico: any[] = []; // Adicionado para manter consistência com o HTML
   analiseDetalhada: any = null;
   searchTerm: string = '';
-  
+
   // edição do modal
   editingDetalhe: boolean = false;
   editModel: any = null;
@@ -115,7 +116,7 @@ export class HistoryPage implements OnInit {
   imagemAmpliada: string | null = null;
 
   constructor(private router: Router, private alertController: AlertController) {
-    addIcons({downloadOutline,trashOutline,trashBinOutline,close,createOutline,imageOutline,listOutline,closeOutline,checkmarkOutline,analyticsOutline,camera,image:imageIcon,documentTextOutline,closeCircle,checkmark,leafOutline,download,trash,closeCircleOutline,checkmarkCircleOutline,pencil,time,arrowBack,expand,contract});
+    addIcons({ downloadOutline, trashOutline, trashBinOutline, close, createOutline, imageOutline, listOutline, closeOutline, checkmarkOutline, analyticsOutline, camera, image: imageIcon, documentTextOutline, closeCircle, checkmark, leafOutline, download, trash, closeCircleOutline, checkmarkCircleOutline, pencil, time, arrowBack, expand, contract });
   }
 
   ngOnInit() {
@@ -127,11 +128,11 @@ export class HistoryPage implements OnInit {
     // Se o seu app usa 'historico', mantenha 'historico'. 
     // Vou usar um fallback para garantir.
     const historicoSalvo = localStorage.getItem('historico_analises') || localStorage.getItem('historico');
-    
+
     if (historicoSalvo) {
       try {
         this.historico = JSON.parse(historicoSalvo);
-        
+
         // Tenta recuperar as imagens do cache
         try {
           const imagensCache = sessionStorage.getItem('historico_imagens');
@@ -147,7 +148,7 @@ export class HistoryPage implements OnInit {
         } catch {
           // Ignora erros ao recuperar imagens do cache
         }
-        
+
         // Ordenar por data (mais recente primeiro)
         this.historico.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
       } catch (e) {
@@ -155,7 +156,7 @@ export class HistoryPage implements OnInit {
         this.historico = [];
       }
     }
-    
+
     // Inicializa a lista filtrada
     this.filteredHistorico = [...this.historico];
   }
@@ -170,13 +171,13 @@ export class HistoryPage implements OnInit {
       this.filteredHistorico = [...this.historico];
       return;
     }
-    
+
     const term = this.searchTerm.toLowerCase();
     this.filteredHistorico = this.historico.filter(h => {
       const especie = h.especie ? h.especie.toLowerCase() : '';
       const tratamento = h.tratamento ? h.tratamento.toLowerCase() : '';
       const nome = h.nomeImagem ? h.nomeImagem.toLowerCase() : '';
-      
+
       return especie.includes(term) || tratamento.includes(term) || nome.includes(term);
     });
   }
@@ -269,13 +270,13 @@ export class HistoryPage implements OnInit {
       message: `Deseja excluir esta análise (#${analise.id})? Esta ação não pode ser desfeita.`,
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
-        { 
-          text: 'Excluir', 
+        {
+          text: 'Excluir',
           role: 'destructive', // Estilo vermelho nativo do Ionic
           handler: () => {
             this.historico = this.historico.filter(h => h.id !== analise.id);
             this.atualizarStorage();
-            
+
             // Se a análise excluída for a que está aberta no modal, fecha o modal
             if (this.analiseDetalhada && this.analiseDetalhada.id === analise.id) {
               this.fecharDetalhes();
@@ -289,15 +290,15 @@ export class HistoryPage implements OnInit {
 
   async limparHistorico() {
     if (!this.historico || this.historico.length === 0) return;
-    
+
     const alert = await this.alertController.create({
       header: 'Limpar tudo',
       message: 'Deseja realmente apagar TODO o histórico? Esta ação não pode ser desfeita.',
       buttons: [
         { text: 'Cancelar', role: 'cancel' },
-        { 
-          text: 'Apagar Tudo', 
-          role: 'destructive', 
+        {
+          text: 'Apagar Tudo',
+          role: 'destructive',
           handler: () => {
             this.historico = [];
             this.filteredHistorico = [];
@@ -358,7 +359,7 @@ export class HistoryPage implements OnInit {
             resultadosAgregados: analise.resultadosAgregados,
             imagemProcessada: analise.imagemProcessada // Mantém a imagem para as miniaturas
           };
-          
+
           // Salva a imagem em sessionStorage também para backup
           if (analise.imagemProcessada) {
             try {
@@ -367,16 +368,16 @@ export class HistoryPage implements OnInit {
               // SessionStorage cheio, ignora
             }
           }
-          
+
           return copia;
         } catch {
           return analise;
         }
       });
-      
+
       // Salva na chave principal (com imagens)
       const dadosStr = JSON.stringify(dadosLimpos);
-      
+
       // Se ainda estiver muito grande, remove as análises mais antigas
       if (dadosStr.length > 5000000) { // ~5MB (aumentado para acomodar imagens)
         const dadosMenores = dadosLimpos.slice(0, 10);
@@ -384,11 +385,11 @@ export class HistoryPage implements OnInit {
       } else {
         localStorage.setItem('historico_analises', dadosStr);
       }
-      
+
       this.filtrar(); // Atualiza a visualização
     } catch (err: any) {
       console.error('Erro ao salvar histórico no localStorage:', err?.message || err);
-      
+
       // Estratégia de emergência: remove as análises mais antigas
       try {
         const dadosMenores = this.historico.slice(0, 5).map(a => ({
@@ -418,15 +419,24 @@ export class HistoryPage implements OnInit {
 
     // Preparar metadados
     const metadados = [
+      ['="========================================================"'],
+      ['                 RELATÓRIO DE ANÁLISE - L.I.M.A.         '],
+      ['="========================================================"'],
+      [''],
+      ['--- INFORMAÇÕES GERAIS ---'],
       ['L.I.M.A. - Relatório de Análise'],
-      ['ID', analise.id || ''],
-      ['Data', new Date(analise.data).toLocaleString()],
-      ['Imagem', analise.nomeImagem || ''],
+      ['ID de análise', analise.id || ''],
+      ['Data e Hora', new Date(analise.data).toLocaleString()],
+      ['Nome da Imagem', analise.nomeImagem || ''],
       ['Espécie', analise.especie || ''],
       ['Tratamento', analise.tratamento || ''],
       ['Réplica', analise.replica || ''],
       [`Área Padrão (${analise.unidade || 'cm'}²)`, analise.areaEscala || analise.scalePatternArea || ''],
-      [''] // Linha em branco
+      [''], // Linha em branco
+      ['="========================================================"'],
+      ['             1. MEDIÇÕES INDIVIDUAIS (POR FOLHA)         '],
+      ['="========================================================"'],
+      ['']
     ];
 
     // Preparar cabeçalho das colunas de dados
@@ -450,37 +460,40 @@ export class HistoryPage implements OnInit {
     // Adicionar estatísticas agregadas
     const linhasAgregadas = [];
     const agg = analise.resultadosAgregados;
-    
+
     if (agg) {
       linhasAgregadas.push(['']);
-      linhasAgregadas.push(['ESTATÍSTICAS AGREGADAS']);
+      linhasAgregadas.push(['="========================================================"']);
+      linhasAgregadas.push(['             2. ESTATÍSTICAS AGREGADAS (RESUMO)          ']);
+      linhasAgregadas.push(['="========================================================"']);
+      linhasAgregadas.push(['']);
       linhasAgregadas.push(['Parâmetro', 'Média', 'Desvio Padrão']);
-      
+
       // Helper para formatar número
       const fmt = (n: any) => (n !== undefined && n !== null) ? Number(n).toFixed(4).replace('.', ',') : '-';
-      
+
       // Verifica chaves novas (inglês) ou antigas (português)
       linhasAgregadas.push([
-        'Largura', 
-        fmt(agg.averageWidth || agg.mediaLargura), 
+        'Largura',
+        fmt(agg.averageWidth || agg.mediaLargura),
         fmt(agg.standardDeviationWidth || agg.desvioLargura)
       ]);
       linhasAgregadas.push([
-        'Comprimento', 
-        fmt(agg.averageLength || agg.mediaComprimento), 
+        'Comprimento',
+        fmt(agg.averageLength || agg.mediaComprimento),
         fmt(agg.standardDeviationLength || agg.desvioComprimento)
       ]);
       linhasAgregadas.push([
-        'Área', 
-        fmt(agg.averageArea || agg.mediaArea), 
+        'Área',
+        fmt(agg.averageArea || agg.mediaArea),
         fmt(agg.standardDeviationArea || agg.desvioArea)
       ]);
       linhasAgregadas.push([
-        'Perímetro', 
-        fmt(agg.averagePerimeter || agg.mediaPerimetro), 
+        'Perímetro',
+        fmt(agg.averagePerimeter || agg.mediaPerimetro),
         fmt(agg.standardDeviationPerimeter || agg.desvioPerimetro)
       ]);
-      
+
       linhasAgregadas.push(['']);
       linhasAgregadas.push(['Soma Total Áreas', fmt(agg.somaAreas || agg.totalArea)]);
     }
@@ -495,12 +508,12 @@ export class HistoryPage implements OnInit {
 
     // Converter para CSV
     const csv = Papa.unparse(dadosCompletos, { delimiter: ';' }); // Ponto e vírgula é melhor para Excel BR
-    
+
     // Criar arquivo
     const nomeLimpo = (analise.especie || 'analise').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const dataStr = new Date().toISOString().slice(0,10);
+    const dataStr = new Date().toISOString().slice(0, 10);
     const nomeArquivo = `LIMA_${nomeLimpo}_${analise.id}_${dataStr}.csv`;
-    
+
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, nomeArquivo);
   }
@@ -509,9 +522,9 @@ export class HistoryPage implements OnInit {
 
   toggleEditDetalhe() {
     if (!this.analiseDetalhada) return;
-    
+
     this.editingDetalhe = true;
-    
+
     // Copia os valores atuais para o modelo de edição
     this.editModel = {
       especie: this.analiseDetalhada.especie,
@@ -544,10 +557,10 @@ export class HistoryPage implements OnInit {
 
     // Atualiza no array
     this.historico[idx] = analiseAtualizada;
-    
+
     // Atualiza a visualização do modal
     this.analiseDetalhada = analiseAtualizada;
-    
+
     // Salva no storage
     this.atualizarStorage();
 

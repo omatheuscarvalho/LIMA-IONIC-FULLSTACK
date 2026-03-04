@@ -86,7 +86,7 @@ export class HomePage {
   isAnalyzing = false;
 
   visibleLeafDetails = new Set<number>();
-  aggregatedResultsVisible = false;
+  aggregatedResultsVisible = true;
   private usuarioAnterior: string | null = null;
 
   constructor(
@@ -146,7 +146,7 @@ export class HomePage {
     this.resultadosAgregados = null;
     this.isAnalyzing = false;
     this.visibleLeafDetails.clear();
-    this.aggregatedResultsVisible = false;
+    this.aggregatedResultsVisible = true;
   }
 
   selecionarImagem() {

@@ -88,286 +88,299 @@
     </ion-card-content>
   </ion-card>
 
-  <ion-modal [isOpen]="analiseDetalhada !== null" (didDismiss)="onModalDidDismiss($event)">
-    <ng-template>
-      <ion-header>
-        <ion-toolbar color="primary">
-          <ion-buttons slot="start">
-            <ion-button (click)="fecharDetalhes()">
-              <ion-icon slot="icon-only" name="close"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-          <ion-title>Análise Detalhada</ion-title>
-          <ion-buttons slot="end">
-            <ion-button *ngIf="!editingDetalhe && selectedSegment === 'resumo'" (click)="toggleEditDetalhe()">
-              <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-            </ion-button>
-            <ion-button *ngIf="editingDetalhe && selectedSegment === 'resumo'" (click)="saveEditDetalhe()"
-              color="secondary" strong>
-              Salvar
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
+</ion-content>
+<ion-modal [isOpen]="analiseDetalhada !== null" (didDismiss)="onModalDidDismiss($event)">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-buttons slot="start">
+          <ion-button (click)="fecharDetalhes()">
+            <ion-icon slot="icon-only" name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Análise Detalhada</ion-title>
+        <ion-buttons slot="end">
+          <ion-button *ngIf="!editingDetalhe && selectedSegment === 'resumo'" (click)="toggleEditDetalhe()">
+            <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+          </ion-button>
+          <ion-button *ngIf="editingDetalhe && selectedSegment === 'resumo'" (click)="saveEditDetalhe()"
+            color="secondary" strong>
+            Salvar
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
 
-        <ion-toolbar color="light">
-          <ion-segment [(ngModel)]="selectedSegment" value="resumo">
-            <ion-segment-button value="resumo">
-              <ion-icon name="image-outline"></ion-icon>
-              <ion-label>Resumo</ion-label>
-            </ion-segment-button>
-            <ion-segment-button value="folhas">
-              <ion-icon name="list-outline"></ion-icon>
-              <ion-label>Folhas ({{ analiseDetalhada?.resultados?.length || 0 }})</ion-label>
-            </ion-segment-button>
-          </ion-segment>
-        </ion-toolbar>
-      </ion-header>
+      <ion-toolbar color="light">
+        <ion-segment [(ngModel)]="selectedSegment" value="resumo">
+          <ion-segment-button value="resumo">
+            <ion-icon name="image-outline"></ion-icon>
+            <ion-label>Resumo</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="folhas">
+            <ion-icon name="list-outline"></ion-icon>
+            <ion-label>Folhas ({{ analiseDetalhada?.resultados?.length || 0 }})</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </ion-toolbar>
+    </ion-header>
 
-      <ion-content class="modal-body" *ngIf="analiseDetalhada">
+    <ion-content class="modal-body" *ngIf="analiseDetalhada">
 
-        <div *ngIf="selectedSegment === 'resumo'" class="fade-in">
+      <div *ngIf="selectedSegment === 'resumo'" class="fade-in">
 
-          <div class="ion-padding">
+        <div class="ion-padding">
 
-            <!-- Informações da Análise -->
-            <div class="analysis-info-section ion-margin-bottom">
-              <div class="analysis-info-card">
-                <div class="analysis-image-section">
-                  <div class="analysis-thumbnail">
-                    <img [src]="getThumbnail(analiseDetalhada)" *ngIf="getThumbnail(analiseDetalhada)"
-                      (click)="abrirImagemAmpliada()" style="cursor: pointer;" />
-                    <ion-icon name="image-outline" *ngIf="!getThumbnail(analiseDetalhada)" size="large"></ion-icon>
-                  </div>
-                </div>
-                <div class="analysis-details-section">
-                  <div *ngIf="!editingDetalhe">
-                    <h3 class="analysis-title">{{ analiseDetalhada.nomeImagem || 'Sem nome' }}</h3>
-                    <div class="analysis-detail-item">
-                      <span class="detail-label">Espécie:</span>
-                      <span class="detail-value">{{ analiseDetalhada.especie || '—' }}</span>
-                    </div>
-                    <div class="analysis-detail-item">
-                      <span class="detail-label">Tratamento:</span>
-                      <span class="detail-value">{{ analiseDetalhada.tratamento || '—' }}</span>
-                    </div>
-                    <div class="analysis-detail-item">
-                      <span class="detail-label">Réplica:</span>
-                      <span class="detail-value">{{ analiseDetalhada.replica || '—' }}</span>
-                    </div>
-                    <div class="analysis-detail-item">
-                      <span class="detail-label">Área Padrão:</span>
-                      <span class="detail-value">{{ analiseDetalhada.areaEscala | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm' }}²</span>
-                    </div>
-                  </div>
-
-                  <!-- Formulário de Edição -->
-                  <div *ngIf="editingDetalhe" class="edit-form">
-                    <h3 class="edit-title">Editar Informações da Amostra</h3>
-                    <ion-item lines="none" class="edit-item">
-                      <ion-label position="stacked">Espécie</ion-label>
-                      <ion-input [(ngModel)]="editModel.especie" placeholder="Digite a espécie"></ion-input>
-                    </ion-item>
-                    <ion-item lines="none" class="edit-item">
-                      <ion-label position="stacked">Tratamento</ion-label>
-                      <ion-input [(ngModel)]="editModel.tratamento" placeholder="Digite o tratamento"></ion-input>
-                    </ion-item>
-                    <ion-item lines="none" class="edit-item">
-                      <ion-label position="stacked">Réplica</ion-label>
-                      <ion-input [(ngModel)]="editModel.replica" placeholder="Digite a réplica"></ion-input>
-                    </ion-item>
-                    <div class="edit-actions">
-                      <ion-button fill="solid" color="medium" (click)="cancelEditDetalhe()">
-                        <ion-icon slot="start" name="close-outline"></ion-icon>
-                        Cancelar
-                      </ion-button>
-                      <ion-button fill="solid" color="primary" (click)="saveEditDetalhe()">
-                        <ion-icon slot="start" name="checkmark-outline"></ion-icon>
-                        Salvar
-                      </ion-button>
-                    </div>
-                  </div>
+          <!-- Informações da Análise -->
+          <div class="analysis-info-section ion-margin-bottom">
+            <div class="analysis-info-card">
+              <div class="analysis-image-section">
+                <div class="analysis-thumbnail">
+                  <img [src]="getThumbnail(analiseDetalhada)" *ngIf="getThumbnail(analiseDetalhada)"
+                    (click)="abrirImagemAmpliada()" style="cursor: pointer;" />
+                  <ion-icon name="image-outline" *ngIf="!getThumbnail(analiseDetalhada)" size="large"></ion-icon>
                 </div>
               </div>
-            </div>
-
-
-
-            <div *ngIf="analiseDetalhada.resultadosAgregados as agg" class="ion-margin-top">
-              <h3 class="section-title">Resumo Estatístico</h3>
-
-              <div class="stats-dashboard">
-                <div class="stat-card primary">
-                  <div class="stat-icon"><ion-icon name="analytics-outline"></ion-icon></div>
-                  <div class="stat-content">
-                    <span class="stat-label">Soma das Áreas</span>
-                    <span class="stat-value">{{ (agg.somaAreas || agg.totalArea || 0) | number:'1.5-5' }}
-                      <small>{{ analiseDetalhada.unidade || 'cm' }}²</small></span>
+              <div class="analysis-details-section">
+                <div *ngIf="!editingDetalhe">
+                  <h3 class="analysis-title">{{ analiseDetalhada.nomeImagem || 'Sem nome' }}</h3>
+                  <div class="analysis-detail-item">
+                    <span class="detail-label">Espécie:</span>
+                    <span class="detail-value">{{ analiseDetalhada.especie || '—' }}</span>
+                  </div>
+                  <div class="analysis-detail-item">
+                    <span class="detail-label">Tratamento:</span>
+                    <span class="detail-value">{{ analiseDetalhada.tratamento || '—' }}</span>
+                  </div>
+                  <div class="analysis-detail-item">
+                    <span class="detail-label">Réplica:</span>
+                    <span class="detail-value">{{ analiseDetalhada.replica || '—' }}</span>
+                  </div>
+                  <div class="analysis-detail-item">
+                    <span class="detail-label">Área Padrão:</span>
+                    <span class="detail-value">{{ analiseDetalhada.areaEscala | number:'1.5-5' }} {{
+                      analiseDetalhada.unidade || 'cm' }}²</span>
                   </div>
                 </div>
 
-                <h4 class="section-subtitle">Largura:</h4>
-
-                <div class="stat-grid">
-                  <div class="mini-stat">
-                    <span class="label">Média</span>
-                    <span class="value">{{ (agg.mediaLargura || agg.averageWidth || 0) | number:'1.5-5' }} <small>{{ analiseDetalhada.unidade || 'cm' }}</small></span>
-                  </div>
-                  <div class="mini-stat">
-                    <span class="label">Desvio Padrão</span>
-                    <span class="value">{{ (agg.desvioLargura || agg.standardDeviationWidth || 0) | number:'1.5-5' }} <small>{{ analiseDetalhada.unidade || 'cm' }}</small></span>
-                  </div>
-                </div>
-
-                <h4 class="section-subtitle">Comprimento:</h4>
-
-                <div class="stat-grid">
-                  <div class="mini-stat">
-                    <span class="label">Média</span>
-                    <span class="value">{{ (agg.mediaComprimento || agg.averageLength || 0) | number:'1.5-5' }} <small>{{ analiseDetalhada.unidade || 'cm' }}</small></span>
-                  </div>
-                  <div class="mini-stat">
-                    <span class="label">Desvio Padrão</span>
-                    <span class="value">{{ (agg.desvioComprimento || agg.standardDeviationLength || 0) | number:'1.5-5' }} <small>{{ analiseDetalhada.unidade || 'cm' }}</small></span>
-                  </div>
-                </div>
-
-                <h4 class="section-subtitle">Área:</h4>
-
-                <div class="stat-grid">
-                  <div class="mini-stat">
-                    <span class="label">Média</span>
-                    <span class="value">{{ (agg.mediaArea || agg.averageArea || 0) | number:'1.5-5' }} <small>{{ analiseDetalhada.unidade || 'cm' }}²</small></span>
-                  </div>
-                  <div class="mini-stat">
-                    <span class="label">Desvio Padrão</span>
-                    <span class="value">{{ (agg.desvioArea || agg.standardDeviationArea || 0) | number:'1.5-5' }} <small>{{ analiseDetalhada.unidade || 'cm' }}²</small></span>
+                <!-- Formulário de Edição -->
+                <div *ngIf="editingDetalhe" class="edit-form">
+                  <h3 class="edit-title">Editar Informações da Amostra</h3>
+                  <ion-item lines="none" class="edit-item">
+                    <ion-label position="stacked">Espécie</ion-label>
+                    <ion-input [(ngModel)]="editModel.especie" placeholder="Digite a espécie"></ion-input>
+                  </ion-item>
+                  <ion-item lines="none" class="edit-item">
+                    <ion-label position="stacked">Tratamento</ion-label>
+                    <ion-input [(ngModel)]="editModel.tratamento" placeholder="Digite o tratamento"></ion-input>
+                  </ion-item>
+                  <ion-item lines="none" class="edit-item">
+                    <ion-label position="stacked">Réplica</ion-label>
+                    <ion-input [(ngModel)]="editModel.replica" placeholder="Digite a réplica"></ion-input>
+                  </ion-item>
+                  <div class="edit-actions">
+                    <ion-button fill="solid" color="medium" (click)="cancelEditDetalhe()">
+                      <ion-icon slot="start" name="close-outline"></ion-icon>
+                      Cancelar
+                    </ion-button>
+                    <ion-button fill="solid" color="primary" (click)="saveEditDetalhe()">
+                      <ion-icon slot="start" name="checkmark-outline"></ion-icon>
+                      Salvar
+                    </ion-button>
                   </div>
                 </div>
-
-                <h4 class="section-subtitle">Perímetro:</h4>
-
-                <div class="stat-grid">
-                  <div class="mini-stat">
-                    <span class="label">Média</span>
-                    <span class="value">{{ (agg.mediaPerimetro || agg.averagePerimeter || 0) | number:'1.5-5' }} <small>{{ analiseDetalhada.unidade || 'cm' }}</small></span>
-                  </div>
-                  <div class="mini-stat">
-                    <span class="label">Desvio Padrão</span>
-                    <span class="value">{{ (agg.desvioPerimetro || agg.standardDeviationPerimeter || 0) | number:'1.5-5' }} <small>{{ analiseDetalhada.unidade || 'cm' }}</small></span>
-                  </div>
-                </div>
-
               </div>
             </div>
           </div>
-        </div>
 
-        <div *ngIf="selectedSegment === 'folhas'" class="fade-in">
-          <ion-list lines="none" *ngIf="analiseDetalhada.resultados?.length; else emptyResults">
+          <div *ngIf="analiseDetalhada.resultadosAgregados as agg" class="ion-margin-top">
+            <h3 class="section-title">Resumo Estatístico</h3>
 
-            <ion-accordion-group>
-              <ion-accordion *ngFor="let r of analiseDetalhada.resultados" [value]="'leaf_'+r.id">
-
-                <ion-item slot="header" color="light">
-                  <ion-badge slot="start" color="medium">{{ r.id }}</ion-badge>
-                  <ion-label>
-                    <h2>Folha {{ r.id }}</h2>
-                    <p>Área: {{ r.area | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm' }}²</p>
-                  </ion-label>
-                </ion-item>
-
-                <div class="ion-padding" slot="content">
-                  <ion-grid class="leaf-details-grid">
-                    <ion-row>
-                      <ion-col size="12">
-                        <div class="detail-box">
-                          <span class="lbl">Largura</span>
-                          <span class="val">{{ r.largura | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm' }}</span>
-                        </div>
-                      </ion-col>
-                      <ion-col size="12">
-                        <div class="detail-box">
-                          <span class="lbl">Comprimento</span>
-                          <span class="val">{{ r.comprimento | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm' }}</span>
-                        </div>
-                      </ion-col>
-                      <ion-col size="12">
-                        <div class="detail-box">
-                          <span class="lbl">Relação L/C</span>
-                          <span class="val">{{ r.relacaoLarguraComprimento | number:'1.5-5' }}</span>
-                        </div>
-                      </ion-col>
-                      <ion-col size="12">
-                        <div class="detail-box">
-                          <span class="lbl">Área</span>
-                          <span class="val">{{ r.area | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm' }}²</span>
-                        </div>
-                      </ion-col>
-                      <ion-col size="12">
-                        <div class="detail-box">
-                          <span class="lbl">Perímetro</span>
-                          <span class="val">{{ r.perimetro | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm' }}</span>
-                        </div>
-                      </ion-col>
-                    </ion-row>
-                  </ion-grid>
+            <div class="stats-dashboard">
+              <div class="stat-card primary">
+                <div class="stat-icon"><ion-icon name="analytics-outline"></ion-icon></div>
+                <div class="stat-content">
+                  <span class="stat-label">Soma das Áreas</span>
+                  <span class="stat-value">{{ (agg.somaAreas || agg.totalArea || 0) | number:'1.5-5' }}
+                    <small>{{ analiseDetalhada.unidade || 'cm' }}²</small></span>
                 </div>
+              </div>
 
-              </ion-accordion>
-            </ion-accordion-group>
-          </ion-list>
+              <h4 class="section-subtitle">Largura:</h4>
 
-          <ng-template #emptyResults>
-            <div class="ion-padding ion-text-center">
-              <ion-text color="medium">Não há medições individuais gravadas.</ion-text>
+              <div class="stat-grid">
+                <div class="mini-stat">
+                  <span class="label">Média</span>
+                  <span class="value">{{ (agg.mediaLargura || agg.averageWidth || 0) | number:'1.5-5' }} <small>{{
+                      analiseDetalhada.unidade || 'cm' }}</small></span>
+                </div>
+                <div class="mini-stat">
+                  <span class="label">Desvio Padrão</span>
+                  <span class="value">{{ (agg.desvioLargura || agg.standardDeviationWidth || 0) | number:'1.5-5' }}
+                    <small>{{ analiseDetalhada.unidade || 'cm' }}</small></span>
+                </div>
+              </div>
+
+              <h4 class="section-subtitle">Comprimento:</h4>
+
+              <div class="stat-grid">
+                <div class="mini-stat">
+                  <span class="label">Média</span>
+                  <span class="value">{{ (agg.mediaComprimento || agg.averageLength || 0) | number:'1.5-5' }}
+                    <small>{{ analiseDetalhada.unidade || 'cm' }}</small></span>
+                </div>
+                <div class="mini-stat">
+                  <span class="label">Desvio Padrão</span>
+                  <span class="value">{{ (agg.desvioComprimento || agg.standardDeviationLength || 0) |
+                    number:'1.5-5'
+                    }} <small>{{ analiseDetalhada.unidade || 'cm' }}</small></span>
+                </div>
+              </div>
+
+              <h4 class="section-subtitle">Área:</h4>
+
+              <div class="stat-grid">
+                <div class="mini-stat">
+                  <span class="label">Média</span>
+                  <span class="value">{{ (agg.mediaArea || agg.averageArea || 0) | number:'1.5-5' }} <small>{{
+                      analiseDetalhada.unidade || 'cm' }}²</small></span>
+                </div>
+                <div class="mini-stat">
+                  <span class="label">Desvio Padrão</span>
+                  <span class="value">{{ (agg.desvioArea || agg.standardDeviationArea || 0) | number:'1.5-5' }}
+                    <small>{{ analiseDetalhada.unidade || 'cm' }}²</small></span>
+                </div>
+              </div>
+
+              <h4 class="section-subtitle">Perímetro:</h4>
+
+              <div class="stat-grid">
+                <div class="mini-stat">
+                  <span class="label">Média</span>
+                  <span class="value">{{ (agg.mediaPerimetro || agg.averagePerimeter || 0) | number:'1.5-5' }}
+                    <small>{{ analiseDetalhada.unidade || 'cm' }}</small></span>
+                </div>
+                <div class="mini-stat">
+                  <span class="label">Desvio Padrão</span>
+                  <span class="value">{{ (agg.desvioPerimetro || agg.standardDeviationPerimeter || 0) |
+                    number:'1.5-5'
+                    }} <small>{{ analiseDetalhada.unidade || 'cm' }}</small></span>
+                </div>
+              </div>
+
             </div>
-          </ng-template>
+          </div>
         </div>
+      </div>
 
-        <div style="height: 60px"></div>
-      </ion-content>
+      <div *ngIf="selectedSegment === 'folhas'" class="fade-in">
+        <ion-list lines="none" *ngIf="analiseDetalhada.resultados?.length; else emptyResults">
 
-      <ion-footer>
-        <ion-toolbar>
-          <ion-grid>
-            <ion-row>
-              <ion-col>
-                <ion-button expand="block" fill="solid" color="danger" (click)="onDeleteAnalise(analiseDetalhada)">
-                  <ion-icon slot="start" name="trash-outline"></ion-icon>
-                  Excluir
-                </ion-button>
-              </ion-col>
-              <ion-col>
-                <ion-button expand="block" fill="solid" color="primary" (click)="exportarAnalise(analiseDetalhada)">
-                  <ion-icon slot="start" name="download-outline"></ion-icon>
-                  Exportar CSV
-                </ion-button>
-              </ion-col>
-            </ion-row>
-          </ion-grid>
-        </ion-toolbar>
-      </ion-footer>
-    </ng-template>
-  </ion-modal>
+          <ion-accordion-group>
+            <ion-accordion *ngFor="let r of analiseDetalhada.resultados" [value]="'leaf_'+r.id">
 
-  <!-- Modal para imagem ampliada -->
-  <ion-modal [isOpen]="imagemAmpliada !== null" (didDismiss)="fecharImagemAmpliada()">
-    <ng-template>
-      <ion-header>
-        <ion-toolbar color="primary">
-          <ion-buttons slot="start">
-            <ion-button (click)="fecharImagemAmpliada()">
-              <ion-icon slot="icon-only" name="close"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-          <ion-title>Imagem Ampliada</ion-title>
-        </ion-toolbar>
-      </ion-header>
+              <ion-item slot="header" color="light">
+                <ion-badge slot="start" color="medium">{{ r.id }}</ion-badge>
+                <ion-label>
+                  <h2>Folha {{ r.id }}</h2>
+                  <p>Área: {{ r.area | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm' }}²</p>
+                </ion-label>
+              </ion-item>
 
-      <ion-content class="ion-padding" style="text-align: center;">
-        <img [src]="imagemAmpliada" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
-      </ion-content>
-    </ng-template>
-  </ion-modal>
+              <div class="ion-padding" slot="content">
+                <ion-grid class="leaf-details-grid">
+                  <ion-row>
+                    <ion-col size="12">
+                      <div class="detail-box">
+                        <span class="lbl">Largura</span>
+                        <span class="val">{{ r.largura | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm'
+                          }}</span>
+                      </div>
+                    </ion-col>
+                    <ion-col size="12">
+                      <div class="detail-box">
+                        <span class="lbl">Comprimento</span>
+                        <span class="val">{{ r.comprimento | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm'
+                          }}</span>
+                      </div>
+                    </ion-col>
+                    <ion-col size="12">
+                      <div class="detail-box">
+                        <span class="lbl">Relação L/C</span>
+                        <span class="val">{{ r.relacaoLarguraComprimento | number:'1.5-5' }}</span>
+                      </div>
+                    </ion-col>
+                    <ion-col size="12">
+                      <div class="detail-box">
+                        <span class="lbl">Área</span>
+                        <span class="val">{{ r.area | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm'
+                          }}²</span>
+                      </div>
+                    </ion-col>
+                    <ion-col size="12">
+                      <div class="detail-box">
+                        <span class="lbl">Perímetro</span>
+                        <span class="val">{{ r.perimetro | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm'
+                          }}</span>
+                      </div>
+                    </ion-col>
+                  </ion-row>
+                </ion-grid>
+              </div>
 
-</ion-content>
+            </ion-accordion>
+          </ion-accordion-group>
+        </ion-list>
+
+        <ng-template #emptyResults>
+          <div class="ion-padding ion-text-center">
+            <ion-text color="medium">Não há medições individuais gravadas.</ion-text>
+          </div>
+        </ng-template>
+      </div>
+
+      <div style="height: 60px"></div>
+    </ion-content>
+
+    <ion-footer class="ion-padding-bottom">
+      <ion-toolbar>
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-button expand="block" fill="solid" color="danger" (click)="onDeleteAnalise(analiseDetalhada)">
+                <ion-icon slot="start" name="trash-outline"></ion-icon>
+                Excluir
+              </ion-button>
+            </ion-col>
+            <ion-col>
+              <ion-button expand="block" fill="solid" color="primary" (click)="exportarAnalise(analiseDetalhada)">
+                <ion-icon slot="start" name="download-outline"></ion-icon>
+                Exportar CSV
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-toolbar>
+    </ion-footer>
+
+  </ng-template>
+</ion-modal>
+
+<!-- Modal para imagem ampliada -->
+<ion-modal [isOpen]="imagemAmpliada !== null" (didDismiss)="fecharImagemAmpliada()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-buttons slot="start">
+          <ion-button (click)="fecharImagemAmpliada()">
+            <ion-icon slot="icon-only" name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Imagem Ampliada</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding" style="text-align: center;">
+      <img [src]="imagemAmpliada" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+    </ion-content>
+  </ng-template>
+</ion-modal>

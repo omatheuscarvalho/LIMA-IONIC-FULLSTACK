@@ -35,7 +35,7 @@
 
   <div class="ion-padding main-container">
     <ion-grid>
-      <ion-row >
+      <ion-row>
 
         <ion-col size="12" size-md="7" class="config-column">
 
@@ -71,10 +71,31 @@
                 </ion-row>
               </ion-grid>
 
-              <ion-item class="compact-item">
-                <ion-label position="stacked">Área do Padrão de Escala (cm²):</ion-label>
-                <ion-input [(ngModel)]="areaEscala" type="number" placeholder="Digite a área do padrão" required></ion-input>
-              </ion-item>
+
+
+              <ion-grid >
+                <ion-row>
+                  <ion-col size="12" size-md="8">
+                    <ion-item class="compact-item">
+                      <ion-label position="stacked">Área do Padrão:</ion-label>
+                      <ion-input [(ngModel)]="areaEscala" type="number" placeholder="Digite a área"
+                        required></ion-input>
+                    </ion-item>
+                  </ion-col>
+
+                  <ion-col size="12" size-md="4">
+                    <ion-list>
+                      <ion-item class="compact-item">
+                        <ion-select [(ngModel)]="unidade" label="Unidade de Medida" label-placement="floating">
+                          <ion-select-option value="cm">cm²</ion-select-option>
+                          <ion-select-option value="mm">mm²</ion-select-option>
+                        </ion-select>
+                      </ion-item>
+                    </ion-list>
+                  </ion-col>
+
+                </ion-row>
+              </ion-grid>
 
               <ion-label class="section-label">Medidas a Calcular:</ion-label>
 
@@ -162,29 +183,25 @@
               <div class="results-header">
                 <ion-card-title>Resultados</ion-card-title>
 
-              <ion-buttons>
-              <ion-button fill="clear" (click)="navegarParaHistorico()">
-                <ion-icon name="time"></ion-icon>
-                Histórico
-              </ion-button>
+                <ion-buttons>
+                  <ion-button fill="clear" (click)="navegarParaHistorico()">
+                    <ion-icon name="time"></ion-icon>
+                    Histórico
+                  </ion-button>
 
-              <ion-button fill="clear" (click)="navegarParaAjuda()">
-                <ion-icon name="help"></ion-icon>
-                Ajuda
-              </ion-button>
+                  <ion-button fill="clear" (click)="navegarParaAjuda()">
+                    <ion-icon name="help"></ion-icon>
+                    Ajuda
+                  </ion-button>
 
-              <ion-button
-                fill="clear"
-                color="danger"
-                (click)="presentDeleteSelectionAlert()"
-                *ngIf="resultados.length > 0"
-              >
-              <ion-icon name="trash"></ion-icon>
-                Excluir
-              </ion-button>
-            </ion-buttons>
-            </div>
-          </ion-card-header>
+                  <ion-button fill="clear" color="danger" (click)="presentDeleteSelectionAlert()"
+                    *ngIf="resultados.length > 0">
+                    <ion-icon name="trash"></ion-icon>
+                    Excluir
+                  </ion-button>
+                </ion-buttons>
+              </div>
+            </ion-card-header>
 
 
             <ion-card-content>
@@ -195,7 +212,8 @@
                   <ion-label>Folha {{ r.id }}</ion-label>
 
                   <!-- toggle de expandir/contraír -->
-                  <ion-icon slot="end" [name]="visibleLeafDetails.has(r.id) ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+                  <ion-icon slot="end"
+                    [name]="visibleLeafDetails.has(r.id) ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
 
                   <!-- botão de excluir rápido (para cada folha) (posicionado no fim) -->
                   <ion-button slot="end" fill="clear" color="danger" (click)="onDeleteClick(r.id, $event)">
@@ -207,12 +225,12 @@
 
                   <ion-item *ngIf="medidasSelecionadas.largura">
                     <ion-label>Largura:</ion-label>
-                    <ion-note slot="end">{{ r.largura | number:'1.5-5' }} cm</ion-note>
+                    <ion-note slot="end">{{ r.largura | number:'1.5-5' }} {{ unidade }}</ion-note>
                   </ion-item>
 
                   <ion-item *ngIf="medidasSelecionadas.comprimento">
                     <ion-label>Comprimento:</ion-label>
-                    <ion-note slot="end">{{ r.comprimento | number:'1.5-5' }} cm</ion-note>
+                    <ion-note slot="end">{{ r.comprimento | number:'1.5-5' }} {{ unidade }}</ion-note>
                   </ion-item>
 
                   <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento">
@@ -222,12 +240,12 @@
 
                   <ion-item *ngIf="medidasSelecionadas.area">
                     <ion-label>Área:</ion-label>
-                    <ion-note slot="end">{{ r.area | number:'1.5-5' }} cm²</ion-note>
+                    <ion-note slot="end">{{ r.area | number:'1.5-5' }} {{ unidade }}²</ion-note>
                   </ion-item>
 
                   <ion-item *ngIf="medidasSelecionadas.perimetro">
                     <ion-label>Perímetro:</ion-label>
-                    <ion-note slot="end">{{ r.perimetro | number:'1.5-5' }} cm</ion-note>
+                    <ion-note slot="end">{{ r.perimetro | number:'1.5-5' }} {{ unidade }}</ion-note>
                   </ion-item>
 
                 </ion-list>
@@ -237,60 +255,66 @@
               <div *ngIf="medidasSelecionadas.somarAreas || medidasSelecionadas.mediaDesvio">
                 <ion-item class="leaf-item-card" button detail="false" lines="none" (click)="toggleAggregatedResults()">
                   <ion-label>Resumo de todas as folhas</ion-label>
-                  <ion-icon slot="end" [name]="aggregatedResultsVisible ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+                  <ion-icon slot="end"
+                    [name]="aggregatedResultsVisible ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
                 </ion-item>
 
                 <ion-list class="leaf-details-list" *ngIf="aggregatedResultsVisible">
 
                   <ion-item *ngIf="medidasSelecionadas.somarAreas">
                     <ion-label>Soma Total das Áreas:</ion-label>
-                    <ion-note slot="end">{{ resultadosAgregados?.totalArea | number:'1.2-2' }} cm²</ion-note>
+                    <ion-note slot="end">{{ resultadosAgregados?.totalArea | number:'1.2-2' }} {{ unidade }}²</ion-note>
                   </ion-item>
 
                   <ng-container *ngIf="medidasSelecionadas.mediaDesvio">
                     <ion-item>
                       <ion-label>Média da Largura:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados?.averageWidth | number:'1.5-5' }} cm</ion-note>
+                      <ion-note slot="end">{{ resultadosAgregados?.averageWidth | number:'1.5-5' }} {{ unidade }}</ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label>Média do Comprimento:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados?.averageLength | number:'1.5-5' }} cm</ion-note>
+                      <ion-note slot="end">{{ resultadosAgregados?.averageLength | number:'1.5-5' }} {{ unidade }}</ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label>Média da Área:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados?.averageArea | number:'1.5-5' }} cm²</ion-note>
+                      <ion-note slot="end">{{ resultadosAgregados?.averageArea | number:'1.5-5' }} {{ unidade }}²</ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label>Média do Perímetro:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados?.averagePerimeter | number:'1.5-5' }} cm</ion-note>
+                      <ion-note slot="end">{{ resultadosAgregados?.averagePerimeter | number:'1.5-5' }} {{ unidade }}</ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label>Desvio da Largura:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados?.standardDeviationWidth | number:'1.5-5' }} cm</ion-note>
+                      <ion-note slot="end">{{ resultadosAgregados?.standardDeviationWidth | number:'1.5-5' }}
+                        {{ unidade }}</ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label>Desvio do Comprimento:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados?.standardDeviationLength | number:'1.5-5' }} cm</ion-note>
+                      <ion-note slot="end">{{ resultadosAgregados?.standardDeviationLength | number:'1.5-5' }}
+                        {{ unidade }}</ion-note>
                     </ion-item>
                     <ion-item>
 
-                    <ion-label>Desvio da Área:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados?.standardDeviationArea | number:'1.5-5' }} cm²</ion-note>
+                      <ion-label>Desvio da Área:</ion-label>
+                      <ion-note slot="end">{{ resultadosAgregados?.standardDeviationArea | number:'1.5-5' }}
+                        {{ unidade }}²</ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label>Desvio do Perímetro:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados?.standardDeviationPerimeter | number:'1.5-5' }} cm</ion-note>
+                      <ion-note slot="end">{{ resultadosAgregados?.standardDeviationPerimeter | number:'1.5-5' }}
+                        {{ unidade }}</ion-note>
                     </ion-item>
-                    
+
                     <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento">
                       <ion-label>Média da Relação L/C:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados?.averageWidthToLengthRatio | number:'1.5-5' }}</ion-note>
+                      <ion-note slot="end">{{ resultadosAgregados?.averageWidthToLengthRatio | number:'1.5-5'
+                        }}</ion-note>
                     </ion-item>
                   </ng-container>
 
@@ -303,7 +327,8 @@
                 <ion-text color="medium">Nenhum resultado disponível</ion-text>
               </div>
 
-              <ion-button expand="block" color="tertiary" class="export-button" [disabled]="resultados.length === 0" (click)="exportarResultados()">
+              <ion-button expand="block" color="tertiary" class="export-button" [disabled]="resultados.length === 0"
+                (click)="exportarResultados()">
                 <ion-icon slot="start" name="download"></ion-icon>
                 Exportar Resultados
               </ion-button>

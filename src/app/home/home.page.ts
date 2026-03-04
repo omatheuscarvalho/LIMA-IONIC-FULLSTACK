@@ -4,7 +4,7 @@ import {
   IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
   IonCol, IonContent, IonGrid, IonTitle, IonHeader, IonIcon, IonInput, IonItem, IonLabel,
   IonNote, IonRow, IonToolbar, IonImg, IonText, IonList, IonCheckbox,
-  IonSpinner, AlertController, AlertInput
+  IonSpinner, AlertController, AlertInput, IonSelect, IonSelectOption
 } from '@ionic/angular/standalone';
 import { DOCUMENT, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -36,7 +36,7 @@ type MedidaKey =
     IonHeader, IonToolbar, IonTitle, IonContent, FormsModule, CommonModule, IonCard,
     IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton,
     IonIcon, IonNote, IonButtons, IonGrid, IonRow, IonCol, IonImg, IonText, IonList,
-    IonCheckbox, IonSpinner
+    IonCheckbox, IonSpinner, IonSelect, IonSelectOption
   ],
 })
 export class HomePage {
@@ -45,6 +45,7 @@ export class HomePage {
   tratamento = '';
   replica = '';
   areaEscala = 1;
+  unidade = 'cm';
 
   // Lista tipada de medidas (usada no template com *ngFor)
   medidasOptions: { key: MedidaKey; label: string }[] = [
@@ -394,6 +395,7 @@ export class HomePage {
       replica: (this.replica && this.replica.trim() !== '') ? this.replica : 'Não informada',
       nomeImagem: this.nomeImagem,
       areaEscala: this.areaEscala || null,
+      unidade: this.unidade,
       resultados: [...this.resultados],
       resultadosAgregados: this.resultadosAgregados ? { ...this.resultadosAgregados } : null,
       imagemKey: imagemKey
@@ -456,20 +458,20 @@ export class HomePage {
     // Cabeçalhos
     const header = [
       'Folha',
-      'Área (cm²)',
-      'Perímetro (cm)',
-      'Comprimento (cm)',
-      'Largura (cm)',
+      `Área (${this.unidade}²)`,
+      `Perímetro (${this.unidade})`,
+      `Comprimento (${this.unidade})`,
+      `Largura (${this.unidade})`,
       'Relação L/C'
     ];
 
     // Linhas individuais
     const linhas = this.resultados.map(r => ({
       Folha: `Folha ${r.id}`,
-      'Área (cm²)': r.area ?? '',
-      'Perímetro (cm)': r.perimetro ?? '',
-      'Comprimento (cm)': r.comprimento ?? '',
-      'Largura (cm)': r.largura ?? '',
+      [`Área (${this.unidade}²)`]: r.area ?? '',
+      [`Perímetro (${this.unidade})`]: r.perimetro ?? '',
+      [`Comprimento (${this.unidade})`]: r.comprimento ?? '',
+      [`Largura (${this.unidade})`]: r.largura ?? '',
       'Relação L/C': r.relacaoLarguraComprimento ?? ''
     }));
 
@@ -489,10 +491,10 @@ export class HomePage {
       agregados.push(['---- Estatísticas Agregadas ----']);
 
       if (this.medidasSelecionadas.somarAreas) {
-        agregados.push(['Soma Total das Áreas (cm²)', this.resultadosAgregados?.totalArea ?? 0]);
+        agregados.push(['Soma Total das Áreas (' + this.unidade + '²)', this.resultadosAgregados?.totalArea ?? 0]);
       }
       if (this.medidasSelecionadas.mediaDesvio) {
-        agregados.push(['Média da Área (cm²)', this.resultadosAgregados?.averageArea ?? 0]);
+        agregados.push(['Média da Área (' + this.unidade + '²)', this.resultadosAgregados?.averageArea ?? 0]);
         agregados.push(['Média da Relação L/C', this.resultadosAgregados?.averageWidthToLengthRatio ?? 0]);
         agregados.push(['Desvio Padrão (Área)', this.resultadosAgregados?.standardDeviationArea ?? 0]);
       }

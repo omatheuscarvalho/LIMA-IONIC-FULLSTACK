@@ -353,6 +353,7 @@ export class HistoryPage implements OnInit {
             replica: analise.replica,
             nomeImagem: analise.nomeImagem,
             areaEscala: analise.areaEscala,
+            unidade: analise.unidade,
             resultados: analise.resultados,
             resultadosAgregados: analise.resultadosAgregados,
             imagemProcessada: analise.imagemProcessada // Mantém a imagem para as miniaturas
@@ -398,6 +399,7 @@ export class HistoryPage implements OnInit {
           replica: a.replica,
           nomeImagem: a.nomeImagem,
           areaEscala: a.areaEscala,
+          unidade: a.unidade,
           resultados: a.resultados,
           resultadosAgregados: a.resultadosAgregados,
           imagemProcessada: a.imagemProcessada // Mantém a imagem mesmo na emergência
@@ -423,12 +425,12 @@ export class HistoryPage implements OnInit {
       ['Espécie', analise.especie || ''],
       ['Tratamento', analise.tratamento || ''],
       ['Réplica', analise.replica || ''],
-      ['Área Padrão (cm²)', analise.areaEscala || analise.scalePatternArea || ''],
+      [`Área Padrão (${analise.unidade || 'cm'}²)`, analise.areaEscala || analise.scalePatternArea || ''],
       [''] // Linha em branco
     ];
 
     // Preparar cabeçalho das colunas de dados
-    const cabecalhoDados = ['Folha', 'Área (cm²)', 'Perímetro (cm)', 'Comprimento (cm)', 'Largura (cm)', 'Relação L/C'];
+    const cabecalhoDados = ['Folha', `Área (${analise.unidade || 'cm'}²)`, `Perímetro (${analise.unidade || 'cm'})`, `Comprimento (${analise.unidade || 'cm'})`, `Largura (${analise.unidade || 'cm'})`, 'Relação L/C'];
 
     // Preparar linhas de dados individuais
     let linhasDados: any[] = [];

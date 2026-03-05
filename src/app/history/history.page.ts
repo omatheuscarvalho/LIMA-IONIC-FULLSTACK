@@ -62,6 +62,7 @@ import {
 } from 'ionicons/icons';
 import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
+import { StorageService } from '../services/storage.service';
 
 @Component({
   selector: 'app-history',
@@ -115,7 +116,11 @@ export class HistoryPage implements OnInit {
   // Modal de imagem ampliada
   imagemAmpliada: string | null = null;
 
-  constructor(private router: Router, private alertController: AlertController) {
+  constructor(
+    private router: Router, 
+    private alertController: AlertController,
+    private storageService: StorageService
+  ) {
     addIcons({ downloadOutline, trashOutline, trashBinOutline, close, createOutline, imageOutline, listOutline, closeOutline, checkmarkOutline, analyticsOutline, camera, image: imageIcon, documentTextOutline, closeCircle, checkmark, leafOutline, download, trash, closeCircleOutline, checkmarkCircleOutline, pencil, time, arrowBack, expand, contract });
   }
 
@@ -123,39 +128,27 @@ export class HistoryPage implements OnInit {
     this.carregarHistorico();
   }
 
-  carregarHistorico() {
-    // Usando a chave correta 'historico_analises' que definimos na Home anteriormente
-    // Se o seu app usa 'historico', mantenha 'historico'. 
-    // Vou usar um fallback para garantir.
-    const historicoSalvo = localStorage.getItem('historico_analises') || localStorage.getItem('historico');
+  async carregarHistorico() {
+    // Carrega análises do StorageService (já com lógica otimizada)
+    this.historico = this.storageService.carregarAnalises();
 
-    if (historicoSalvo) {
-      try {
-        this.historico = JSON.parse(historicoSalvo);
-
-        // Tenta recuperar as imagens do cache
+    // Para cada análise, carrega a imagem do IndexedDB se necessário
+    for (const analise of this.historico) {
+      // Se não tem thumbnail mas tem imagemKey, tenta recuperar do IndexedDB
+      if (analise.imagemKey && !analise.imagemProcessada) {
         try {
-          const imagensCache = sessionStorage.getItem('historico_imagens');
-          if (imagensCache) {
-            const imagens = JSON.parse(imagensCache);
-            this.historico.forEach((analise: any) => {
-              // Se a análise não tem imagem, tenta restaurar do cache
-              if ((!analise.imagemProcessada && !analise.imagemBase64 && !analise.imagem) && imagens[analise.id]) {
-                analise.imagemProcessada = imagens[analise.id];
-              }
-            });
+          const imagemAlta = await this.storageService.recuperarImagemAlta(analise.imagemKey);
+          if (imagemAlta) {
+            analise.imagemProcessada = imagemAlta;
           }
-        } catch {
-          // Ignora erros ao recuperar imagens do cache
+        } catch (e) {
+          console.warn(`Falha ao recuperar imagem ${analise.imagemKey}:`, e);
         }
-
-        // Ordenar por data (mais recente primeiro)
-        this.historico.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
-      } catch (e) {
-        console.error('Erro ao fazer parse do histórico', e);
-        this.historico = [];
       }
     }
+
+    // Ordenar por data (mais recente primeiro)
+    this.historico.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
 
     // Inicializa a lista filtrada
     this.filteredHistorico = [...this.historico];
@@ -198,40 +191,25 @@ export class HistoryPage implements OnInit {
     if (analise.imagemBase64) return analise.imagemBase64;
     if (analise.imagem) return analise.imagem;
 
-    // Se existir referência para a chave de imagem, tenta recuperar do localStorage/sessionStorage
-    if (analise.imagemKey) {
-      try {
-        const imgLocal = localStorage.getItem(analise.imagemKey);
-        if (imgLocal) {
-          analise.imagemProcessada = imgLocal;
-          return imgLocal;
-        }
-      } catch (e) {
-        // Ignora erros de localStorage
-      }
-
-      try {
-        const imgSession = sessionStorage.getItem(analise.imagemKey);
-        if (imgSession) {
-          analise.imagemProcessada = imgSession;
-          return imgSession;
-        }
-      } catch (e) {
-        // Ignora erros de sessionStorage
-      }
+    // Usa o thumbnail otimizado se disponível (muito menor)
+    if (analise.imagemThumbnail) {
+      return analise.imagemThumbnail;
     }
 
-    // Fallback: tenta pegar por id (compatibilidade com versões antigas)
-    try {
-      const imgFallback = localStorage.getItem(`img_${analise.id}`) || sessionStorage.getItem(`img_${analise.id}`);
-      if (imgFallback) {
-        analise.imagemProcessada = imgFallback;
-        // também grava referencia para futuras leituras
-        analise.imagemKey = `img_${analise.id}`;
-        return imgFallback;
-      }
-    } catch (e) {
-      // ignora
+    // Se tem imagemKey, carrega do IndexedDB de forma assíncrona
+    if (analise.imagemKey && !analise._loadingImage) {
+      analise._loadingImage = true; // Marca como carregando para evitar loops
+      
+      this.storageService.recuperarImagemAlta(analise.imagemKey)
+        .then(imagemAlta => {
+          if (imagemAlta) {
+            analise.imagemProcessada = imagemAlta;
+            analise._loadingImage = false;
+          }
+        })
+        .catch(() => {
+          analise._loadingImage = false;
+        });
     }
 
     return null;
@@ -273,9 +251,20 @@ export class HistoryPage implements OnInit {
         {
           text: 'Excluir',
           role: 'destructive', // Estilo vermelho nativo do Ionic
-          handler: () => {
+          handler: async () => {
+            // Remove a imagem do IndexedDB se existir
+            if (analise.imagemKey) {
+              try {
+                await this.storageService.deletarImagem(analise.imagemKey);
+                console.log(`🗑️ Imagem ${analise.imagemKey} removida do IndexedDB`);
+              } catch (e) {
+                console.warn('Falha ao remover imagem do IndexedDB:', e);
+              }
+            }
+
+            // Remove a análise do histórico
             this.historico = this.historico.filter(h => h.id !== analise.id);
-            this.atualizarStorage();
+            await this.atualizarStorage();
 
             // Se a análise excluída for a que está aberta no modal, fecha o modal
             if (this.analiseDetalhada && this.analiseDetalhada.id === analise.id) {
@@ -299,12 +288,27 @@ export class HistoryPage implements OnInit {
         {
           text: 'Apagar Tudo',
           role: 'destructive',
-          handler: () => {
+          handler: async () => {
+            // Remove todas as imagens do IndexedDB
+            for (const analise of this.historico) {
+              if (analise.imagemKey) {
+                try {
+                  await this.storageService.deletarImagem(analise.imagemKey);
+                } catch (e) {
+                  console.warn(`Falha ao remover imagem ${analise.imagemKey}:`, e);
+                }
+              }
+            }
+
+            // Limpa tudo usando o StorageService
+            this.storageService.limparLocalStorageCompletamente();
+            
+            // Limpa as variáveis locais
             this.historico = [];
             this.filteredHistorico = [];
-            localStorage.removeItem('historico_analises');
-            localStorage.removeItem('historico'); // Limpa a chave legado também
             this.analiseDetalhada = null;
+            
+            console.log('✅ Histórico completamente limpo');
           }
         }
       ]
@@ -340,77 +344,20 @@ export class HistoryPage implements OnInit {
     this.imagemAmpliada = null;
   }
 
-  atualizarStorage() {
+  async atualizarStorage() {
     try {
-      // Sanitiza os dados antes de salvar (mantém imagens para exibir miniaturas)
-      const dadosLimpos = this.historico.map(analise => {
-        try {
-          // Cria uma cópia com os dados essenciais, incluindo a imagem
-          const copia: any = {
-            id: analise.id,
-            data: analise.data,
-            especie: analise.especie,
-            tratamento: analise.tratamento,
-            replica: analise.replica,
-            nomeImagem: analise.nomeImagem,
-            areaEscala: analise.areaEscala,
-            unidade: analise.unidade,
-            resultados: analise.resultados,
-            resultadosAgregados: analise.resultadosAgregados,
-            imagemProcessada: analise.imagemProcessada // Mantém a imagem para as miniaturas
-          };
-
-          // Salva a imagem em sessionStorage também para backup
-          if (analise.imagemProcessada) {
-            try {
-              sessionStorage.setItem(`img_${analise.id}`, analise.imagemProcessada);
-            } catch {
-              // SessionStorage cheio, ignora
-            }
-          }
-
-          return copia;
-        } catch {
-          return analise;
-        }
-      });
-
-      // Salva na chave principal (com imagens)
-      const dadosStr = JSON.stringify(dadosLimpos);
-
-      // Se ainda estiver muito grande, remove as análises mais antigas
-      if (dadosStr.length > 5000000) { // ~5MB (aumentado para acomodar imagens)
-        const dadosMenores = dadosLimpos.slice(0, 10);
-        localStorage.setItem('historico_analises', JSON.stringify(dadosMenores));
+      // Usa o StorageService para salvar (j\u00e1 com l\u00f3gica otimizada e IndexedDB)
+      const sucesso = await this.storageService.salvarAnalises(this.historico as any);
+      
+      if (sucesso) {
+        console.log('\u2705 Hist\u00f3rico atualizado com sucesso');
       } else {
-        localStorage.setItem('historico_analises', dadosStr);
+        console.warn('\u26a0\ufe0f Falha ao salvar hist\u00f3rico, mas dados est\u00e3o em mem\u00f3ria');
       }
-
-      this.filtrar(); // Atualiza a visualização
+      
+      this.filtrar(); // Atualiza a visualiza\u00e7\u00e3o
     } catch (err: any) {
-      console.error('Erro ao salvar histórico no localStorage:', err?.message || err);
-
-      // Estratégia de emergência: remove as análises mais antigas
-      try {
-        const dadosMenores = this.historico.slice(0, 5).map(a => ({
-          id: a.id,
-          data: a.data,
-          especie: a.especie,
-          tratamento: a.tratamento,
-          replica: a.replica,
-          nomeImagem: a.nomeImagem,
-          areaEscala: a.areaEscala,
-          unidade: a.unidade,
-          resultados: a.resultados,
-          resultadosAgregados: a.resultadosAgregados,
-          imagemProcessada: a.imagemProcessada // Mantém a imagem mesmo na emergência
-        }));
-        localStorage.setItem('historico_analises', JSON.stringify(dadosMenores));
-      } catch (e2) {
-        console.error('Erro crítico ao salvar histórico');
-        // Último recurso: limpa tudo
-        localStorage.removeItem('historico_analises');
-      }
+      console.error('Erro ao salvar hist\u00f3rico:', err?.message || err);
     }
   }
 

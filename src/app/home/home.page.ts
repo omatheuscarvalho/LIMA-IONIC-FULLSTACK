@@ -11,13 +11,15 @@ import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import {
   camera, download, help, home, moon, sunny, time,
-  trash, logOut, person, calculator, image as imageIcon
+  trash, logOut, person, calculator, image as imageIcon, chevronDownOutline
 } from 'ionicons/icons';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 
 import { AuthService } from '../auth/auth.service';
 import { ThemeService } from '../services/theme.service';
+import { StorageService, StoredAnalysis } from '../services/storage.service';
 import { ImageAnalysisService, LeafMetric, AggregatedMetrics } from '../services/image-analysis.service';
 import { ChangeDetectorRef } from '@angular/core';
 /**
@@ -94,12 +96,13 @@ export class HomePage {
     private authService: AuthService,
     private alertCtrl: AlertController,
     private themeService: ThemeService,
+    private storageService: StorageService,
     private imageService: ImageAnalysisService,
     @Inject(DOCUMENT) private document: Document,
     private cdr: ChangeDetectorRef,
   ) {
     // Registrar ícones (sem duplicatas)
-    addIcons({person,logOut,calculator,trash,camera,time,help,download,sunny,moon,home,image:imageIcon});
+    addIcons({ person, logOut, calculator, trash, camera, time, help, download, sunny, moon, home, image: imageIcon, 'chevron-down-outline': chevronDownOutline });
 
     this.carregarHistorico();
     this.themeService.darkMode$.subscribe(v => this.darkMode = v);
@@ -172,9 +175,45 @@ export class HomePage {
     input.click();
   }
 
-  capturarImagem() {
-    // TODO: Implementar captura de imagem via câmera
-    // Funcionalidade a ser implementada
+  async capturarImagem() {
+    try {
+      // Captura imagem via câmera do dispositivo
+      const image = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.Base64, // Retorna em base64
+        source: CameraSource.Camera, // Usa a câmera traseira do dispositivo
+        promptLabelPhoto: 'Selecionar Foto',
+        promptLabelPicture: 'Tirar Foto',
+        promptLabelCancel: 'Cancelar'
+      });
+
+      // Se conseguiu capturar, processa a imagem
+      if (image.base64String) {
+        this.resetAnalise(); // Limpa análise anterior se houver
+        
+        // Cria URI de dados em base64
+        const base64Image = `data:image/jpeg;base64,${image.base64String}`;
+        
+        this.imagemSelecionada = base64Image;
+        
+        // Define nome da imagem com timestamp
+        const timestamp = new Date().toLocaleString('pt-BR');
+        this.nomeImagem = `captura_${Date.now()}.jpg`;
+        
+        this.hasImage = true;
+        this.selectedImageFile = null; // Sem arquivo File no caso de câmera
+      }
+    } catch (error: any) {
+      // Se o usuário cancelou, não mostra erro
+      if (error.message === 'User cancelled photos app') {
+        return;
+      }
+      
+      // Mostra erro se houver outro problema
+      await this.showAlert('Erro', `Falha ao capturar imagem: ${error?.message || 'Desconhecido'}`);
+      console.error('Erro ao capturar imagem:', error);
+    }
   }
 
   private createImg(base64: string): Promise<HTMLImageElement> {
@@ -212,7 +251,7 @@ export class HomePage {
       this.resultados = r.leaves ?? [];
       this.resultadosAgregados = r.aggregatedMetrics ?? this.initAggregatedMetrics();
       this.imagemProcessada = r.processedImage ?? null;
-      this.adicionarAoHistorico();
+      await this.adicionarAoHistorico();
     } catch (e: any) {
       await this.showAlert('Erro', e?.message ?? 'Falha inesperada.');
     } finally {
@@ -320,7 +359,7 @@ export class HomePage {
     await alert.present();
   }
 
-  private deleteSelectedLeaves(idsToDelete: number[]) {
+  private async deleteSelectedLeaves(idsToDelete: number[]) {
     // Remove as folhas selecionadas
     this.resultados = this.resultados.filter(leaf => !idsToDelete.includes(leaf.id));
 
@@ -337,57 +376,91 @@ export class HomePage {
     // usa o imagemSelecionada (base) para gerar uma nova imagem com apenas os labels atuais
     if (this.imagemSelecionada) {
       const baseImg = this.imagemSelecionada;
-      // chamada assíncrona — tenta redesenhar contornos + labels usando OpenCV (mesmo estilo)
-      this.imageService.drawContoursAndLabelsOnImage(baseImg, this.resultados)
-        // se falhar (ex.: contornos não persistidos), regrada com drawLabelsOnImage como fallback
-        .catch(() => this.imageService.drawLabelsOnImage(baseImg, this.resultados))
-        .then(base64 => {
-          this.imagemProcessada = base64 || this.imagemSelecionada;
-          // força re-render da view
-          Promise.resolve().then(() => this.cdr.detectChanges());
-          this.adicionarAoHistorico();
-        })
-        .catch(err => {
-          // se falhar, apenas atualiza agregados e histórico
-          console.warn('Falha ao regenerar imagem processada:', err);
-          Promise.resolve().then(() => this.cdr.detectChanges());
-          this.adicionarAoHistorico();
-        });
-      return; // histórico será atualizado na promise
+      try {
+        // chamada assíncrona — tenta redesenhar contornos + labels usando OpenCV (mesmo estilo)
+        let processedImage = await this.imageService.drawContoursAndLabelsOnImage(baseImg, this.resultados)
+          // se falhar (ex.: contornos não persistidos), regrada com drawLabelsOnImage como fallback
+          .catch(() => this.imageService.drawLabelsOnImage(baseImg, this.resultados));
+        
+        this.imagemProcessada = processedImage || this.imagemSelecionada;
+        
+        // força re-render da view
+        await Promise.resolve();
+        this.cdr.detectChanges();
+        
+        // Aguarda histórico ser salvo
+        await this.adicionarAoHistorico();
+      } catch (err) {
+        // se falhar, apenas atualiza agregados e histórico
+        console.warn('Falha ao regenerar imagem processada:', err);
+        await Promise.resolve();
+        this.cdr.detectChanges();
+        await this.adicionarAoHistorico();
+      }
+      return;
     }
 
     // re-render obrigatório aqui
-    Promise.resolve().then(() => this.cdr.detectChanges());
+    await Promise.resolve();
+    this.cdr.detectChanges();
 
-    this.adicionarAoHistorico();
+    await this.adicionarAoHistorico();
   }
 
   // ------- histórico -------
-  adicionarAoHistorico() {
-    // sempre recarrega o histórico do localStorage antes de adicionar
-    // para evitar reescrever entradas removidas a partir de outra tela
+  async adicionarAoHistorico() {
+    // Sempre recarrega o histórico do localStorage antes de adicionar
     this.carregarHistorico();
 
-    // Salva a imagem processada em storage separado antes de criar a análise
     const idAnalise = Date.now();
     let imagemKey: string | null = null;
+    let imagemThumbnail: string | null = null;
+
     if (this.imagemProcessada) {
       imagemKey = `img_${idAnalise}`;
+
       try {
-        // tenta salvar em localStorage (persistente)
-        localStorage.setItem(imagemKey, this.imagemProcessada);
-      } catch (e) {
-        try {
-          // fallback para sessionStorage se localStorage estourar
-          sessionStorage.setItem(imagemKey, this.imagemProcessada);
-        } catch (e2) {
-          // se falhar também, prossegue sem imagem
-          imagemKey = null;
+        console.log('🖼️ Iniciando processamento de imagem...');
+        
+        // Gera thumbnail otimizado de forma assíncrona (não bloqueia UI)
+        console.log('🔄 Gerando thumbnail otimizado...');
+        imagemThumbnail = await this.storageService.gerarThumbnailOtimizado(
+          this.imagemProcessada,
+          400, // maxWidth
+          0.5  // 50% qualidade
+        );
+
+        if (!imagemThumbnail || imagemThumbnail.length === 0) {
+          console.warn('⚠️ Thumbnail gerado vazio, usando fallback.');
+          imagemThumbnail = await this.storageService.gerarThumbnailOtimizado(
+            this.imagemProcessada,
+            300,
+            0.3
+          );
         }
+
+        console.log(`✅ Thumbnail gerado: ${imagemThumbnail?.length || 0} bytes`);
+
+        // Salva imagem em alta resolução no IndexedDB (assíncrono, não bloqueia)
+        console.log('💾 Salvando imagem em alta resolução (IndexedDB)...');
+        const sucessoIndexedDB = await this.storageService.salvarImagemAlta(
+          this.imagemProcessada,
+          imagemKey
+        );
+
+        if (sucessoIndexedDB) {
+          console.log('✅ Imagem salva com sucesso no IndexedDB');
+        } else {
+          console.warn('⚠️ Falha ao salvar no IndexedDB. Imagem será recuperada do fallback se necessário.');
+        }
+      } catch (e: any) {
+        console.error('❌ Erro ao processar imagem:', e?.message);
+        imagemKey = null;
       }
     }
 
-    const analise = {
+    // Cria objeto de análise com metadados
+    const analise: StoredAnalysis = {
       id: idAnalise,
       data: new Date(),
       especie: (this.especie && this.especie.trim() !== '') ? this.especie : 'Não informada',
@@ -398,42 +471,84 @@ export class HomePage {
       unidade: this.unidade,
       resultados: [...this.resultados],
       resultadosAgregados: this.resultadosAgregados ? { ...this.resultadosAgregados } : null,
-      imagemKey: imagemKey
+      imagemKey: imagemKey,
+      imagemThumbnail: imagemThumbnail
     };
+
+    // Adiciona ao histórico em memória
     this.historico.unshift(analise);
-    if (this.historico.length > 30) this.historico = this.historico.slice(0, 30);
-    this.salvarHistorico();
+
+    // Mantém apenas 30 análises mais recentes
+    if (this.historico.length > 30) {
+      this.historico = this.historico.slice(0, 30);
+    }
+
+    console.log(`📊 Análise adicionada ao histórico. Total: ${this.historico.length}`);
+
+    // Salva assincronamente (não bloqueia UI)
+    await this.salvarHistoricoAsync();
   }
 
-  salvarHistorico() {
+  /**
+   * Remove a função gerarThumbnail() do componente
+   * Agora está otimizada no StorageService
+   */
+
+  async salvarHistoricoAsync() {
     try {
-      const dados = JSON.stringify(this.historico);
-      // Se os dados forem muito grandes, limpa análises antigas
-      if (dados.length > 3000000) { // ~3MB
-        this.historico = this.historico.slice(0, 15);
+      console.log(`📝 Salvando histórico (${this.historico.length} análises)...`);
+      
+      // Usa o novo serviço para salvar (agora com dados otimizados)
+      const sucesso = await this.storageService.salvarAnalises(
+        this.historico as StoredAnalysis[]
+      );
+
+      if (sucesso) {
+        console.log(`✅ Histórico salvo com sucesso!`);
+      } else {
+        console.warn(`⚠️ Falha ao salvar histórico, mas dados estão em memória`);
       }
-      localStorage.setItem('historico_analises', JSON.stringify(this.historico));
-    } catch (e: any) {
-      console.error('Erro ao salvar histórico:', e?.message);
-      // Se falhar, limpa as análises mais antigas
-      this.historico = this.historico.slice(0, 10);
-      try {
-        localStorage.setItem('historico_analises', JSON.stringify(this.historico));
-      } catch (e2) {
-        console.error('Erro crítico ao salvar histórico');
-      }
+    } catch (error) {
+      console.error('❌ Erro ao salvar histórico assincronamente:', error);
+      console.log(`⚠️ Histórico em memória com ${this.historico.length} análises`);
     }
   }
 
+  /**
+   * Salva histórico (compatível com código antigo, agora em background)
+   * Para não bloquear, o método é assíncrono
+   */
+  salvarHistorico() {
+    // Executa em background sem bloqueair
+    this.salvarHistoricoAsync().catch(e => console.error('Background save error:', e));
+  }
+
   carregarHistorico() {
-    const h = localStorage.getItem('historico_analises') || localStorage.getItem('historico');
-    this.historico = h ? JSON.parse(h) : [];
+    // Usa o StorageService para carregar análises
+    this.historico = this.storageService.carregarAnalises();
+    console.log(`Histórico carregado: ${this.historico.length} análises`);
   }
 
   limparHistorico() {
+    const limpar = confirm('Tem certeza que deseja limpar TUDO? Isto inclui todo o armazenamento de análises e imagens.');
+    
+    if (!limpar) return;
+    
+    console.log('🧹 Iniciando limpeza completa...');
+    
+    // Limpa em memória
     this.historico = [];
+    
+    // Limpa localStorage
     localStorage.removeItem('historico_analises');
-    localStorage.removeItem('historico'); // Remove a chave antiga também
+    localStorage.removeItem('historico');
+    
+    // Limpa IndexedDB (se possível)
+    if (this.storageService) {
+      this.storageService.limparLocalStorageCompletamente();
+    }
+    
+    console.log('✅ Tudo limpo! Refresque a página para continuar.');
   }
 
   // ------- navegação / utilitários -------

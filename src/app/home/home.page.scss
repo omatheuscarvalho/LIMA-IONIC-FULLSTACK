@@ -44,6 +44,24 @@ ion-card-title {
   --min-height: 38px; 
 }
 
+/* Mantem todos os campos de configuracao com tipografia uniforme */
+.config-card .compact-item ion-label,
+.config-card .compact-item ion-input,
+.config-card .compact-item ion-select,
+.config-card .compact-item ion-select-option {
+  font-size: 18px !important;
+}
+
+.config-card .compact-item ion-input {
+  --placeholder-font-size: 18px;
+}
+
+.config-card .compact-item ion-input::part(native),
+.config-card .compact-item ion-select::part(text),
+.config-card .compact-item ion-select::part(placeholder) {
+  font-size: 18px;
+}
+
 .section-label {
   display: block;
   margin: 8px 0 4px 0;

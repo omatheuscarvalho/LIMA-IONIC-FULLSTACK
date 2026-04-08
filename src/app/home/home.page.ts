@@ -143,6 +143,12 @@ export class HomePage {
       totalArea: 0,
       averageArea: 0,
       standardDeviationArea: 0,
+      averagePerimeter: 0,
+      standardDeviationPerimeter: 0,
+      averageWidth: 0,
+      standardDeviationWidth: 0,
+      averageLength: 0,
+      standardDeviationLength: 0,
       averageWidthToLengthRatio: 0,
       // adicione aqui outros campos esperados pelo seu AggregatedMetrics
     } as AggregatedMetrics;
@@ -309,18 +315,37 @@ export class HomePage {
 
     this.resultadosAgregados = this.initAggregatedMetrics();
 
-    const areas = this.resultados.map(r => r.area ?? 0);
-    const total = areas.reduce((a, b) => a + b, 0);
-    this.resultadosAgregados.totalArea = total;
+    const toFinite = (value: number | null | undefined) =>
+      Number.isFinite(value as number) ? (value as number) : 0;
+    const mean = (values: number[]) =>
+      values.length > 0 ? values.reduce((sum, v) => sum + v, 0) / values.length : 0;
+    const stdDev = (values: number[], avg: number) =>
+      values.length > 0
+        ? Math.sqrt(values.reduce((sum, v) => sum + Math.pow(v - avg, 2), 0) / values.length)
+        : 0;
 
-    const avg = areas.length > 0 ? total / areas.length : 0;
-    this.resultadosAgregados.averageArea = avg;
+    const areas = this.resultados.map(r => toFinite(r.area));
+    const perimetros = this.resultados.map(r => toFinite(r.perimetro));
+    const larguras = this.resultados.map(r => toFinite(r.largura));
+    const comprimentos = this.resultados.map(r => toFinite(r.comprimento));
+    const relacoes = this.resultados.map(r => toFinite(r.relacaoLarguraComprimento));
 
-    const somaDifsQuad = areas.reduce((s, a) => s + Math.pow(a - avg, 2), 0);
-    this.resultadosAgregados.standardDeviationArea = areas.length > 0 ? Math.sqrt(somaDifsQuad / areas.length) : 0;
+    const totalArea = areas.reduce((sum, v) => sum + v, 0);
+    const averageArea = mean(areas);
+    const averagePerimeter = mean(perimetros);
+    const averageWidth = mean(larguras);
+    const averageLength = mean(comprimentos);
 
-    const relacoes = this.resultados.map(r => r.relacaoLarguraComprimento ?? 0);
-    this.resultadosAgregados.averageWidthToLengthRatio = relacoes.length > 0 ? relacoes.reduce((s, v) => s + v, 0) / relacoes.length : 0;
+    this.resultadosAgregados.totalArea = totalArea;
+    this.resultadosAgregados.averageArea = averageArea;
+    this.resultadosAgregados.standardDeviationArea = stdDev(areas, averageArea);
+    this.resultadosAgregados.averagePerimeter = averagePerimeter;
+    this.resultadosAgregados.standardDeviationPerimeter = stdDev(perimetros, averagePerimeter);
+    this.resultadosAgregados.averageWidth = averageWidth;
+    this.resultadosAgregados.standardDeviationWidth = stdDev(larguras, averageWidth);
+    this.resultadosAgregados.averageLength = averageLength;
+    this.resultadosAgregados.standardDeviationLength = stdDev(comprimentos, averageLength);
+    this.resultadosAgregados.averageWidthToLengthRatio = mean(relacoes);
   }
 
   // ------- excluir folhas (alerts) -------

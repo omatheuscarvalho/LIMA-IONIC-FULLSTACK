@@ -609,7 +609,7 @@ export class HomePage {
     this.router.navigateByUrl('/help');
   }
 
-  exportarResultados() {
+  async exportarResultados() {
     if (!this.resultados || this.resultados.length === 0) {
       console.log('Não há resultados para exportar');
       return;
@@ -677,10 +677,41 @@ export class HomePage {
     const filename = `LIMA_${this.especie}_${this.tratamento}_${new Date().toISOString().split('T')[0]}.csv`;
 
     try {
+      // Em mobile, prioriza o compartilhamento nativo quando suportado.
+      const file = new File([blob], filename, { type: 'text/csv;charset=utf-8' });
+      const canUseNativeShare =
+        typeof navigator !== 'undefined' &&
+        typeof navigator.share === 'function' &&
+        typeof (navigator as Navigator & { canShare?: (data?: ShareData) => boolean }).canShare === 'function' &&
+        (navigator as Navigator & { canShare?: (data?: ShareData) => boolean }).canShare?.({ files: [file] });
+
+      if (canUseNativeShare) {
+        await navigator.share({
+          title: 'Exportar resultados',
+          text: 'Arquivo CSV gerado pela análise.',
+          files: [file]
+        });
+        console.log('CSV compartilhado com sucesso!');
+        return;
+      }
+
+      // Fallback para web/desktop e navegadores sem Web Share com arquivos.
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = filename;
+      anchor.style.display = 'none';
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(url);
+
+      // Compatibilidade extra para alguns navegadores.
       saveAs(blob, filename);
       console.log('CSV exportado com sucesso!');
     } catch (error) {
       console.error('Erro ao exportar CSV:', error);
+      await this.showAlert('Erro', 'Não foi possível exportar o CSV neste dispositivo.');
     }
   }
 

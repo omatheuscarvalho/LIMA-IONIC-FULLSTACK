@@ -337,60 +337,48 @@ export class StorageService {
   }
 
   /**
-   * Salva análise no localStorage com dados MÍNIMOS (apenas referências)
-   * Os dados completos ficam no IndexedDB
+   * Salva análises no localStorage preservando os dados necessários para o modal
+   * Remove apenas campos pesados por folha (ex.: contorno) para reduzir tamanho.
    */
   async salvarAnalises(analises: StoredAnalysis[]): Promise<boolean> {
     try {
       console.log(`📝 Tentando salvar ${analises.length} análises...`);
 
-      // Cria versão LEVE com apenas metadados essenciais
-      const analisesLeves = analises.map(a => ({
-        id: a.id,
-        data: a.data,
-        especie: a.especie,
-        nomeImagem: a.nomeImagem,
-        imagemThumbnail: a.imagemThumbnail // Só thumbnail, não a imagem completa
-        // Removido: resultados, resultadosAgregados, imagemKey (esses ficam no IndexedDB)
-      }));
+      // Preserva dados exibidos no histórico/modal/exportação e remove campos pesados.
+      const analisesPersistidas = analises.map(a => this.criarAnalisePersistida(a));
 
-      const dados = JSON.stringify(analisesLeves);
+      const ajustadas = this.ajustarAnalisesAoLimite(analisesPersistidas);
+      const dados = JSON.stringify(ajustadas);
       const sizeInBytes = new Blob([dados]).size;
 
       console.log(`📦 Tamanho otimizado: ${sizeInBytes} bytes`);
 
       localStorage.setItem(this.STORAGE_KEY_ANALYSIS, dados);
-      console.log(`✅ Análises salvas com sucesso (${analises.length} registros)`);
+      console.log(`✅ Análises salvas com sucesso (${ajustadas.length} registros)`);
       return true;
     } catch (error: any) {
       console.error('❌ Erro ao salvar análises:', error?.message);
       
       // Se falhar, tenta salvar apenas últimas 10 análises
       try {
-        const ultimas = analises.slice(0, 10).map(a => ({
-          id: a.id,
-          data: a.data,
-          especie: a.especie,
-          nomeImagem: a.nomeImagem,
-          imagemThumbnail: a.imagemThumbnail
-        }));
+        const ultimas = analises
+          .slice(0, 10)
+          .map(a => this.criarAnalisePersistida(a));
         
         localStorage.setItem(this.STORAGE_KEY_ANALYSIS, JSON.stringify(ultimas));
         console.log('🆘 Salvo em modo leve: 10 análises apenas');
         return true;
       } catch (e) {
-        console.error('❌ Falha crítica. Limpando localStorage...');
-        this.limparLocalStorageCompletamente();
+        console.error('❌ Falha crítica. Tentando salvar uma análise essencial...');
         
-        // Tenta salvar apenas últimas 3
+        // Último fallback: mantém ao menos a análise mais recente com métricas.
         try {
-          const minimas = analises.slice(0, 3).map(a => ({
-            id: a.id,
-            data: a.data,
-            especie: a.especie
-          }));
+          const minimas = analises
+            .slice(0, 1)
+            .map(a => this.criarAnalisePersistida(a));
+
           localStorage.setItem(this.STORAGE_KEY_ANALYSIS, JSON.stringify(minimas));
-          console.log('🆘 Salvo modo ultra-leve: 3 análises');
+          console.log('🆘 Salvo modo ultra-leve: 1 análise essencial');
           return true;
         } catch (final) {
           console.error('❌ localStorage bloqueado completamente');
@@ -401,12 +389,12 @@ export class StorageService {
   }
 
   /**
-   * Recupera análises do localStorage (agora apenas metadados leves)
-   * Para dados completos, usar recuperarImagemAlta()
+   * Recupera análises do localStorage e normaliza dados para compatibilidade
    */
   carregarAnalises(): StoredAnalysis[] {
     try {
-      const dados = localStorage.getItem(this.STORAGE_KEY_ANALYSIS);
+      const dados = localStorage.getItem(this.STORAGE_KEY_ANALYSIS)
+        || localStorage.getItem('historico');
       if (!dados) {
         console.log('📭 Nenhuma análise armazenada');
         return [];
@@ -415,23 +403,83 @@ export class StorageService {
       const analises = JSON.parse(dados);
       console.log(`📥 Carregadas ${analises.length} análises do localStorage`);
       
-      // Converte strings de data de volta para Date objects se necessário
+      // Converte strings de data e preenche campos ausentes (compatibilidade com versões antigas).
       return analises.map((a: any) => ({
         ...a,
         data: typeof a.data === 'string' ? new Date(a.data) : a.data,
-        // Campos não carregados do localStorage (estão no IndexedDB):
-        resultados: [],
-        resultadosAgregados: null,
-        imagemKey: null,
-        areaEscala: null,
-        unidade: 'cm',
-        tratamento: 'N/A',
-        replica: 'N/A'
+        especie: a.especie || 'Não informada',
+        tratamento: a.tratamento || 'Não informado',
+        replica: a.replica || 'Não informada',
+        nomeImagem: a.nomeImagem || a.imageName || 'Sem nome',
+        areaEscala: a.areaEscala ?? a.scalePatternArea ?? null,
+        unidade: a.unidade || a.unit || 'cm',
+        resultados: Array.isArray(a.resultados)
+          ? a.resultados
+          : (Array.isArray(a.leaves) ? a.leaves : []),
+        resultadosAgregados: a.resultadosAgregados || a.aggregatedMetrics || null,
+        imagemKey: a.imagemKey || null,
+        imagemThumbnail: a.imagemThumbnail || null
       }));
     } catch (error) {
       console.error('❌ Erro ao carregar análises:', error);
       return [];
     }
+  }
+
+  /**
+   * Remove campos pesados e mantém apenas o necessário para histórico/modal/exportação.
+   */
+  private criarAnalisePersistida(a: StoredAnalysis): any {
+    return {
+      id: a.id,
+      data: a.data,
+      especie: a.especie,
+      tratamento: a.tratamento,
+      replica: a.replica,
+      nomeImagem: a.nomeImagem,
+      areaEscala: a.areaEscala,
+      unidade: a.unidade,
+      resultados: Array.isArray(a.resultados)
+        ? a.resultados.map((r: any) => ({
+            id: r?.id,
+            area: r?.area,
+            perimetro: r?.perimetro,
+            comprimento: r?.comprimento,
+            largura: r?.largura,
+            relacaoLarguraComprimento: r?.relacaoLarguraComprimento,
+            uid: r?.uid
+          }))
+        : [],
+      resultadosAgregados: a.resultadosAgregados || null,
+      imagemKey: a.imagemKey || null,
+      imagemThumbnail: a.imagemThumbnail || null
+    };
+  }
+
+  /**
+   * Garante que o JSON final caiba no limite do localStorage mantendo as análises mais recentes.
+   */
+  private ajustarAnalisesAoLimite(analises: any[]): any[] {
+    if (!analises.length) {
+      return analises;
+    }
+
+    let limite = Math.min(this.MAX_LOCALSTORAGE_BYTES, 3800000);
+    let ajustadas = [...analises];
+
+    while (ajustadas.length > 1) {
+      const dados = JSON.stringify(ajustadas);
+      const tamanho = new Blob([dados]).size;
+
+      if (tamanho <= limite) {
+        return ajustadas;
+      }
+
+      // Remove as mais antigas no fim da lista.
+      ajustadas.pop();
+    }
+
+    return ajustadas;
   }
 
   /**

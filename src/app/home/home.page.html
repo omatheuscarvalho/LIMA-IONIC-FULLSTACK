@@ -87,9 +87,14 @@
                     <ion-list>
                       <ion-item class="compact-item">
                         <ion-label position="stacked">Unidade de Medida</ion-label>
-                        <ion-select [(ngModel)]="unidade">
-                          <ion-select-option value="cm">cm²</ion-select-option>
-                          <ion-select-option value="mm">mm²</ion-select-option>
+                        <ion-select
+                          [(ngModel)]="unidade"
+                          interface="alert"
+                          [interfaceOptions]="unitSelectInterfaceOptions"
+                          cancelText="Cancelar"
+                          okText="Aplicar">
+                          <ion-select-option value="cm">Centímetros (cm)</ion-select-option>
+                          <ion-select-option value="mm">Milímetros (mm)</ion-select-option>
                         </ion-select>
                       </ion-item>
                     </ion-list>

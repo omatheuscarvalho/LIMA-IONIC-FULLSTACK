@@ -29,6 +29,8 @@ type MedidaKey =
   'area' | 'perimetro' | 'comprimento' | 'largura' |
   'somarAreas' | 'relacaoLarguraComprimento' | 'mediaDesvio';
 
+type UnidadeKey = 'cm' | 'mm';
+
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -47,7 +49,11 @@ export class HomePage {
   tratamento = '';
   replica = '';
   areaEscala = 1;
-  unidade = 'cm';
+  unidade: UnidadeKey = 'cm';
+  unitSelectInterfaceOptions = {
+    header: 'Escolha uma unidade de medida',
+    message: 'A unidade selecionada será usada nos resultados e na exportação dos dados.'
+  };
 
   // Lista tipada de medidas (usada no template com *ngFor)
   medidasOptions: { key: MedidaKey; label: string }[] = [
@@ -102,7 +108,21 @@ export class HomePage {
     private cdr: ChangeDetectorRef,
   ) {
     // Registrar ícones (sem duplicatas)
-    addIcons({ person, logOut, calculator, trash, camera, time, help, download, sunny, moon, home, image: imageIcon, 'chevron-down-outline': chevronDownOutline });
+    addIcons({
+      person,
+      logOut,
+      calculator,
+      trash,
+      camera,
+      time,
+      help,
+      download,
+      sunny,
+      moon,
+      home,
+      image: imageIcon,
+      'chevron-down-outline': chevronDownOutline
+    });
 
     this.carregarHistorico();
     this.themeService.darkMode$.subscribe(v => this.darkMode = v);

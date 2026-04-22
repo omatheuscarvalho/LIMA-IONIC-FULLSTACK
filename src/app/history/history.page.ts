@@ -453,15 +453,19 @@ export class HistoryPage implements OnInit {
       ...linhasAgregadas
     ];
 
-    // Converter para CSV
-    const csv = Papa.unparse(dadosCompletos, { delimiter: ';' }); // Ponto e vírgula é melhor para Excel BR
+    // Converter para CSV no formato mais compatível com Excel BR
+    const csv = Papa.unparse(dadosCompletos, {
+      delimiter: ';',
+      quotes: true,
+      newline: '\r\n'
+    });
 
     // Criar arquivo
     const nomeLimpo = (analise.especie || 'analise').replace(/[^a-z0-9]/gi, '_').toLowerCase();
     const dataStr = new Date().toISOString().slice(0, 10);
     const nomeArquivo = `LIMA_${nomeLimpo}_${analise.id}_${dataStr}.csv`;
 
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, nomeArquivo);
   }
 

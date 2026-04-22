@@ -611,107 +611,177 @@ export class HomePage {
 
   async exportarResultados() {
     if (!this.resultados || this.resultados.length === 0) {
-      console.log('Não há resultados para exportar');
+      await this.showAlert('Atenção', 'Não há resultados para exportar.');
       return;
     }
 
-    // Cabeçalhos
-    const header = [
-      'Folha',
-      `Área (${this.unidade}²)`,
-      `Perímetro (${this.unidade})`,
-      `Comprimento (${this.unidade})`,
-      `Largura (${this.unidade})`,
-      'Relação L/C'
-    ];
+    // Normaliza entradas numéricas com ponto/vírgula e exporta com vírgula decimal.
+    const formatarNumero = (valor: unknown, casas = 3): string => {
+      if (valor === null || valor === undefined || valor === '') return '';
 
-    // Linhas individuais
-    const linhas = this.resultados.map(r => ({
-      Folha: `Folha ${r.id}`,
-      [`Área (${this.unidade}²)`]: r.area ?? '',
-      [`Perímetro (${this.unidade})`]: r.perimetro ?? '',
-      [`Comprimento (${this.unidade})`]: r.comprimento ?? '',
-      [`Largura (${this.unidade})`]: r.largura ?? '',
-      'Relação L/C': r.relacaoLarguraComprimento ?? ''
-    }));
+      let numero: number;
 
-    // Informações de metadados (cabecalho separado)
-    const metadados = [
-      ['Nome da Imagem', this.nomeImagem],
-      ['Espécie', this.especie],
-      ['Tratamento', this.tratamento],
-      ['Réplica', this.replica],
-      ['Área de Escala (cm²)', this.areaEscala]
-    ];
+      if (typeof valor === 'number') {
+        numero = valor;
+      } else {
+        const bruto = String(valor).trim();
+        if (!bruto) return '';
 
-    // Estatísticas agregadas
-    const agregados: any[] = [];
+        let normalizado = bruto.replace(/\s+/g, '');
+
+        // pt-BR com milhar e decimal (ex: 1.234,56)
+        if (/^-?\d{1,3}(\.\d{3})+,\d+$/.test(normalizado)) {
+          normalizado = normalizado.replace(/\./g, '').replace(',', '.');
+        }
+        // en-US com milhar e decimal (ex: 1,234.56)
+        else if (/^-?\d{1,3}(,\d{3})+\.\d+$/.test(normalizado)) {
+          normalizado = normalizado.replace(/,/g, '');
+        }
+        // apenas vírgula decimal (ex: 1,32)
+        else if (/^-?\d+,\d+$/.test(normalizado)) {
+          normalizado = normalizado.replace(',', '.');
+        }
+
+        numero = Number(normalizado);
+      }
+
+      if (!Number.isFinite(numero)) return '';
+
+      const [inteiro, decimal] = numero.toFixed(casas).split('.');
+      return decimal ? `${inteiro},${decimal}` : inteiro;
+    };
+
+    const linhasExportacao: (string | number)[][] = [];
+
+    // 1. BLOCO DE METADADOS (fiel ao CSV antigo)
+    linhasExportacao.push(['Nome da Imagem:', this.nomeImagem || '']);
+    linhasExportacao.push(['Espécie:', this.especie || '']);
+    linhasExportacao.push(['Tratamento:', this.tratamento || '']);
+    linhasExportacao.push(['Réplica:', this.replica || '']);
+    linhasExportacao.push(['Área de Escala:', formatarNumero(this.areaEscala, 4)]);
+    linhasExportacao.push(['Número de folhas:', this.resultados.length]);
+    linhasExportacao.push([]);
+
+    // 2. CABEÇALHOS DAS COLUNAS (ordem do app antigo)
+    const cabecalhosResultados: string[] = ['Número da folha'];
+    if (this.medidasSelecionadas.largura) cabecalhosResultados.push(`Largura (${this.unidade})`);
+    if (this.medidasSelecionadas.comprimento) cabecalhosResultados.push(`Comprimento (${this.unidade})`);
+    if (this.medidasSelecionadas.relacaoLarguraComprimento) cabecalhosResultados.push('Relação L/C');
+    if (this.medidasSelecionadas.area) cabecalhosResultados.push(`Área (${this.unidade}²)`);
+    if (this.medidasSelecionadas.perimetro) cabecalhosResultados.push(`Perímetro (${this.unidade})`);
+
+    linhasExportacao.push(cabecalhosResultados);
+    linhasExportacao.push([]);
+
+    // 3. DADOS DAS FOLHAS
+    this.resultados.forEach((r, index) => {
+      const linha: (string | number)[] = [index + 1];
+      if (this.medidasSelecionadas.largura) linha.push(formatarNumero(r.largura));
+      if (this.medidasSelecionadas.comprimento) linha.push(formatarNumero(r.comprimento));
+      if (this.medidasSelecionadas.relacaoLarguraComprimento) linha.push(formatarNumero(r.relacaoLarguraComprimento));
+      if (this.medidasSelecionadas.area) linha.push(formatarNumero(r.area));
+      if (this.medidasSelecionadas.perimetro) linha.push(formatarNumero(r.perimetro));
+      linhasExportacao.push(linha);
+    });
+
+    linhasExportacao.push([]);
+
+    // 4. ESTATÍSTICAS AGREGADAS (mantidas sem separadores textuais)
     if (this.medidasSelecionadas.somarAreas || this.medidasSelecionadas.mediaDesvio) {
-      agregados.push([]);
-      agregados.push(['---- Estatísticas Agregadas ----']);
+      linhasExportacao.push(['ESTATÍSTICAS AGREGADAS']);
+      linhasExportacao.push(['Parâmetro', 'Valor']);
 
       if (this.medidasSelecionadas.somarAreas) {
-        agregados.push(['Soma Total das Áreas (' + this.unidade + '²)', this.resultadosAgregados?.totalArea ?? 0]);
+        linhasExportacao.push([`Soma Total das Áreas (${this.unidade}²)`, formatarNumero(this.resultadosAgregados?.totalArea)]);
       }
+
       if (this.medidasSelecionadas.mediaDesvio) {
-        agregados.push(['Média da Área (' + this.unidade + '²)', this.resultadosAgregados?.averageArea ?? 0]);
-        agregados.push(['Média da Relação L/C', this.resultadosAgregados?.averageWidthToLengthRatio ?? 0]);
-        agregados.push(['Desvio Padrão (Área)', this.resultadosAgregados?.standardDeviationArea ?? 0]);
+        if (this.medidasSelecionadas.largura) {
+          linhasExportacao.push([`Média da Largura (${this.unidade})`, formatarNumero(this.resultadosAgregados?.averageWidth)]);
+        }
+        if (this.medidasSelecionadas.comprimento) {
+          linhasExportacao.push([`Média do Comprimento (${this.unidade})`, formatarNumero(this.resultadosAgregados?.averageLength)]);
+        }
+        if (this.medidasSelecionadas.relacaoLarguraComprimento) {
+          linhasExportacao.push(['Média da Relação L/C', formatarNumero(this.resultadosAgregados?.averageWidthToLengthRatio)]);
+        }
+        if (this.medidasSelecionadas.area) {
+          linhasExportacao.push([`Média da Área (${this.unidade}²)`, formatarNumero(this.resultadosAgregados?.averageArea)]);
+          linhasExportacao.push(['Desvio Padrão (Área)', formatarNumero(this.resultadosAgregados?.standardDeviationArea)]);
+        }
+        if (this.medidasSelecionadas.perimetro) {
+          linhasExportacao.push([`Média do Perímetro (${this.unidade})`, formatarNumero(this.resultadosAgregados?.averagePerimeter)]);
+          linhasExportacao.push(['Desvio Padrão (Perímetro)', formatarNumero(this.resultadosAgregados?.standardDeviationPerimeter)]);
+        }
       }
     }
 
-    // Montagem final do CSV
-    const csv = Papa.unparse(linhas, {
-      delimiter: ';', // ✅ aqui, e não no objeto fields/data
-      quotes: true
+    // 4. CONVERSÃO E EXPORTAÇÃO
+    // Uma única chamada ao PapaParse constrói a tabela inteira alinhada.
+    const csvFinal = Papa.unparse(linhasExportacao, {
+      delimiter: ';',
+      quotes: false,
+      newline: '\r\n'
     });
 
-    // Inserir metadados antes do CSV e agregados depois
-    const csvFinal =
-      metadados.map(m => m.join(';')).join('\n') +
-      '\n\n---- Resultados Individuais ----\n' +
-      csv +
-      (agregados.length ? '\n\n' + agregados.map(a => a.join(';')).join('\n') : '');
+    const blob = new Blob(['\uFEFF', csvFinal], { type: 'text/csv;charset=utf-8' });
+    const dataArquivo = new Date().toISOString().split('T')[0];
+    const especieLimpa = (this.especie || 'analise').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const tratamentoLimpo = (this.tratamento || 'sem_tratamento').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const filename = `LIMA_${especieLimpa}_${tratamentoLimpo}_${dataArquivo}.csv`;
 
-    const blob = new Blob([csvFinal], { type: 'text/csv;charset=utf-8' });
-    const filename = `LIMA_${this.especie}_${this.tratamento}_${new Date().toISOString().split('T')[0]}.csv`;
+    let exportouComShare = false;
+
+    // Tenta compartilhamento nativo apenas quando realmente suportado.
+    // Se falhar, segue para o fallback de download sem interromper o fluxo.
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      try {
+        const file = new File([blob], filename, { type: 'text/csv;charset=utf-8' });
+        const navigatorComShare = navigator as Navigator & {
+          canShare?: (data?: ShareData) => boolean;
+        };
+
+        const canShareFiles =
+          typeof navigatorComShare.canShare === 'function'
+            ? navigatorComShare.canShare({ files: [file] })
+            : false;
+
+        if (canShareFiles) {
+          await navigator.share({
+            title: 'Exportar Resultados LIMA',
+            text: 'Arquivo CSV gerado pela análise.',
+            files: [file]
+          });
+          exportouComShare = true;
+        }
+      } catch (shareError) {
+        console.warn('Web Share indisponível/falhou. Usando download local.', shareError);
+      }
+    }
+
+    if (exportouComShare) {
+      return;
+    }
 
     try {
-      // Em mobile, prioriza o compartilhamento nativo quando suportado.
-      const file = new File([blob], filename, { type: 'text/csv;charset=utf-8' });
-      const canUseNativeShare =
-        typeof navigator !== 'undefined' &&
-        typeof navigator.share === 'function' &&
-        typeof (navigator as Navigator & { canShare?: (data?: ShareData) => boolean }).canShare === 'function' &&
-        (navigator as Navigator & { canShare?: (data?: ShareData) => boolean }).canShare?.({ files: [file] });
-
-      if (canUseNativeShare) {
-        await navigator.share({
-          title: 'Exportar resultados',
-          text: 'Arquivo CSV gerado pela análise.',
-          files: [file]
-        });
-        console.log('CSV compartilhado com sucesso!');
-        return;
-      }
-
-      // Fallback para web/desktop e navegadores sem Web Share com arquivos.
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = filename;
-      anchor.style.display = 'none';
-      document.body.appendChild(anchor);
-      anchor.click();
-      document.body.removeChild(anchor);
-      URL.revokeObjectURL(url);
-
-      // Compatibilidade extra para alguns navegadores.
+      // Fallback principal para desktop/web
       saveAs(blob, filename);
-      console.log('CSV exportado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar CSV:', error);
-      await this.showAlert('Erro', 'Não foi possível exportar o CSV neste dispositivo.');
+    } catch (saveError) {
+      try {
+        // Fallback final com link temporário
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = filename;
+        anchor.style.display = 'none';
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        URL.revokeObjectURL(url);
+      } catch (downloadError) {
+        console.error('Erro ao exportar CSV:', { saveError, downloadError });
+        await this.showAlert('Erro', 'Não foi possível exportar o CSV neste dispositivo.');
+      }
     }
   }
 

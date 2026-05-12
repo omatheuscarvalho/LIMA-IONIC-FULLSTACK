@@ -231,12 +231,12 @@
 
                   <ion-item *ngIf="medidasSelecionadas.largura">
                     <ion-label>Largura:</ion-label>
-                    <ion-note slot="end">{{ r.largura | number:'1.5-5' }} {{ unidade }}</ion-note>
+                    <ion-note slot="end">{{ r.largura | number:'1.5-5' }} {{ unidadeCalculada }}</ion-note>
                   </ion-item>
 
                   <ion-item *ngIf="medidasSelecionadas.comprimento">
                     <ion-label>Comprimento:</ion-label>
-                    <ion-note slot="end">{{ r.comprimento | number:'1.5-5' }} {{ unidade }}</ion-note>
+                    <ion-note slot="end">{{ r.comprimento | number:'1.5-5' }} {{ unidadeCalculada }}</ion-note>
                   </ion-item>
 
                   <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento">
@@ -246,19 +246,19 @@
 
                   <ion-item *ngIf="medidasSelecionadas.area">
                     <ion-label>Área:</ion-label>
-                    <ion-note slot="end">{{ r.area | number:'1.5-5' }} {{ unidade }}²</ion-note>
+                    <ion-note slot="end">{{ r.area | number:'1.5-5' }} {{ unidadeCalculada }}²</ion-note>
                   </ion-item>
 
                   <ion-item *ngIf="medidasSelecionadas.perimetro">
                     <ion-label>Perímetro:</ion-label>
-                    <ion-note slot="end">{{ r.perimetro | number:'1.5-5' }} {{ unidade }}</ion-note>
+                    <ion-note slot="end">{{ r.perimetro | number:'1.5-5' }} {{ unidadeCalculada }}</ion-note>
                   </ion-item>
 
                 </ion-list>
               </div>
 
               <!-- Agregados -->
-              <div *ngIf="medidasSelecionadas.somarAreas || medidasSelecionadas.mediaDesvio">
+              <div *ngIf="(medidasSelecionadas.somarAreas || medidasSelecionadas.mediaDesvio) && resultados.length > 0">
                 <ion-item class="leaf-item-card" button detail="false" lines="none" (click)="toggleAggregatedResults()">
                   <ion-label>Resumo de todas as folhas</ion-label>
                   <ion-icon slot="end"
@@ -269,58 +269,52 @@
 
                   <ion-item *ngIf="medidasSelecionadas.somarAreas">
                     <ion-label>Soma Total das Áreas:</ion-label>
-                    <ion-note slot="end">{{ resultadosAgregados?.totalArea | number:'1.2-2' }} {{ unidade }}²</ion-note>
+                    <ion-note slot="end">{{ resultadosAgregados?.totalArea | number:'1.2-2' }} {{ unidadeCalculada }}²</ion-note>
                   </ion-item>
 
                   <ng-container *ngIf="medidasSelecionadas.mediaDesvio">
                     <ion-item>
                       <ion-label>Média da Largura:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados?.averageWidth | number:'1.5-5' }} {{ unidade }}</ion-note>
+                      <ion-note slot="end">{{ resultadosAgregados?.averageWidth | number:'1.5-5' }} {{ unidadeCalculada }}</ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label>Média do Comprimento:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados?.averageLength | number:'1.5-5' }} {{ unidade }}</ion-note>
+                      <ion-note slot="end">{{ resultadosAgregados?.averageLength | number:'1.5-5' }} {{ unidadeCalculada }}</ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label>Média da Área:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados?.averageArea | number:'1.5-5' }} {{ unidade }}²</ion-note>
+                      <ion-note slot="end">{{ resultadosAgregados?.averageArea | number:'1.5-5' }} {{ unidadeCalculada }}²</ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label>Média do Perímetro:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados?.averagePerimeter | number:'1.5-5' }} {{ unidade }}</ion-note>
+                      <ion-note slot="end">{{ resultadosAgregados?.averagePerimeter | number:'1.5-5' }} {{ unidadeCalculada }}</ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label>Desvio da Largura:</ion-label>
                       <ion-note slot="end">{{ resultadosAgregados?.standardDeviationWidth | number:'1.5-5' }}
-                        {{ unidade }}</ion-note>
+                        {{ unidadeCalculada }}</ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label>Desvio do Comprimento:</ion-label>
                       <ion-note slot="end">{{ resultadosAgregados?.standardDeviationLength | number:'1.5-5' }}
-                        {{ unidade }}</ion-note>
+                        {{ unidadeCalculada }}</ion-note>
                     </ion-item>
                     <ion-item>
 
                       <ion-label>Desvio da Área:</ion-label>
                       <ion-note slot="end">{{ resultadosAgregados?.standardDeviationArea | number:'1.5-5' }}
-                        {{ unidade }}²</ion-note>
+                        {{ unidadeCalculada }}²</ion-note>
                     </ion-item>
 
                     <ion-item>
                       <ion-label>Desvio do Perímetro:</ion-label>
                       <ion-note slot="end">{{ resultadosAgregados?.standardDeviationPerimeter | number:'1.5-5' }}
-                        {{ unidade }}</ion-note>
-                    </ion-item>
-
-                    <ion-item *ngIf="medidasSelecionadas.relacaoLarguraComprimento">
-                      <ion-label>Média da Relação L/C:</ion-label>
-                      <ion-note slot="end">{{ resultadosAgregados?.averageWidthToLengthRatio | number:'1.5-5'
-                        }}</ion-note>
+                        {{ unidadeCalculada }}</ion-note>
                     </ion-item>
                   </ng-container>
 

@@ -22,6 +22,11 @@ import { ThemeService } from '../services/theme.service';
 import { StorageService, StoredAnalysis } from '../services/storage.service';
 import { ImageAnalysisService, LeafMetric, AggregatedMetrics } from '../services/image-analysis.service';
 import { ChangeDetectorRef } from '@angular/core';
+
+//Importações para exportação no celular
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 /**
  * Tipagem das chaves das medidas (declarada OUTSIDE da classe)
  */
@@ -50,6 +55,7 @@ export class HomePage {
   replica = '';
   areaEscala = 1;
   unidade: UnidadeKey = 'cm';
+  unidadeCalculada: UnidadeKey = 'cm'; //usada para guardar a unidade de medida do momento em que a análise foi realizada
   unitSelectInterfaceOptions = {
     header: 'Escolha uma unidade de medida',
     message: 'A unidade selecionada será usada nos resultados e na exportação dos dados.'
@@ -277,6 +283,8 @@ export class HomePage {
       this.resultados = r.leaves ?? [];
       this.resultadosAgregados = r.aggregatedMetrics ?? this.initAggregatedMetrics();
       this.imagemProcessada = r.processedImage ?? null;
+      this.unidadeCalculada = this.unidade; // Guarda a unidade usada no momento do cálculo para referência
+
       await this.adicionarAoHistorico();
     } catch (e: any) {
       await this.showAlert('Erro', e?.message ?? 'Falha inesperada.');
@@ -513,7 +521,7 @@ export class HomePage {
       replica: (this.replica && this.replica.trim() !== '') ? this.replica : 'Não informada',
       nomeImagem: this.nomeImagem,
       areaEscala: this.areaEscala || null,
-      unidade: this.unidade,
+      unidade: this.unidadeCalculada,
       resultados: [...this.resultados],
       resultadosAgregados: this.resultadosAgregados ? { ...this.resultadosAgregados } : null,
       imagemKey: imagemKey,
@@ -664,11 +672,11 @@ export class HomePage {
 
     // 2. CABEÇALHOS DAS COLUNAS (ordem do app antigo)
     const cabecalhosResultados: string[] = ['Número da folha'];
-    if (this.medidasSelecionadas.largura) cabecalhosResultados.push(`Largura (${this.unidade})`);
-    if (this.medidasSelecionadas.comprimento) cabecalhosResultados.push(`Comprimento (${this.unidade})`);
+    if (this.medidasSelecionadas.largura) cabecalhosResultados.push(`Largura (${this.unidadeCalculada})`);
+    if (this.medidasSelecionadas.comprimento) cabecalhosResultados.push(`Comprimento (${this.unidadeCalculada})`);
     if (this.medidasSelecionadas.relacaoLarguraComprimento) cabecalhosResultados.push('Relação L/C');
-    if (this.medidasSelecionadas.area) cabecalhosResultados.push(`Área (${this.unidade}²)`);
-    if (this.medidasSelecionadas.perimetro) cabecalhosResultados.push(`Perímetro (${this.unidade})`);
+    if (this.medidasSelecionadas.area) cabecalhosResultados.push(`Área (${this.unidadeCalculada}²)`);
+    if (this.medidasSelecionadas.perimetro) cabecalhosResultados.push(`Perímetro (${this.unidadeCalculada})`);
 
     linhasExportacao.push(cabecalhosResultados);
     linhasExportacao.push([]);
@@ -692,25 +700,22 @@ export class HomePage {
       linhasExportacao.push(['Parâmetro', 'Valor']);
 
       if (this.medidasSelecionadas.somarAreas) {
-        linhasExportacao.push([`Soma Total das Áreas (${this.unidade}²)`, formatarNumero(this.resultadosAgregados?.totalArea)]);
+        linhasExportacao.push([`Soma Total das Áreas (${this.unidadeCalculada}²)`, formatarNumero(this.resultadosAgregados?.totalArea)]);
       }
 
       if (this.medidasSelecionadas.mediaDesvio) {
         if (this.medidasSelecionadas.largura) {
-          linhasExportacao.push([`Média da Largura (${this.unidade})`, formatarNumero(this.resultadosAgregados?.averageWidth)]);
+          linhasExportacao.push([`Média da Largura (${this.unidadeCalculada})`, formatarNumero(this.resultadosAgregados?.averageWidth)]);
         }
         if (this.medidasSelecionadas.comprimento) {
-          linhasExportacao.push([`Média do Comprimento (${this.unidade})`, formatarNumero(this.resultadosAgregados?.averageLength)]);
-        }
-        if (this.medidasSelecionadas.relacaoLarguraComprimento) {
-          linhasExportacao.push(['Média da Relação L/C', formatarNumero(this.resultadosAgregados?.averageWidthToLengthRatio)]);
+          linhasExportacao.push([`Média do Comprimento (${this.unidadeCalculada})`, formatarNumero(this.resultadosAgregados?.averageLength)]);
         }
         if (this.medidasSelecionadas.area) {
-          linhasExportacao.push([`Média da Área (${this.unidade}²)`, formatarNumero(this.resultadosAgregados?.averageArea)]);
+          linhasExportacao.push([`Média da Área (${this.unidadeCalculada}²)`, formatarNumero(this.resultadosAgregados?.averageArea)]);
           linhasExportacao.push(['Desvio Padrão (Área)', formatarNumero(this.resultadosAgregados?.standardDeviationArea)]);
         }
         if (this.medidasSelecionadas.perimetro) {
-          linhasExportacao.push([`Média do Perímetro (${this.unidade})`, formatarNumero(this.resultadosAgregados?.averagePerimeter)]);
+          linhasExportacao.push([`Média do Perímetro (${this.unidadeCalculada})`, formatarNumero(this.resultadosAgregados?.averagePerimeter)]);
           linhasExportacao.push(['Desvio Padrão (Perímetro)', formatarNumero(this.resultadosAgregados?.standardDeviationPerimeter)]);
         }
       }
@@ -724,63 +729,75 @@ export class HomePage {
       newline: '\r\n'
     });
 
-    const blob = new Blob(['\uFEFF', csvFinal], { type: 'text/csv;charset=utf-8' });
-    const dataArquivo = new Date().toISOString().split('T')[0];
+const dataArquivo = new Date().toISOString().split('T')[0];
     const especieLimpa = (this.especie || 'analise').replace(/[^a-z0-9]/gi, '_').toLowerCase();
     const tratamentoLimpo = (this.tratamento || 'sem_tratamento').replace(/[^a-z0-9]/gi, '_').toLowerCase();
     const filename = `LIMA_${especieLimpa}_${tratamentoLimpo}_${dataArquivo}.csv`;
 
-    let exportouComShare = false;
-
-    // Tenta compartilhamento nativo apenas quando realmente suportado.
-    // Se falhar, segue para o fallback de download sem interromper o fluxo.
-    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    // VERIFICA SE ESTÁ RODANDO NO CELULAR (APP NATIVO)
+    if (Capacitor.isNativePlatform()) {
       try {
-        const file = new File([blob], filename, { type: 'text/csv;charset=utf-8' });
-        const navigatorComShare = navigator as Navigator & {
-          canShare?: (data?: ShareData) => boolean;
-        };
+        const result = await Filesystem.writeFile({
+          path: filename,
+          data: csvFinal,
+          directory: Directory.Cache,
+          encoding: Encoding.UTF8
+        });
 
-        const canShareFiles =
-          typeof navigatorComShare.canShare === 'function'
-            ? navigatorComShare.canShare({ files: [file] })
-            : false;
+        await Share.share({
+          title: 'Resultados L.I.M.A.',
+          text: 'Confira os resultados da análise exportados pelo LIMA.',
+          url: result.uri,
+          dialogTitle: 'Exportar CSV'
+        });
 
-        if (canShareFiles) {
-          await navigator.share({
-            title: 'Exportar Resultados LIMA',
-            text: 'Arquivo CSV gerado pela análise.',
-            files: [file]
-          });
-          exportouComShare = true;
-        }
-      } catch (shareError) {
-        console.warn('Web Share indisponível/falhou. Usando download local.', shareError);
+      } catch (error) {
+        console.error('Erro no mobile ao salvar/compartilhar:', error);
+        await this.showAlert('Erro', 'Não foi possível exportar o arquivo neste dispositivo.');
       }
-    }
+    } 
 
-    if (exportouComShare) {
-      return;
-    }
+    else {
+      const blob = new Blob(['\uFEFF', csvFinal], { type: 'text/csv;charset=utf-8' });
+      let exportouComShare = false;
 
-    try {
-      // Fallback principal para desktop/web
-      saveAs(blob, filename);
-    } catch (saveError) {
-      try {
-        // Fallback final com link temporário
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = filename;
-        anchor.style.display = 'none';
-        document.body.appendChild(anchor);
-        anchor.click();
-        document.body.removeChild(anchor);
-        URL.revokeObjectURL(url);
-      } catch (downloadError) {
-        console.error('Erro ao exportar CSV:', { saveError, downloadError });
-        await this.showAlert('Erro', 'Não foi possível exportar o CSV neste dispositivo.');
+      if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+        try {
+          const file = new File([blob], filename, { type: 'text/csv;charset=utf-8' });
+          const navigatorComShare = navigator as any; // Usando any para ignorar tipagem estrita
+          
+          if (navigatorComShare.canShare && navigatorComShare.canShare({ files: [file] })) {
+            await navigator.share({
+              title: 'Exportar Resultados LIMA',
+              text: 'Arquivo CSV gerado pela análise.',
+              files: [file]
+            });
+            exportouComShare = true;
+          }
+        } catch (shareError) {
+          console.warn('Web Share indisponível/falhou. Usando download local.', shareError);
+        }
+      }
+
+      if (!exportouComShare) {
+        try {
+          saveAs(blob, filename); 
+        } catch (saveError) {
+          try {
+            const url = URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = filename;
+            anchor.style.display = 'none';
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+            URL.revokeObjectURL(url);
+          } catch (downloadError) {
+            console.error('Erro ao exportar CSV:', { saveError, downloadError });
+            await this.showAlert('Erro', 'Não foi possível exportar o CSV neste dispositivo.');
+          }
+        }
       }
     }
   }

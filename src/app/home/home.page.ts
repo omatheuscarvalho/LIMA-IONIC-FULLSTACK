@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import {
   camera, download, help, home, moon, sunny, time,
-  trash, logOut, person, calculator, image as imageIcon, chevronDownOutline
+  trash, logOut, person, calculator, image as imageIcon, chevronDownOutline, chevronUpOutline
 } from 'ionicons/icons';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import * as Papa from 'papaparse';
@@ -78,9 +78,9 @@ export class HomePage {
     perimetro: true,
     comprimento: true,
     largura: true,
-    somarAreas: false,
-    relacaoLarguraComprimento: false,
-    mediaDesvio: false
+    somarAreas: true,
+    relacaoLarguraComprimento: true,
+    mediaDesvio: true
   };
 
   // --- imagens / seleção ---
@@ -100,7 +100,7 @@ export class HomePage {
   isAnalyzing = false;
 
   visibleLeafDetails = new Set<number>();
-  aggregatedResultsVisible = true;
+  aggregatedResultsVisible = false;
   private usuarioAnterior: string | null = null;
 
   constructor(
@@ -114,7 +114,22 @@ export class HomePage {
     private cdr: ChangeDetectorRef,
   ) {
     // Registrar ícones (sem duplicatas)
-    addIcons({person,logOut,image,calculator,trash,camera,time,help,download,sunny,moon,home,image:imageIcon,'chevronDownOutline':chevronDownOutline});
+    addIcons({
+      person,
+      logOut,
+      calculator,
+      trash,
+      camera,
+      time,
+      help,
+      download,
+      sunny,
+      moon,
+      home,
+      image: imageIcon,
+      'chevron-down-outline': chevronDownOutline,
+      'chevron-up-outline': chevronUpOutline,
+    });
 
     this.carregarHistorico();
     this.themeService.darkMode$.subscribe(v => this.darkMode = v);
@@ -167,7 +182,7 @@ export class HomePage {
     this.resultadosAgregados = null;
     this.isAnalyzing = false;
     this.visibleLeafDetails.clear();
-    this.aggregatedResultsVisible = true;
+    this.aggregatedResultsVisible = false;
   }
 
   selecionarImagem() {

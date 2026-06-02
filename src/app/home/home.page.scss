@@ -274,6 +274,17 @@
   ion-note[slot="end"] {
     margin-left: 8px;
   }
+
+  .leaf-details-list ion-label,
+  .leaf-details-list ion-note[slot="end"] {
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  .leaf-details-list ion-note[slot="end"] {
+    font-weight: 600;
+    color: var(--ion-color-dark);
+  }
   ion-item.compacto {
     --padding-start: 0px;
     --inner-padding-end: 0px;

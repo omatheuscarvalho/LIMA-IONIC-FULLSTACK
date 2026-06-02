@@ -1,431 +1,431 @@
-.ion-padding {
-  margin-top: 10px;
-}
+  .ion-padding {
+    margin-top: 10px;
+  }
 
 
 
-/* Estilos gerais para cards */
-ion-card {
-  margin-bottom: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
+  /* Estilos gerais para cards */
+  ion-card {
+    margin-bottom: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
 
-ion-card-title {
-  font-size: 16px;
-  font-weight: 600;
-}
+  ion-card-title {
+    font-size: 16px;
+    font-weight: 600;
+  }
 
-/* Container principal */
-.main-container {
-  padding: 0 8px;
-  margin-top: 0;
-  max-width: 1400px; // Limita a largura máxima em telas grandes
-  margin: 0 auto; // Centraliza o container
-}
+  /* Container principal */
+  .main-container {
+    padding: 0 8px;
+    margin-top: 0;
+    max-width: 1400px; // Limita a largura máxima em telas grandes
+    margin: 0 auto; // Centraliza o container
+  }
 
-/* Estilos para o layout de colunas */
-.config-column {
-  padding: 0 4px;
-}
+  /* Estilos para o layout de colunas */
+  .config-column {
+    padding: 0 4px;
+  }
 
-.image-column {
-  padding: 0 4px;
-}
+  .image-column {
+    padding: 0 4px;
+  }
 
-/* Estilos para o card de configuração */
-.config-card {
-  margin-bottom: 12px;
-}
+  /* Estilos para o card de configuração */
+  .config-card {
+    margin-bottom: 12px;
+  }
 
-.compact-item {
-  --padding-start: 0px;
-  --inner-padding-end: 0px;
-  --inner-padding-start: 0px;
-  --min-height: 38px; 
-}
+  .compact-item {
+    --padding-start: 0px;
+    --inner-padding-end: 0px;
+    --inner-padding-start: 0px;
+    --min-height: 38px; 
+  }
 
-/* Mantem todos os campos de configuracao com tipografia uniforme */
-.config-card .compact-item ion-label,
-.config-card .compact-item ion-input,
-.config-card .compact-item ion-select,
-.config-card .compact-item ion-select-option {
-  font-size: 18px !important;
-}
+  /* Mantem todos os campos de configuracao com tipografia uniforme */
+  .config-card .compact-item ion-label,
+  .config-card .compact-item ion-input,
+  .config-card .compact-item ion-select,
+  .config-card .compact-item ion-select-option {
+    font-size: 18px !important;
+  }
 
-.config-card .compact-item ion-input {
-  --placeholder-font-size: 18px;
-}
+  .config-card .compact-item ion-input {
+    --placeholder-font-size: 18px;
+  }
 
-.config-card .compact-item ion-input::part(native),
-.config-card .compact-item ion-select::part(text),
-.config-card .compact-item ion-select::part(placeholder) {
-  font-size: 18px;
-}
+  .config-card .compact-item ion-input::part(native),
+  .config-card .compact-item ion-select::part(text),
+  .config-card .compact-item ion-select::part(placeholder) {
+    font-size: 18px;
+  }
 
-.section-label {
-  display: block;
-  margin: 8px 0 4px 0;
-  font-weight: 500;
-}
+  .section-label {
+    display: block;
+    margin: 8px 0 4px 0;
+    font-weight: 500;
+  }
 
-/* Estilos para os checkboxes */
-.medidas-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  margin: 4px 0 8px 0;
-}
+  /* Estilos para os checkboxes */
+  .medidas-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin: 4px 0 8px 0;
+  }
 
-.checkbox-item {
-  --padding-start: 0;
-  --inner-padding-end: 0;
-  --min-height: 28px;
-  width: auto;
-  margin-right: 8px;
-}
+  .checkbox-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    --min-height: 28px;
+    width: auto;
+    margin-right: 8px;
+  }
 
-/* Estilos para os botões de ação */
-.action-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-/* Estilos para o card de resultados */
-.results-card {
-  margin-bottom: 12px;
-}
-
-.results-list ion-item {
-  --min-height: 36px;
-}
-
-.leaf-result-item {
-  border: 1px solid var(--ion-color-step-200, #e0e0e0);
-  border-radius: 8px;
-  margin-bottom: 12px;
-  overflow: hidden;
-}
-
-.leaf-item-header {
-  --background: var(--ion-color-light-tint, #f9f9f9);
-  --padding-start: 16px;
-  --inner-padding-end: 16px;
-  font-weight: 500;
-}
-
-:host-context(.dark) .leaf-item-header {
-  --background: var(--ion-color-step-150, #262626);
-}
-
-.export-button {
-  margin-top: 8px;
-}
-
-/* Estilos para o card de imagem */
-.image-card {
-  height: calc(100% - 12px);
-  margin-bottom: 12px;
-}
-
-.image-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 200px;
-  height: calc(100% - 20px);
-  background-color: var(--ion-color-light);
-  border-radius: 8px;
-  position: relative;
-}
-
-.placeholder-text {
-  position: absolute;
-  text-align: center;
-  font-style: italic;
-}
-
-ion-img {
-  max-height: 100%;
-  object-fit: contain;
-}
-
-/* Estilos para o modo escuro */
-:host-context(.dark) .image-container {
-  background-color: var(--ion-color-dark-shade);
-}
-
-/* Ocultar card de resultados móvel em telas grandes */
-.results-card-mobile {
-  display: none;
-}
-
-/* Estilos responsivos */
-@media (min-width: 768px) {
+  /* Estilos para os botões de ação */
   .action-buttons {
-    flex-direction: row;
-    justify-content: space-between;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
   }
-  
-  .action-buttons ion-button {
-    width: 32%;
+
+  /* Estilos para o card de resultados */
+  .results-card {
+    margin-bottom: 12px;
   }
-  
+
+  .results-list ion-item {
+    --min-height: 36px;
+  }
+
+  .leaf-result-item {
+    border: 1px solid var(--ion-color-step-200, #e0e0e0);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .leaf-item-header {
+    --background: var(--ion-color-light-tint, #f9f9f9);
+    --padding-start: 16px;
+    --inner-padding-end: 16px;
+    font-weight: 500;
+  }
+
+  :host-context(.dark) .leaf-item-header {
+    --background: var(--ion-color-step-150, #262626);
+  }
+
+  .export-button {
+    margin-top: 8px;
+  }
+
+  /* Estilos para o card de imagem */
+  .image-card {
+    height: calc(100% - 12px);
+    margin-bottom: 12px;
+  }
+
+  .image-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    height: calc(100% - 20px);
+    background-color: var(--ion-color-light);
+    border-radius: 8px;
+    position: relative;
+  }
+
+  .placeholder-text {
+    position: absolute;
+    text-align: center;
+    font-style: italic;
+  }
+
   ion-img {
     max-height: 100%;
+    object-fit: contain;
   }
-}
 
-/* Estilos para telas pequenas */
-@media (max-width: 767px) {
-  .results-card {
-    display: none;
+  /* Estilos para o modo escuro */
+  :host-context(.dark) .image-container {
+    background-color: var(--ion-color-dark-shade);
   }
-  
+
+  /* Ocultar card de resultados móvel em telas grandes */
   .results-card-mobile {
-    display: block;
-  }
-  
-  .image-container {
-    min-height: 180px;
-  }
-}
-
-/* Estilos para o Overlay de Carregamento */
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(var(--ion-background-color-rgb, 255, 255, 255), 0.7);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  z-index: 1000; // Garante que fique por cima de tudo
-}
-
-.loading-content {
-  text-align: center;
-
-  ion-spinner {
-    width: 50px;
-    height: 50px;
-    --color: var(--ion-color-success);
-  }
-
-  p {
-    margin-top: 12px;
-    font-size: 1em;
-    font-weight: 500;
-    color: var(--ion-text-color);
-  }
-}
-
-/* Estilos para o Alerta de Exclusão Moderno */
-::ng-deep .delete-selection-alert {
-  // Backdrop
-  --backdrop-opacity: 0.6;
-
-  .alert-wrapper {
-    background-color: var(--ion-color-step-50, #f2f2f2);
-    border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-  }
-
-  .alert-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--ion-color-primary);
-  }
-
-  .alert-message {
-    color: var(--ion-text-color-step-600, #666);
-  }
-
-  // Estilo dos checkboxes
-  .alert-checkbox-label {
-    font-size: 16px;
-  }
-
-  .alert-button.alert-button-confirm {
-    font-weight: 600;
-    color: var(--ion-color-primary);
-  }
-
-  .alert-button.alert-button-cancel {
-    color: var(--ion-color-medium);
-  }
-
-  .alert-button.alert-button-danger {
-    color: var(--ion-color-danger);
-    font-weight: bold;
-  }
-}
-ion-item ion-label {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-ion-note[slot="end"] {
-  margin-left: 8px;
-}
-ion-item.compacto {
-  --padding-start: 0px;
-  --inner-padding-end: 0px;
-  --inner-padding-start: 0px;
-  --min-height: 38px; 
-}
-.leaf-grid {
-  --ion-grid-padding: 0;
-  --ion-grid-row-padding: 6px;
-  --ion-grid-column-padding: 6px;
-}
-
-/* Botões de ação para desktop e mobile */
-.desktop-action-buttons {
-  display: flex;
-}
-
-.mobile-image-buttons,
-.mobile-action-buttons {
-  display: none;
-}
-
-/* No mobile: mostrar botões mobile, ocultar desktop */
-@media (max-width: 768px) {
-  .desktop-action-buttons {
     display: none;
+  }
+
+  /* Estilos responsivos */
+  @media (min-width: 768px) {
+    .action-buttons {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+    
+    .action-buttons ion-button {
+      width: 32%;
+    }
+    
+    ion-img {
+      max-height: 100%;
+    }
+  }
+
+  /* Estilos para telas pequenas */
+  @media (max-width: 767px) {
+    .results-card {
+      display: none;
+    }
+    
+    .results-card-mobile {
+      display: block;
+    }
+    
+    .image-container {
+      min-height: 180px;
+    }
+  }
+
+  /* Estilos para o Overlay de Carregamento */
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(var(--ion-background-color-rgb, 255, 255, 255), 0.7);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 1000; // Garante que fique por cima de tudo
+  }
+
+  .loading-content {
+    text-align: center;
+
+    ion-spinner {
+      width: 50px;
+      height: 50px;
+      --color: var(--ion-color-success);
+    }
+
+    p {
+      margin-top: 12px;
+      font-size: 1em;
+      font-weight: 500;
+      color: var(--ion-text-color);
+    }
+  }
+
+  /* Estilos para o Alerta de Exclusão Moderno */
+  ::ng-deep .delete-selection-alert {
+    // Backdrop
+    --backdrop-opacity: 0.6;
+
+    .alert-wrapper {
+      background-color: var(--ion-color-step-50, #f2f2f2);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+
+    .alert-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--ion-color-primary);
+    }
+
+    .alert-message {
+      color: var(--ion-text-color-step-600, #666);
+    }
+
+    // Estilo dos checkboxes
+    .alert-checkbox-label {
+      font-size: 16px;
+    }
+
+    .alert-button.alert-button-confirm {
+      font-weight: 600;
+      color: var(--ion-color-primary);
+    }
+
+    .alert-button.alert-button-cancel {
+      color: var(--ion-color-medium);
+    }
+
+    .alert-button.alert-button-danger {
+      color: var(--ion-color-danger);
+      font-weight: bold;
+    }
+  }
+  ion-item ion-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  ion-note[slot="end"] {
+    margin-left: 8px;
+  }
+  ion-item.compacto {
+    --padding-start: 0px;
+    --inner-padding-end: 0px;
+    --inner-padding-start: 0px;
+    --min-height: 38px; 
+  }
+  .leaf-grid {
+    --ion-grid-padding: 0;
+    --ion-grid-row-padding: 6px;
+    --ion-grid-column-padding: 6px;
+  }
+
+  /* Botões de ação para desktop e mobile */
+  .desktop-action-buttons {
+    display: flex;
   }
 
   .mobile-image-buttons,
   .mobile-action-buttons {
-    display: flex;
-  }
-}
-.results-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.results-header ion-buttons {
-  display: flex;
-  gap: 4px;
-}
-.leaf-item-card {
-  border: 1px solid var(--ion-color-medium, #ccc);
-  border-radius: 6px;
-  margin-top: 8px;
-}
-
-.leaf-details-list {
-  padding-left: 4px;
-  border-left: 2px solid var(--ion-color-primary);
-  margin-bottom: 6px;
-}
-.mobile-stack {
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-}
-
-@media (max-width: 768px) {
-  .mobile-stack {
-    flex-direction: column;
+    display: none;
   }
 
-  .results-card {
-    order: 2;
+  /* No mobile: mostrar botões mobile, ocultar desktop */
+  @media (max-width: 768px) {
+    .desktop-action-buttons {
+      display: none;
+    }
+
+    .mobile-image-buttons,
+    .mobile-action-buttons {
+      display: flex;
+    }
   }
-
-  .image-card {
-    order: 1;
-  }
-}
-
-/* Força exibição do card de resultados no mobile */
-@media (max-width: 767px) {
-  .results-card {
-    display: block !important;
-  }
-  .results-card-mobile {
-    display: block !important; /* se existir, mostra também */
-  }
-}
-
-/* Borda e separador por folha */
-.leaf-result-item {
-  border: 1px solid rgba(0,0,0,0.08);
-  border-radius: 8px;
-  padding: 6px;
-  margin-bottom: 10px;
-  background: var(--ion-background-color);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-}
-
-.leaf-item-header {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-/* Header dos resultados alinhado à direita */
-.results-header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:4px;
-  width:100%;
-  min-width: 0;
-}
-
-ion-card-title {
-  font-size: 16px;
-  font-weight: 600;
-  flex-shrink: 0;
-  min-width: fit-content;
-}
-
-.results-header ion-buttons {
-  display:flex;
-  gap:0px;
-  flex-wrap: nowrap;
-  flex-shrink: 0;
-  min-width: fit-content;
-}
-
-.results-header ion-buttons ion-button {
-  --padding-start: 6px;
-  --padding-end: 6px;
-  font-size: 13px;
-  white-space: nowrap;
-  min-width: fit-content;
-  flex: 1;
-}
-
-.results-header ion-buttons ion-button ion-icon {
-  margin-right: 0px;
-  font-size: 16px;
-}
-
-@media (max-width: 768px) {
   .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .results-header ion-buttons {
+    display: flex;
+    gap: 4px;
+  }
+  .leaf-item-card {
+    border: 1px solid var(--ion-color-medium, #ccc);
+    border-radius: 6px;
+    margin-top: 8px;
+  }
+
+  .leaf-details-list {
+    padding-left: 4px;
+    border-left: 2px solid var(--ion-color-primary);
+    margin-bottom: 6px;
+  }
+  .mobile-stack {
+    display: flex;
+    flex-direction: row;
     gap: 12px;
   }
-}
 
-/* Ajuste fino para evitar overflow de texto nos ion-labels */
-.results-list ion-item ion-label,
-.leaf-item-header ion-label {
-  white-space: normal;
-  word-break: break-word;
-}
+  @media (max-width: 768px) {
+    .mobile-stack {
+      flex-direction: column;
+    }
+
+    .results-card {
+      order: 2;
+    }
+
+    .image-card {
+      order: 1;
+    }
+  }
+
+  /* Força exibição do card de resultados no mobile */
+  @media (max-width: 767px) {
+    .results-card {
+      display: block !important;
+    }
+    .results-card-mobile {
+      display: block !important; /* se existir, mostra também */
+    }
+  }
+
+  /* Borda e separador por folha */
+  .leaf-result-item {
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 8px;
+    padding: 6px;
+    margin-bottom: 10px;
+    background: var(--ion-background-color);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  .leaf-item-header {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* Header dos resultados alinhado à direita */
+  .results-header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:4px;
+    width:100%;
+    min-width: 0;
+  }
+
+  ion-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    flex-shrink: 0;
+    min-width: fit-content;
+  }
+
+  .results-header ion-buttons {
+    display:flex;
+    gap:0px;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+    min-width: fit-content;
+  }
+
+  .results-header ion-buttons ion-button {
+    --padding-start: 6px;
+    --padding-end: 6px;
+    font-size: 13px;
+    white-space: nowrap;
+    min-width: fit-content;
+    flex: 1;
+  }
+
+  .results-header ion-buttons ion-button ion-icon {
+    margin-right: 0px;
+    font-size: 16px;
+  }
+
+  @media (max-width: 768px) {
+    .results-header {
+      gap: 12px;
+    }
+  }
+
+  /* Ajuste fino para evitar overflow de texto nos ion-labels */
+  .results-list ion-item ion-label,
+  .leaf-item-header ion-label {
+    white-space: normal;
+    word-break: break-word;
+  }

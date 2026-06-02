@@ -114,21 +114,7 @@ export class HomePage {
     private cdr: ChangeDetectorRef,
   ) {
     // Registrar ícones (sem duplicatas)
-    addIcons({
-      person,
-      logOut,
-      calculator,
-      trash,
-      camera,
-      time,
-      help,
-      download,
-      sunny,
-      moon,
-      home,
-      image: imageIcon,
-      'chevron-down-outline': chevronDownOutline
-    });
+    addIcons({person,logOut,image,calculator,trash,camera,time,help,download,sunny,moon,home,image:imageIcon,'chevronDownOutline':chevronDownOutline});
 
     this.carregarHistorico();
     this.themeService.darkMode$.subscribe(v => this.darkMode = v);
@@ -694,31 +680,57 @@ export class HomePage {
 
     linhasExportacao.push([]);
 
-    // 4. ESTATÍSTICAS AGREGADAS (mantidas sem separadores textuais)
+    // 4. ESTATÍSTICAS AGREGADAS: alinhar Soma / Média / Desvio nas colunas já existentes
     if (this.medidasSelecionadas.somarAreas || this.medidasSelecionadas.mediaDesvio) {
-      linhasExportacao.push(['ESTATÍSTICAS AGREGADAS']);
-      linhasExportacao.push(['Parâmetro', 'Valor']);
+      // Mantém uma linha em branco antes das estatísticas
+      linhasExportacao.push([]);
 
-      if (this.medidasSelecionadas.somarAreas) {
-        linhasExportacao.push([`Soma Total das Áreas (${this.unidadeCalculada}²)`, formatarNumero(this.resultadosAgregados?.totalArea)]);
-      }
+      // Mapeia posições das colunas do cabeçalho para inserir valores alinhados
+      const header = cabecalhosResultados; // já contém a ordem usada acima
+      const findCol = (needle: string) => header.findIndex(h => (h || '').toString().toLowerCase().includes(needle));
 
-      if (this.medidasSelecionadas.mediaDesvio) {
-        if (this.medidasSelecionadas.largura) {
-          linhasExportacao.push([`Média da Largura (${this.unidadeCalculada})`, formatarNumero(this.resultadosAgregados?.averageWidth)]);
-        }
-        if (this.medidasSelecionadas.comprimento) {
-          linhasExportacao.push([`Média do Comprimento (${this.unidadeCalculada})`, formatarNumero(this.resultadosAgregados?.averageLength)]);
-        }
-        if (this.medidasSelecionadas.area) {
-          linhasExportacao.push([`Média da Área (${this.unidadeCalculada}²)`, formatarNumero(this.resultadosAgregados?.averageArea)]);
-          linhasExportacao.push(['Desvio Padrão (Área)', formatarNumero(this.resultadosAgregados?.standardDeviationArea)]);
-        }
-        if (this.medidasSelecionadas.perimetro) {
-          linhasExportacao.push([`Média do Perímetro (${this.unidadeCalculada})`, formatarNumero(this.resultadosAgregados?.averagePerimeter)]);
-          linhasExportacao.push(['Desvio Padrão (Perímetro)', formatarNumero(this.resultadosAgregados?.standardDeviationPerimeter)]);
-        }
-      }
+      const idxLargura = findCol('largura');
+      const idxComprimento = findCol('comprimento');
+      const idxRelacao = findCol('relação') >= 0 ? findCol('relação') : findCol('l/c');
+      const idxArea = findCol('área');
+      const idxPerimetro = findCol('perímetro');
+
+      const totalArea = this.resultadosAgregados?.totalArea ?? (this.resultadosAgregados as any)?.somaAreas ?? 0;
+      const avgWidth = this.resultadosAgregados?.averageWidth ?? (this.resultadosAgregados as any)?.mediaLargura ?? '';
+      const avgLength = this.resultadosAgregados?.averageLength ?? (this.resultadosAgregados as any)?.mediaComprimento ?? '';
+      const avgRelation = this.resultadosAgregados?.averageWidthToLengthRatio ?? (this.resultadosAgregados as any)?.mediaRelacao ?? '';
+      const avgArea = this.resultadosAgregados?.averageArea ?? (this.resultadosAgregados as any)?.mediaArea ?? '';
+      const avgPerimeter = this.resultadosAgregados?.averagePerimeter ?? (this.resultadosAgregados as any)?.mediaPerimetro ?? '';
+
+      const sdWidth = this.resultadosAgregados?.standardDeviationWidth ?? (this.resultadosAgregados as any)?.desvioLargura ?? '';
+      const sdLength = this.resultadosAgregados?.standardDeviationLength ?? (this.resultadosAgregados as any)?.desvioComprimento ?? '';
+      const sdArea = this.resultadosAgregados?.standardDeviationArea ?? (this.resultadosAgregados as any)?.desvioArea ?? '';
+      const sdPerimeter = this.resultadosAgregados?.standardDeviationPerimeter ?? (this.resultadosAgregados as any)?.desvioPerimetro ?? '';
+
+      // Linha Soma: coloca totalArea na coluna Área (se existir)
+      const somaRow: (string | number)[] = new Array(header.length).fill('');
+      somaRow[0] = 'Soma';
+      if (idxArea >= 0) somaRow[idxArea] = formatarNumero(totalArea);
+      linhasExportacao.push(somaRow);
+
+      // Linha Média: popula as colunas de medidas (se existirem)
+      const mediaRow: (string | number)[] = new Array(header.length).fill('');
+      mediaRow[0] = 'Média';
+      if (idxLargura >= 0) mediaRow[idxLargura] = formatarNumero(avgWidth);
+      if (idxComprimento >= 0) mediaRow[idxComprimento] = formatarNumero(avgLength);
+      if (idxRelacao >= 0) mediaRow[idxRelacao] = formatarNumero(avgRelation);
+      if (idxArea >= 0) mediaRow[idxArea] = formatarNumero(avgArea);
+      if (idxPerimetro >= 0) mediaRow[idxPerimetro] = formatarNumero(avgPerimeter);
+      linhasExportacao.push(mediaRow);
+
+      // Linha Desvio Padrão: popula colunas quando aplicável
+      const desvioRow: (string | number)[] = new Array(header.length).fill('');
+      desvioRow[0] = 'Desvio Padrão';
+      if (idxLargura >= 0) desvioRow[idxLargura] = formatarNumero(sdWidth);
+      if (idxComprimento >= 0) desvioRow[idxComprimento] = formatarNumero(sdLength);
+      if (idxArea >= 0) desvioRow[idxArea] = formatarNumero(sdArea);
+      if (idxPerimetro >= 0) desvioRow[idxPerimetro] = formatarNumero(sdPerimeter);
+      linhasExportacao.push(desvioRow);
     }
 
     // 4. CONVERSÃO E EXPORTAÇÃO

@@ -386,26 +386,26 @@ export class HistoryPage implements OnInit {
       ['']
     ];
 
-    // Preparar cabeçalho das colunas de dados
-    const cabecalhoDados = ['Folha', `Área (${analise.unidade || 'cm'}²)`, `Perímetro (${analise.unidade || 'cm'})`, `Comprimento (${analise.unidade || 'cm'})`, `Largura (${analise.unidade || 'cm'})`, 'Relação L/C'];
+    // Preparar cabeçalho das colunas de dados (ordem: Folha, Largura, Comprimento, Relação L/C, Área, Perímetro)
+    const cabecalhoDados = ['Folha', `Largura (${analise.unidade || 'cm'})`, `Comprimento (${analise.unidade || 'cm'})`, 'Relação L/C', `Área (${analise.unidade || 'cm'}²)`, `Perímetro (${analise.unidade || 'cm'})`];
 
-    // Preparar linhas de dados individuais
+    // Preparar linhas de dados individuais seguindo a mesma ordem
     let linhasDados: any[] = [];
     if (analise.resultados && Array.isArray(analise.resultados)) {
       linhasDados = analise.resultados.map((r: any) => {
         return [
           `Folha ${r.id}`,
-          (r.area || 0).toString().replace('.', ','),
-          (r.perimetro || 0).toString().replace('.', ','),
-          (r.comprimento || 0).toString().replace('.', ','),
           (r.largura || 0).toString().replace('.', ','),
-          (r.relacaoLarguraComprimento || 0).toString().replace('.', ',')
+          (r.comprimento || 0).toString().replace('.', ','),
+          (r.relacaoLarguraComprimento || 0).toString().replace('.', ','),
+          (r.area || 0).toString().replace('.', ','),
+          (r.perimetro || 0).toString().replace('.', ',')
         ];
       });
     }
 
-    // Adicionar estatísticas agregadas
-    const linhasAgregadas = [];
+    // Adicionar estatísticas agregadas alinhadas com as colunas acima
+    const linhasAgregadas: any[] = [];
     const agg = analise.resultadosAgregados;
 
     if (agg) {
@@ -414,35 +414,34 @@ export class HistoryPage implements OnInit {
       linhasAgregadas.push(['             2. ESTATÍSTICAS AGREGADAS (RESUMO)          ']);
       linhasAgregadas.push(['="========================================================"']);
       linhasAgregadas.push(['']);
-      linhasAgregadas.push(['Parâmetro', 'Média', 'Desvio Padrão']);
 
-      // Helper para formatar número
-      const fmt = (n: any) => (n !== undefined && n !== null) ? Number(n).toFixed(4).replace('.', ',') : '-';
+      // Helper para formatar número com 4 casas
+      const fmt = (n: any) => (n !== undefined && n !== null) ? Number(n).toFixed(4).replace('.', ',') : '';
 
-      // Verifica chaves novas (inglês) ou antigas (português)
-      linhasAgregadas.push([
-        'Largura',
-        fmt(agg.averageWidth || agg.mediaLargura),
-        fmt(agg.standardDeviationWidth || agg.desvioLargura)
-      ]);
-      linhasAgregadas.push([
-        'Comprimento',
-        fmt(agg.averageLength || agg.mediaComprimento),
-        fmt(agg.standardDeviationLength || agg.desvioComprimento)
-      ]);
-      linhasAgregadas.push([
-        'Área',
-        fmt(agg.averageArea || agg.mediaArea),
-        fmt(agg.standardDeviationArea || agg.desvioArea)
-      ]);
-      linhasAgregadas.push([
-        'Perímetro',
-        fmt(agg.averagePerimeter || agg.mediaPerimetro),
-        fmt(agg.standardDeviationPerimeter || agg.desvioPerimetro)
-      ]);
+      const totalArea = agg.totalArea ?? agg.somaAreas ?? 0;
+      const avgWidth = agg.averageWidth ?? agg.mediaLargura ?? '';
+      const avgLength = agg.averageLength ?? agg.mediaComprimento ?? '';
+      const avgRelation = agg.averageWidthToLengthRatio ?? agg.mediaRelacao ?? '';
+      const avgArea = agg.averageArea ?? agg.mediaArea ?? '';
+      const avgPerimeter = agg.averagePerimeter ?? agg.mediaPerimetro ?? '';
 
-      linhasAgregadas.push(['']);
-      linhasAgregadas.push(['Soma Total Áreas', fmt(agg.somaAreas || agg.totalArea)]);
+      const sdWidth = agg.standardDeviationWidth ?? agg.desvioLargura ?? '';
+      const sdLength = agg.standardDeviationLength ?? agg.desvioComprimento ?? '';
+      const sdArea = agg.standardDeviationArea ?? agg.desvioArea ?? '';
+      const sdPerimeter = agg.standardDeviationPerimeter ?? agg.desvioPerimetro ?? '';
+
+      // Soma: totalArea na coluna Área (índice 4)
+      const somaRow = ['', '', '', '', fmt(totalArea), ''];
+      somaRow[0] = 'Soma';
+      linhasAgregadas.push(somaRow);
+
+      // Média: coloca médias nas colunas correspondentes
+      const mediaRow = ['Média', fmt(avgWidth), fmt(avgLength), fmt(avgRelation), fmt(avgArea), fmt(avgPerimeter)];
+      linhasAgregadas.push(mediaRow);
+
+      // Desvio Padrão: coloca desvios nas colunas correspondentes
+      const desvioRow = ['Desvio Padrão', fmt(sdWidth), fmt(sdLength), '', fmt(sdArea), fmt(sdPerimeter)];
+      linhasAgregadas.push(desvioRow);
     }
 
     // Combinar tudo

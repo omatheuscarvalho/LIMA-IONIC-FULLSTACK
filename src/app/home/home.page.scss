@@ -11,7 +11,7 @@
   }
 
   ion-card-title {
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 600;
   }
 
@@ -49,23 +49,24 @@
   .config-card .compact-item ion-input,
   .config-card .compact-item ion-select,
   .config-card .compact-item ion-select-option {
-    font-size: 18px !important;
+    font-size: 20px !important;
   }
 
   .config-card .compact-item ion-input {
-    --placeholder-font-size: 18px;
+    --placeholder-font-size: 20px;
   }
 
   .config-card .compact-item ion-input::part(native),
   .config-card .compact-item ion-select::part(text),
   .config-card .compact-item ion-select::part(placeholder) {
-    font-size: 18px;
+    font-size: 20px;
   }
 
   .section-label {
     display: block;
     margin: 8px 0 4px 0;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 18px;
   }
 
   /* Estilos para os checkboxes */
@@ -220,7 +221,7 @@
 
     p {
       margin-top: 12px;
-      font-size: 1em;
+      font-size: 18px;
       font-weight: 500;
       color: var(--ion-text-color);
     }
@@ -238,7 +239,7 @@
     }
 
     .alert-title {
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 600;
       color: var(--ion-color-primary);
     }
@@ -249,7 +250,7 @@
 
     // Estilo dos checkboxes
     .alert-checkbox-label {
-      font-size: 16px;
+      font-size: 18px;
     }
 
     .alert-button.alert-button-confirm {
@@ -335,6 +336,11 @@
     border: 1px solid var(--ion-color-medium, #ccc);
     border-radius: 6px;
     margin-top: 8px;
+
+    ion-label {
+      font-size: 18px;
+      font-weight: 600;
+    }
   }
 
   .leaf-details-list {
@@ -417,7 +423,7 @@
   .results-header ion-buttons ion-button {
     --padding-start: 6px;
     --padding-end: 6px;
-    font-size: 13px;
+    font-size: 16px;
     white-space: nowrap;
     min-width: fit-content;
     flex: 1;
@@ -425,7 +431,7 @@
 
   .results-header ion-buttons ion-button ion-icon {
     margin-right: 0px;
-    font-size: 16px;
+    font-size: 18px;
   }
 
   @media (max-width: 768px) {

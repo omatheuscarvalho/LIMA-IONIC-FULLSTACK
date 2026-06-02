@@ -30,6 +30,7 @@
 
   .image-column {
     padding: 0 4px;
+    align-self: flex-start;
   }
 
   /* Estilos para o card de configuração */
@@ -126,8 +127,14 @@
 
   /* Estilos para o card de imagem */
   .image-card {
-    height: calc(100% - 12px);
+    height: auto;
+    width: 100%;
     margin-bottom: 12px;
+  }
+
+  .image-card ion-card-content {
+    display: flex;
+    padding-top: 0;
   }
 
   .image-container {
@@ -135,8 +142,9 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 200px;
-    height: calc(100% - 20px);
+    min-height: 0;
+    height: auto;
+    width: 100%;
     background-color: var(--ion-color-light);
     border-radius: 8px;
     position: relative;
@@ -149,6 +157,8 @@
   }
 
   ion-img {
+    display: block;
+    width: 100%;
     max-height: 100%;
     object-fit: contain;
   }
@@ -190,7 +200,7 @@
     }
     
     .image-container {
-      min-height: 180px;
+      min-height: 0;
     }
   }
 

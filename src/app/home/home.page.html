@@ -103,29 +103,6 @@
                 </ion-row>
               </ion-grid>
 
-              <ion-accordion-group value="filtro-exibicao">
-                <ion-accordion value="filtro-exibicao">
-                  <ion-item slot="header" class="filter-header" color="light">
-                    <ion-label>
-                      <h2>Filtro de Exibição</h2>
-                      <p>Todos os filtros começam ativados por padrão.</p>
-                    </ion-label>
-                  </ion-item>
-
-                  <div slot="content" class="medidas-container">
-                    <ion-item class="checkbox-item" *ngFor="let m of medidasOptions">
-                      <ion-checkbox
-                        slot="start"
-                        [(ngModel)]="viewFilterState[m.key]"
-                        [disabled]="isFilterDisabled(m.key)"
-                        (ionChange)="onFilterChange(m.key, $event.detail.checked)">
-                      </ion-checkbox>
-                      <ion-label [class.filter-disabled]="isFilterDisabled(m.key)">{{ m.label }}</ion-label>
-                    </ion-item>
-                  </div>
-                </ion-accordion>
-              </ion-accordion-group>
-
               <ion-grid class="ion-no-padding">
                 <!-- Desktop: 3 botões lado a lado -->
                 <ion-row class="desktop-action-buttons">
@@ -224,6 +201,23 @@
 
 
             <ion-card-content>
+
+              <ion-accordion-group value="filtro-exibicao" class="ion-margin-bottom">
+                <ion-accordion value="filtro-exibicao">
+                  <ion-item slot="header" class="filter-header" color="light">
+                    <ion-label>
+                      <h2>Filtro de Exibição</h2>
+                    </ion-label>
+                  </ion-item>
+
+                  <div slot="content" class="medidas-container">
+                    <ion-item class="checkbox-item" *ngFor="let m of medidasOptions">
+                      <ion-checkbox slot="start" [(ngModel)]="viewFilterState[m.key]" [disabled]="isFilterDisabled(m.key)" (ionChange)="onFilterChange(m.key, $event.detail.checked)"></ion-checkbox>
+                      <ion-label [class.filter-disabled]="isFilterDisabled(m.key)">{{ m.label }}</ion-label>
+                    </ion-item>
+                  </div>
+                </ion-accordion>
+              </ion-accordion-group>
 
               <!-- Lista individual -->
               <div *ngFor="let r of resultados; trackBy: trackByLeaf">

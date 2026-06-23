@@ -86,6 +86,14 @@
     margin-right: 8px;
   }
 
+  .filter-header {
+    --min-height: 54px;
+  }
+
+  .filter-disabled {
+    opacity: 0.45;
+  }
+
   /* Estilos para os botões de ação */
   .action-buttons {
     display: flex;

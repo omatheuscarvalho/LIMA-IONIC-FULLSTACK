@@ -4,7 +4,8 @@ import {
   IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
   IonCol, IonContent, IonGrid, IonTitle, IonHeader, IonIcon, IonInput, IonItem, IonLabel,
   IonNote, IonRow, IonToolbar, IonImg, IonText, IonList, IonCheckbox,
-  IonSpinner, AlertController, AlertInput, IonSelect, IonSelectOption
+  IonSpinner, AlertController, AlertInput, IonSelect, IonSelectOption, IonAccordion,
+  IonAccordionGroup
 } from '@ionic/angular/standalone';
 import { DOCUMENT, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -45,7 +46,7 @@ type UnidadeKey = 'cm' | 'mm';
     IonHeader, IonToolbar, IonTitle, IonContent, FormsModule, CommonModule, IonCard,
     IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton,
     IonIcon, IonNote, IonButtons, IonGrid, IonRow, IonCol, IonImg, IonText, IonList,
-    IonCheckbox, IonSpinner, IonSelect, IonSelectOption
+    IonCheckbox, IonSpinner, IonSelect, IonSelectOption, IonAccordion, IonAccordionGroup
   ],
 })
 export class HomePage {
@@ -83,6 +84,43 @@ export class HomePage {
     mediaDesvio: true
   };
 
+  // Alias de leitura para a interface: o menu agora é tratado como filtro de exibição.
+  viewFilterState = this.medidasSelecionadas;
+
+  isFilterDisabled(key: MedidaKey): boolean {
+    if (key === 'somarAreas') {
+      return !this.viewFilterState.area;
+    }
+
+    if (key === 'relacaoLarguraComprimento') {
+      return !(this.viewFilterState.largura && this.viewFilterState.comprimento);
+    }
+
+    return false;
+  }
+
+  onFilterChange(key: MedidaKey, checked: boolean) {
+    this.viewFilterState[key] = checked;
+
+    if (!checked) {
+      if (key === 'area') {
+        this.viewFilterState.somarAreas = false;
+      }
+
+      if (key === 'largura' || key === 'comprimento') {
+        this.viewFilterState.relacaoLarguraComprimento = false;
+      }
+    }
+
+    if (this.isFilterDisabled('somarAreas')) {
+      this.viewFilterState.somarAreas = false;
+    }
+
+    if (this.isFilterDisabled('relacaoLarguraComprimento')) {
+      this.viewFilterState.relacaoLarguraComprimento = false;
+    }
+  }
+
   // --- imagens / seleção ---
   imagemSelecionada: string | null = null;
   imagemProcessada: string | null = null;
@@ -114,22 +152,7 @@ export class HomePage {
     private cdr: ChangeDetectorRef,
   ) {
     // Registrar ícones (sem duplicatas)
-    addIcons({
-      person,
-      logOut,
-      calculator,
-      trash,
-      camera,
-      time,
-      help,
-      download,
-      sunny,
-      moon,
-      home,
-      image: imageIcon,
-      'chevron-down-outline': chevronDownOutline,
-      'chevron-up-outline': chevronUpOutline,
-    });
+    addIcons({person,logOut,image,calculator,trash,camera,time,help,download,'logOut':logOut,image:imageIcon,sunny,moon,home,'chevronDownOutline':chevronDownOutline,'chevronUpOutline':chevronUpOutline});
 
     this.carregarHistorico();
     this.themeService.darkMode$.subscribe(v => this.darkMode = v);

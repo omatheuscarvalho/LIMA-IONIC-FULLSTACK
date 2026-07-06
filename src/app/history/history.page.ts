@@ -64,6 +64,10 @@ import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 import { StorageService } from '../services/storage.service';
 
+type MedidaKey =
+  'area' | 'perimetro' | 'comprimento' | 'largura' |
+  'somarAreas' | 'relacaoLarguraComprimento' | 'mediaDesvio';
+
 @Component({
   selector: 'app-history',
   templateUrl: './history.page.html',
@@ -101,6 +105,20 @@ import { StorageService } from '../services/storage.service';
   ]
 })
 export class HistoryPage implements OnInit {
+  medidasOptions: { key: MedidaKey; label: string }[] = [
+    { key: 'area', label: 'Área' },
+    { key: 'perimetro', label: 'Perímetro' },
+    { key: 'comprimento', label: 'Comprimento' },
+    { key: 'largura', label: 'Largura' },
+    { key: 'somarAreas', label: 'Somar áreas' },
+    { key: 'relacaoLarguraComprimento', label: 'Relação L/C' },
+    { key: 'mediaDesvio', label: 'Média e desvio' }
+  ];
+
+  medidasSelecionadas: Record<MedidaKey, boolean> = this.criarFiltroPadrao();
+
+  viewFilterState: Record<MedidaKey, boolean> = this.criarFiltroPadrao();
+
   historico: any[] = [];
   filteredHistorico: any[] = []; // Adicionado para manter consistência com o HTML
   analiseDetalhada: any = null;
@@ -116,6 +134,18 @@ export class HistoryPage implements OnInit {
   // Modal de imagem ampliada
   imagemAmpliada: string | null = null;
 
+  private criarFiltroPadrao(): Record<MedidaKey, boolean> {
+    return {
+    area: true,
+    perimetro: true,
+    comprimento: true,
+    largura: true,
+    somarAreas: true,
+    relacaoLarguraComprimento: true,
+    mediaDesvio: true
+    };
+  }
+
   constructor(
     private router: Router, 
     private alertController: AlertController,
@@ -126,6 +156,45 @@ export class HistoryPage implements OnInit {
 
   ngOnInit() {
     this.carregarHistorico();
+  }
+
+  isFilterDisabled(key: MedidaKey): boolean {
+    if (key === 'somarAreas') {
+      return !this.viewFilterState.area;
+    }
+
+    if (key === 'relacaoLarguraComprimento') {
+      return !(this.viewFilterState.largura && this.viewFilterState.comprimento);
+    }
+
+    return false;
+  }
+
+  onFilterChange(key: MedidaKey, checked: boolean) {
+    this.viewFilterState[key] = checked;
+
+    if (!checked) {
+      if (key === 'area') {
+        this.viewFilterState.somarAreas = false;
+      }
+
+      if (key === 'largura' || key === 'comprimento') {
+        this.viewFilterState.relacaoLarguraComprimento = false;
+      }
+    }
+
+    if (this.isFilterDisabled('somarAreas')) {
+      this.viewFilterState.somarAreas = false;
+    }
+
+    if (this.isFilterDisabled('relacaoLarguraComprimento')) {
+      this.viewFilterState.relacaoLarguraComprimento = false;
+    }
+  }
+
+  private resetFiltroExibicao() {
+    this.viewFilterState = this.criarFiltroPadrao();
+    this.medidasSelecionadas = { ...this.viewFilterState };
   }
 
   async carregarHistorico() {
@@ -318,8 +387,10 @@ export class HistoryPage implements OnInit {
 
   expandirAnalise(analise: any) {
     // Armazena apenas a referência do ID para encontrar depois
+    this.resetFiltroExibicao();
     this.analiseDetalhada = analise;
     this.editingDetalhe = false;
+    this.selectedSegment = 'resumo';
   }
 
   fecharDetalhes() {
@@ -327,6 +398,7 @@ export class HistoryPage implements OnInit {
     this.editingDetalhe = false;
     this.editModel = null;
     this.selectedSegment = 'resumo'; // Resetar para a aba principal
+    this.resetFiltroExibicao();
   }
 
   onModalDidDismiss(event: any) {

@@ -209,6 +209,86 @@
   background: var(--ion-background-color);
 }
 
+.filter-card {
+  margin: 0 0 16px 0;
+  border-radius: 18px;
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-color-step-150);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+}
+
+.filter-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+
+  h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ion-text-color);
+  }
+}
+
+.filter-eyebrow {
+  margin: 0 0 4px 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ion-color-primary);
+}
+
+.filter-accordion {
+  border-top: 1px solid var(--ion-color-step-150);
+  padding-top: 10px;
+}
+
+.filter-accordion-header {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --background: transparent;
+
+  ion-label {
+    margin: 0;
+
+    span {
+      display: block;
+      font-weight: 600;
+      color: var(--ion-text-color);
+    }
+
+    p {
+      margin: 4px 0 0 0;
+      color: var(--ion-color-medium);
+      font-size: 0.85rem;
+    }
+  }
+}
+
+.medidas-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.checkbox-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --min-height: 34px;
+  --background: var(--ion-color-step-50);
+  --color: var(--ion-text-color);
+  border: 1px solid var(--ion-color-step-150);
+  border-radius: 12px;
+  width: 100%;
+}
+
+.filter-disabled {
+  opacity: 0.45;
+}
+
 /* Seção da Imagem */
 .image-section {
   position: relative;

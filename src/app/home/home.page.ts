@@ -152,7 +152,22 @@ export class HomePage {
     private cdr: ChangeDetectorRef,
   ) {
     // Registrar ícones (sem duplicatas)
-    addIcons({ person, 'log-out': logOut, image: imageIcon, calculator, trash, camera, time, help, download, sunny, moon, home, 'chevron-down-outline': chevronDownOutline, 'chevron-up-outline': chevronUpOutline });
+    addIcons({
+      person,
+      'log-out': logOut,
+      image: imageIcon,
+      calculator,
+      trash,
+      camera,
+      time,
+      help,
+      download,
+      sunny,
+      moon,
+      home,
+      'chevron-down-outline': chevronDownOutline,
+      'chevron-up-outline': chevronUpOutline
+    });
 
     this.carregarHistorico();
     this.themeService.darkMode$.subscribe(v => this.darkMode = v);

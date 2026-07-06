@@ -155,7 +155,7 @@
                     <span class="detail-label">Réplica:</span>
                     <span class="detail-value">{{ analiseDetalhada.replica || '—' }}</span>
                   </div>
-                  <div class="analysis-detail-item">
+                  <div class="analysis-detail-item" *ngIf="viewFilterState.area">
                     <span class="detail-label">Área Padrão:</span>
                     <span class="detail-value">{{ analiseDetalhada.areaEscala | number:'1.5-5' }} {{
                       analiseDetalhada.unidade || 'cm' }}²</span>
@@ -196,7 +196,7 @@
             <h3 class="section-title">Resumo Estatístico</h3>
 
             <div class="stats-dashboard">
-              <div class="stat-card primary">
+              <div class="stat-card primary" *ngIf="viewFilterState.somarAreas">
                 <div class="stat-icon"><ion-icon name="analytics-outline"></ion-icon></div>
                 <div class="stat-content">
                   <span class="stat-label">Soma das Áreas</span>
@@ -205,9 +205,9 @@
                 </div>
               </div>
 
-              <h4 class="section-subtitle">Largura:</h4>
+              <h4 class="section-subtitle" *ngIf="viewFilterState.mediaDesvio && viewFilterState.largura">Largura:</h4>
 
-              <div class="stat-grid">
+              <div class="stat-grid" *ngIf="viewFilterState.mediaDesvio && viewFilterState.largura">
                 <div class="mini-stat">
                   <span class="label">Média</span>
                   <span class="value">{{ (agg.mediaLargura || agg.averageWidth || 0) | number:'1.5-5' }} <small>{{
@@ -220,9 +220,9 @@
                 </div>
               </div>
 
-              <h4 class="section-subtitle">Comprimento:</h4>
+              <h4 class="section-subtitle" *ngIf="viewFilterState.mediaDesvio && viewFilterState.comprimento">Comprimento:</h4>
 
-              <div class="stat-grid">
+              <div class="stat-grid" *ngIf="viewFilterState.mediaDesvio && viewFilterState.comprimento">
                 <div class="mini-stat">
                   <span class="label">Média</span>
                   <span class="value">{{ (agg.mediaComprimento || agg.averageLength || 0) | number:'1.5-5' }}
@@ -236,9 +236,9 @@
                 </div>
               </div>
 
-              <h4 class="section-subtitle">Área:</h4>
+              <h4 class="section-subtitle" *ngIf="viewFilterState.mediaDesvio && viewFilterState.area">Área:</h4>
 
-              <div class="stat-grid">
+              <div class="stat-grid" *ngIf="viewFilterState.mediaDesvio && viewFilterState.area">
                 <div class="mini-stat">
                   <span class="label">Média</span>
                   <span class="value">{{ (agg.mediaArea || agg.averageArea || 0) | number:'1.5-5' }} <small>{{
@@ -251,9 +251,9 @@
                 </div>
               </div>
 
-              <h4 class="section-subtitle">Perímetro:</h4>
+              <h4 class="section-subtitle" *ngIf="viewFilterState.mediaDesvio && viewFilterState.perimetro">Perímetro:</h4>
 
-              <div class="stat-grid">
+              <div class="stat-grid" *ngIf="viewFilterState.mediaDesvio && viewFilterState.perimetro">
                 <div class="mini-stat">
                   <span class="label">Média</span>
                   <span class="value">{{ (agg.mediaPerimetro || agg.averagePerimeter || 0) | number:'1.5-5' }}
@@ -293,7 +293,7 @@
 
                 <div slot="content" class="medidas-container">
                   <ion-item class="checkbox-item" *ngFor="let m of medidasOptions" lines="none">
-                    <ion-checkbox slot="start" [(ngModel)]="viewFilterState[m.key]"
+                    <ion-checkbox slot="start" [checked]="viewFilterState[m.key]"
                       [disabled]="isFilterDisabled(m.key)"
                       (ionChange)="onFilterChange(m.key, $event.detail.checked)"></ion-checkbox>
                     <ion-label [class.filter-disabled]="isFilterDisabled(m.key)">{{ m.label }}</ion-label>

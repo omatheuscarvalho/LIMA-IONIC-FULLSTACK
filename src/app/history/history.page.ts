@@ -26,6 +26,7 @@ import {
   IonAccordion,
   IonAccordionGroup,
   IonBadge,
+  IonCheckbox,
   IonCardHeader,
   IonCardTitle,
   IonLabel,
@@ -98,6 +99,7 @@ type MedidaKey =
     IonAccordion,
     IonAccordionGroup,
     IonBadge,
+    IonCheckbox,
     IonLabel,
     IonItem,
     IonInput,
@@ -155,6 +157,7 @@ export class HistoryPage implements OnInit {
   }
 
   ngOnInit() {
+    this.resetFiltroExibicao();
     this.carregarHistorico();
   }
 

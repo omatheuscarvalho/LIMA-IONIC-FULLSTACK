@@ -32,7 +32,7 @@ import {
   IonLabel,
   IonItem,
   IonInput,
-  IonList
+  IonList, ActionSheetController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -51,6 +51,7 @@ import {
   analyticsOutline,
   leafOutline,
   documentTextOutline,
+  documentOutline,
   closeCircle,
   arrowBack,
   imageOutline,
@@ -64,6 +65,7 @@ import {
 import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 import { StorageService } from '../services/storage.service';
+import { ExportService } from '../services/export.service';
 
 type MedidaKey =
   'area' | 'perimetro' | 'comprimento' | 'largura' |
@@ -138,22 +140,52 @@ export class HistoryPage implements OnInit {
 
   private criarFiltroPadrao(): Record<MedidaKey, boolean> {
     return {
-    area: true,
-    perimetro: true,
-    comprimento: true,
-    largura: true,
-    somarAreas: true,
-    relacaoLarguraComprimento: true,
-    mediaDesvio: true
+      area: true,
+      perimetro: true,
+      comprimento: true,
+      largura: true,
+      somarAreas: true,
+      relacaoLarguraComprimento: true,
+      mediaDesvio: true
     };
   }
 
   constructor(
-    private router: Router, 
+    private router: Router,
     private alertController: AlertController,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private actionSheetCtrl: ActionSheetController,
+    private exportService: ExportService
   ) {
-    addIcons({ downloadOutline, trashOutline, trashBinOutline, close, createOutline, imageOutline, listOutline, closeOutline, checkmarkOutline, analyticsOutline, camera, image: imageIcon, documentTextOutline, closeCircle, checkmark, leafOutline, download, trash, closeCircleOutline, checkmarkCircleOutline, pencil, time, arrowBack, expand, contract });
+    addIcons({
+      downloadOutline,
+      trashOutline,
+      trashBinOutline,
+      close,
+      createOutline,
+      imageOutline,
+      listOutline,
+      closeOutline,
+      checkmarkOutline,
+      analyticsOutline,
+      camera,
+      image: imageIcon,
+      documentTextOutline,
+      closeCircle,
+      checkmark,
+      leafOutline,
+      download,
+      trash,
+      closeCircleOutline,
+      checkmarkCircleOutline,
+      pencil,
+      time,
+      arrowBack,
+      expand,
+      contract,
+      'document-outline': documentOutline,
+      'document-text-outline': documentTextOutline
+    });
   }
 
   ngOnInit() {
@@ -271,7 +303,7 @@ export class HistoryPage implements OnInit {
     // Se tem imagemKey, carrega do IndexedDB de forma assíncrona
     if (analise.imagemKey && !analise._loadingImage) {
       analise._loadingImage = true; // Marca como carregando para evitar loops
-      
+
       this.storageService.recuperarImagemAlta(analise.imagemKey)
         .then(imagemAlta => {
           if (imagemAlta) {
@@ -374,12 +406,12 @@ export class HistoryPage implements OnInit {
 
             // Limpa tudo usando o StorageService
             this.storageService.limparLocalStorageCompletamente();
-            
+
             // Limpa as variáveis locais
             this.historico = [];
             this.filteredHistorico = [];
             this.analiseDetalhada = null;
-            
+
             console.log('✅ Histórico completamente limpo');
           }
         }
@@ -423,124 +455,67 @@ export class HistoryPage implements OnInit {
     try {
       // Usa o StorageService para salvar (j\u00e1 com l\u00f3gica otimizada e IndexedDB)
       const sucesso = await this.storageService.salvarAnalises(this.historico as any);
-      
+
       if (sucesso) {
         console.log('\u2705 Hist\u00f3rico atualizado com sucesso');
       } else {
         console.warn('\u26a0\ufe0f Falha ao salvar hist\u00f3rico, mas dados est\u00e3o em mem\u00f3ria');
       }
-      
+
       this.filtrar(); // Atualiza a visualiza\u00e7\u00e3o
     } catch (err: any) {
       console.error('Erro ao salvar hist\u00f3rico:', err?.message || err);
     }
   }
 
-  exportarAnalise(analise: any) {
-    if (!analise) return;
-
-    // Preparar metadados
-    const metadados = [
-      ['="========================================================"'],
-      ['                 RELATÓRIO DE ANÁLISE - L.I.M.A.         '],
-      ['="========================================================"'],
-      [''],
-      ['--- INFORMAÇÕES GERAIS ---'],
-      ['L.I.M.A. - Relatório de Análise'],
-      ['ID de análise', analise.id || ''],
-      ['Data e Hora', new Date(analise.data).toLocaleString()],
-      ['Nome da Imagem', analise.nomeImagem || ''],
-      ['Espécie', analise.especie || ''],
-      ['Tratamento', analise.tratamento || ''],
-      ['Réplica', analise.replica || ''],
-      [`Área Padrão (${analise.unidade || 'cm'}²)`, analise.areaEscala || analise.scalePatternArea || ''],
-      [''], // Linha em branco
-      ['="========================================================"'],
-      ['             1. MEDIÇÕES INDIVIDUAIS (POR FOLHA)         '],
-      ['="========================================================"'],
-      ['']
-    ];
-
-    // Preparar cabeçalho das colunas de dados (ordem: Folha, Largura, Comprimento, Relação L/C, Área, Perímetro)
-    const cabecalhoDados = ['Folha', `Largura (${analise.unidade || 'cm'})`, `Comprimento (${analise.unidade || 'cm'})`, 'Relação L/C', `Área (${analise.unidade || 'cm'}²)`, `Perímetro (${analise.unidade || 'cm'})`];
-
-    // Preparar linhas de dados individuais seguindo a mesma ordem
-    let linhasDados: any[] = [];
-    if (analise.resultados && Array.isArray(analise.resultados)) {
-      linhasDados = analise.resultados.map((r: any) => {
-        return [
-          `Folha ${r.id}`,
-          (r.largura || 0).toString().replace('.', ','),
-          (r.comprimento || 0).toString().replace('.', ','),
-          (r.relacaoLarguraComprimento || 0).toString().replace('.', ','),
-          (r.area || 0).toString().replace('.', ','),
-          (r.perimetro || 0).toString().replace('.', ',')
-        ];
-      });
+  async exportarAnalise(analise: any) {
+    if (!analise || !analise.resultados || analise.resultados.length === 0) {
+      const alert = await this.alertController.create({ header: 'Atenção', message: 'Sem resultados para exportar.', buttons: ['OK'] });
+      await alert.present();
+      return;
     }
 
-    // Adicionar estatísticas agregadas alinhadas com as colunas acima
-    const linhasAgregadas: any[] = [];
-    const agg = analise.resultadosAgregados;
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Escolha o formato de exportação',
+      buttons: [
+        {
+          text: 'Exportar como Planilha (CSV)',
+          icon: 'document-text-outline',
+          handler: () => {
+            this.exportService.exportarCSV(
+              analise,
+              this.viewFilterState, // Usa a visibilidade atual configurada pelo usuário
+              analise.unidade || 'cm',
+              analise.resultados,
+              analise.resultadosAgregados
+            ).catch(e => console.error('Erro na exportação CSV', e));
+          }
+        },
+        {
+          text: 'Exportar como Documento (PDF)',
+          icon: 'document-outline',
+          handler: () => {
+            // Garante que tentamos pegar a melhor imagem possível
+            const imagem = this.getThumbnail(analise) || '';
 
-    if (agg) {
-      linhasAgregadas.push(['']);
-      linhasAgregadas.push(['="========================================================"']);
-      linhasAgregadas.push(['             2. ESTATÍSTICAS AGREGADAS (RESUMO)          ']);
-      linhasAgregadas.push(['="========================================================"']);
-      linhasAgregadas.push(['']);
-
-      // Helper para formatar número com 4 casas
-      const fmt = (n: any) => (n !== undefined && n !== null) ? Number(n).toFixed(4).replace('.', ',') : '';
-
-      const totalArea = agg.totalArea ?? agg.somaAreas ?? 0;
-      const avgWidth = agg.averageWidth ?? agg.mediaLargura ?? '';
-      const avgLength = agg.averageLength ?? agg.mediaComprimento ?? '';
-      const avgRelation = agg.averageWidthToLengthRatio ?? agg.mediaRelacao ?? '';
-      const avgArea = agg.averageArea ?? agg.mediaArea ?? '';
-      const avgPerimeter = agg.averagePerimeter ?? agg.mediaPerimetro ?? '';
-
-      const sdWidth = agg.standardDeviationWidth ?? agg.desvioLargura ?? '';
-      const sdLength = agg.standardDeviationLength ?? agg.desvioComprimento ?? '';
-      const sdArea = agg.standardDeviationArea ?? agg.desvioArea ?? '';
-      const sdPerimeter = agg.standardDeviationPerimeter ?? agg.desvioPerimetro ?? '';
-
-      // Soma: totalArea na coluna Área (índice 4)
-      const somaRow = ['', '', '', '', fmt(totalArea), ''];
-      somaRow[0] = 'Soma';
-      linhasAgregadas.push(somaRow);
-
-      // Média: coloca médias nas colunas correspondentes
-      const mediaRow = ['Média', fmt(avgWidth), fmt(avgLength), fmt(avgRelation), fmt(avgArea), fmt(avgPerimeter)];
-      linhasAgregadas.push(mediaRow);
-
-      // Desvio Padrão: coloca desvios nas colunas correspondentes
-      const desvioRow = ['Desvio Padrão', fmt(sdWidth), fmt(sdLength), '', fmt(sdArea), fmt(sdPerimeter)];
-      linhasAgregadas.push(desvioRow);
-    }
-
-    // Combinar tudo
-    const dadosCompletos = [
-      ...metadados,
-      cabecalhoDados,
-      ...linhasDados,
-      ...linhasAgregadas
-    ];
-
-    // Converter para CSV no formato mais compatível com Excel BR
-    const csv = Papa.unparse(dadosCompletos, {
-      delimiter: ';',
-      quotes: true,
-      newline: '\r\n'
+            this.exportService.exportarPDF(
+              analise,
+              analise.unidade || 'cm',
+              analise.resultados,
+              analise.resultadosAgregados,
+              imagem
+            ).catch(e => console.error('Erro na exportação PDF', e));
+          }
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close',
+          role: 'cancel'
+        }
+      ]
     });
 
-    // Criar arquivo
-    const nomeLimpo = (analise.especie || 'analise').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const dataStr = new Date().toISOString().slice(0, 10);
-    const nomeArquivo = `LIMA_${nomeLimpo}_${analise.id}_${dataStr}.csv`;
-
-    const blob = new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, nomeArquivo);
+    await actionSheet.present();
   }
 
   // --- MÉTODOS DE EDIÇÃO ---

@@ -178,16 +178,17 @@ export class ExportService {
         const htmlTemplate = `
       <div style="background-color: #ffffff; padding: 10px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #2e3d30;">
           <style>
-              .header-banner { background-color: #1b5e20; color: #ffffff; padding: 20px; margin-bottom: 20px; border-radius: 4px; }
+              .header-banner { background-color: #1b5e20; color: #ffffff; padding: 20px 20px; margin-bottom: 20px; border-radius: 4px; }
               .header-banner table { width: 100%; border-collapse: collapse; }
-              .header-banner h1 { margin: 0; font-size: 22px; }
+              .header-banner td { padding: 4px }
+              .header-banner h1 { margin: 0; font-size: 24px; }
               .header-banner p { margin: 0; font-size: 11px; font-style: italic; opacity: 0.9; }
               .app-id { text-align: right; font-size: 11px; font-weight: bold; opacity: 0.8; }
               
-              .section-title { font-size: 13px; color: #1b5e20; border-bottom: 2px solid #a5d6a7; padding-bottom: 4px; margin: 20px 0 10px 0; text-transform: uppercase; font-weight: bold; }
+              .section-title { font-size: 16px; color: #1b5e20; border-bottom: 2px solid #a5d6a7; padding-bottom: 4px; margin: 20px 0 10px 0; text-transform: uppercase; font-weight: bold; }
               
               .meta-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-              .meta-table td { padding: 6px; border-bottom: 1px solid #e8f5e9; font-size: 11px; }
+              .meta-table td { padding: 8px; border-bottom: 1px solid #e8f5e9; font-size: 11px; }
               .meta-label { font-weight: bold; color: #2e7d32; width: 22%; }
               
               .image-analysis-container { text-align: center; margin-bottom: 20px; border: 1px solid #c8e6c9; padding: 10px; border-radius: 4px; background-color: #fff; }
@@ -196,7 +197,7 @@ export class ExportService {
               
               .data-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
               .data-table th { background-color: #2e7d32; color: #ffffff; padding: 8px 4px; font-size: 11px; border: 1px solid #1b5e20; text-align: center; }
-              .data-table td { padding: 6px 4px; text-align: center; border: 1px solid #e0e0e0; font-size: 11px; }
+              .data-table td { padding: 8px 4px; text-align: center; border: 1px solid #e0e0e0; font-size: 11px; }
               .row-summary-mean { background-color: #e8f5e9; font-weight: bold; border-top: 2px solid #2e7d32; }
               .row-summary-sd { background-color: #e8f5e9; font-weight: bold; border-top: 2px solid #2e7d32;}
               .row-summary-total { background-color: #c8e6c9; font-weight: bold; border-top: 1.5px solid #1b5e20; border-bottom: 2px solid #1b5e20; }
@@ -210,7 +211,7 @@ export class ExportService {
                   break-inside: avoid !important;
               }
               .footer { margin-top: 30px; border-top: 1px solid #e0e0e0; padding-top: 10px; text-align: center; font-size: 10px; color: #888888; }
-          </style>
+            </style>
           
           <div class="header-banner">
               <table>

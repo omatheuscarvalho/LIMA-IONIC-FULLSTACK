@@ -93,21 +93,12 @@
   <ng-template>
     <ion-header>
       <ion-toolbar class="detail-modal-toolbar">
-        <ion-buttons slot="start">
+        <ion-buttons slot="end">
           <ion-button (click)="fecharDetalhes()">
             <ion-icon slot="icon-only" name="close"></ion-icon>
           </ion-button>
         </ion-buttons>
         <ion-title>Análise Detalhada</ion-title>
-        <ion-buttons slot="end">
-          <ion-button *ngIf="!editingDetalhe && selectedSegment === 'resumo'" (click)="toggleEditDetalhe()">
-            <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-          </ion-button>
-          <ion-button *ngIf="editingDetalhe && selectedSegment === 'resumo'" (click)="saveEditDetalhe()"
-            color="secondary" strong>
-            Salvar
-          </ion-button>
-        </ion-buttons>
       </ion-toolbar>
 
       <ion-toolbar color="light">
@@ -186,6 +177,13 @@
                       Salvar
                     </ion-button>
                   </div>
+                </div>
+
+                <div class="analysis-actions" *ngIf="!editingDetalhe">
+                  <ion-button fill="clear" color="primary" class="edit-info-button" (click)="toggleEditDetalhe()">
+                    <ion-icon slot="start" name="create-outline"></ion-icon>
+                    Editar informações
+                  </ion-button>
                 </div>
               </div>
             </div>

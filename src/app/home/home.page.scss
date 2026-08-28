@@ -82,12 +82,38 @@
     --padding-start: 0;
     --inner-padding-end: 0;
     --min-height: 28px;
+    --background: transparent;
     width: auto;
     margin-right: 8px;
   }
 
   .filter-header {
+    --background: var(--ion-card-background, var(--ion-background-color));
+    --color: var(--ion-text-color);
     --min-height: 54px;
+  }
+
+  .filter-header::part(native) {
+    background: var(--ion-card-background, var(--ion-background-color));
+  }
+
+  ion-accordion-group {
+    background: transparent;
+  }
+
+  ion-accordion {
+    background: var(--ion-card-background, var(--ion-background-color));
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  ion-accordion::part(content) {
+    background: var(--ion-card-background, var(--ion-background-color));
+  }
+
+  .medidas-container {
+    background: var(--ion-card-background, var(--ion-background-color));
+    padding: 8px 0 4px 0;
   }
 
   .filter-disabled {

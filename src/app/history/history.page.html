@@ -92,7 +92,7 @@
 <ion-modal [isOpen]="analiseDetalhada !== null" (didDismiss)="onModalDidDismiss($event)">
   <ng-template>
     <ion-header>
-      <ion-toolbar color="primary">
+      <ion-toolbar class="detail-modal-toolbar">
         <ion-buttons slot="start">
           <ion-button (click)="fecharDetalhes()">
             <ion-icon slot="icon-only" name="close"></ion-icon>
@@ -142,7 +142,6 @@
               </div>
               <div class="analysis-details-section">
                 <div *ngIf="!editingDetalhe">
-                  <h3 class="analysis-title">{{ analiseDetalhada.nomeImagem || 'Sem nome' }}</h3>
                   <div class="analysis-detail-item">
                     <span class="detail-label">Espécie:</span>
                     <span class="detail-value">{{ analiseDetalhada.especie || '—' }}</span>
@@ -299,12 +298,16 @@
 
         <ion-list lines="none" *ngIf="analiseDetalhada.resultados?.length; else emptyResults">
 
-          <ion-accordion-group>
-            <ion-accordion *ngFor="let r of analiseDetalhada.resultados" [value]="'leaf_'+r.id">
+          <ion-accordion-group [animated]="false">
+            <ion-accordion *ngFor="let r of analiseDetalhada.resultados; trackBy: trackByLeaf" [value]="'leaf_'+r.id" toggleIconSlot="end">
 
               <ion-item slot="header" color="light">
                 <ion-badge slot="start" color="medium">{{ r.id }}</ion-badge>
                 <ion-label></ion-label>
+                <ion-button slot="end" fill="clear" class="leaf-delete-button" type="button"
+                  (click)="$event.stopPropagation(); onDeleteLeafClick(r, $event)">
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-button>
               </ion-item>
 
               <div class="ion-padding" slot="content">
@@ -359,7 +362,6 @@
         </ng-template>
       </div>
 
-      <div style="height: 60px"></div>
     </ion-content>
 
     <ion-footer class="ion-padding-bottom">
@@ -400,7 +402,7 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content class="ion-padding" style="text-align: center;">
+    <ion-content class="image-modal-content">
       <img [src]="imagemAmpliada" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
     </ion-content>
   </ng-template>

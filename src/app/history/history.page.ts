@@ -381,6 +381,126 @@ export class HistoryPage implements OnInit {
     await alert.present();
   }
 
+  onDeleteLeafClick(leaf: any, event: Event) {
+    event.stopPropagation();
+    this.presentLeafDeleteConfirmation(leaf);
+  }
+
+  private async presentLeafDeleteConfirmation(leaf: any) {
+    if (!this.analiseDetalhada || !leaf) return;
+
+    const alert = await this.alertController.create({
+      header: 'Confirmar exclusão',
+      message: `Deseja excluir a folha ${leaf.id}? Esta ação não pode ser desfeita.`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Excluir',
+          role: 'destructive',
+          handler: async () => {
+            await this.deleteLeafFromCurrentAnalysis(leaf.id);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  private async deleteLeafFromCurrentAnalysis(leafId: number) {
+    if (!this.analiseDetalhada) return;
+
+    const target = this.historico.find(h => h.id === this.analiseDetalhada.id);
+    if (!target || !Array.isArray(target.resultados)) return;
+
+    const updatedResult = target.resultados
+      .filter((leaf: any) => leaf.id !== leafId)
+      .map((leaf: any, index: number) => ({ ...leaf, id: index + 1 }));
+
+    const updatedAnalysis = {
+      ...target,
+      resultados: updatedResult,
+      resultadosAgregados: this.recalcularAgregados(updatedResult)
+    };
+
+    this.historico = this.historico.map(h => h.id === updatedAnalysis.id ? updatedAnalysis : h);
+    this.analiseDetalhada = updatedAnalysis;
+
+    await this.atualizarStorage();
+  }
+
+  private recalcularAgregados(resultados: any[]) {
+    if (!Array.isArray(resultados) || resultados.length === 0) {
+      return {
+        totalArea: 0,
+        averageArea: 0,
+        standardDeviationArea: 0,
+        averagePerimeter: 0,
+        standardDeviationPerimeter: 0,
+        averageWidth: 0,
+        standardDeviationWidth: 0,
+        averageLength: 0,
+        standardDeviationLength: 0,
+        averageWidthToLengthRatio: 0,
+        somaAreas: 0,
+        mediaArea: 0,
+        desvioArea: 0,
+        mediaPerimetro: 0,
+        desvioPerimetro: 0,
+        mediaLargura: 0,
+        desvioLargura: 0,
+        mediaComprimento: 0,
+        desvioComprimento: 0,
+        mediaRelacao: 0
+      };
+    }
+
+    const toFinite = (value: number | null | undefined) =>
+      Number.isFinite(value as number) ? (value as number) : 0;
+    const mean = (values: number[]) =>
+      values.length > 0 ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
+    const stdDev = (values: number[], average: number) =>
+      values.length > 0
+        ? Math.sqrt(values.reduce((sum, value) => sum + Math.pow(value - average, 2), 0) / values.length)
+        : 0;
+
+    const areas = resultados.map(result => toFinite(result.area));
+    const perimetros = resultados.map(result => toFinite(result.perimetro));
+    const larguras = resultados.map(result => toFinite(result.largura));
+    const comprimentos = resultados.map(result => toFinite(result.comprimento));
+    const relacoes = resultados.map(result => toFinite(result.relacaoLarguraComprimento));
+
+    const totalArea = areas.reduce((sum, value) => sum + value, 0);
+    const averageArea = mean(areas);
+    const averagePerimeter = mean(perimetros);
+    const averageWidth = mean(larguras);
+    const averageLength = mean(comprimentos);
+    const averageWidthToLengthRatio = mean(relacoes);
+
+    return {
+      totalArea,
+      averageArea,
+      standardDeviationArea: stdDev(areas, averageArea),
+      averagePerimeter,
+      standardDeviationPerimeter: stdDev(perimetros, averagePerimeter),
+      averageWidth,
+      standardDeviationWidth: stdDev(larguras, averageWidth),
+      averageLength,
+      standardDeviationLength: stdDev(comprimentos, averageLength),
+      averageWidthToLengthRatio,
+      somaAreas: totalArea,
+      mediaArea: averageArea,
+      desvioArea: stdDev(areas, averageArea),
+      mediaPerimetro: averagePerimeter,
+      desvioPerimetro: stdDev(perimetros, averagePerimeter),
+      mediaLargura: averageWidth,
+      desvioLargura: stdDev(larguras, averageWidth),
+      mediaComprimento: averageLength,
+      desvioComprimento: stdDev(comprimentos, averageLength),
+      mediaRelacao: averageWidthToLengthRatio
+    };
+  }
+
   async limparHistorico() {
     if (!this.historico || this.historico.length === 0) return;
 

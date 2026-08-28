@@ -205,7 +205,7 @@
 }
 
 .modal-body {
-  padding-bottom: 80px; /* Espaço para o footer fixo */
+  padding-bottom: 16px;
   background: var(--ion-background-color);
 }
 
@@ -305,6 +305,31 @@
 
 .filter-accordion ion-item.checkbox-item::part(native) {
   background: var(--ion-card-background);
+}
+
+.detail-modal-toolbar {
+  --background: var(--ion-card-background);
+  --color: var(--ion-text-color);
+  border-bottom: 1px solid var(--ion-color-step-150);
+}
+
+.leaf-delete-button {
+  --background: transparent;
+  --background-hover: transparent;
+  --background-activated: transparent;
+  --color: #ffffff;
+  margin-left: 0;
+  margin-right: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.leaf-delete-button::part(native) {
+  background: transparent;
+}
+
+.leaf-delete-button ion-icon {
+  font-size: 1.05rem;
 }
 
 .filter-disabled {
@@ -629,8 +654,26 @@
 /* ============================================ */
 
 .modal-body {
-  padding-bottom: 80px; /* Espaço para o footer fixo */
+  padding-bottom: 16px;
   background: var(--ion-background-color);
+}
+
+.image-modal-content {
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ion-background-color);
+}
+
+.image-modal-content img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 32px);
+  object-fit: contain;
 }
 
 /* Seção Superior: Miniatura + Informações */

@@ -285,7 +285,7 @@
                 </ion-item>
 
                 <div slot="content" class="medidas-container">
-                  <ion-item class="checkbox-item" *ngFor="let m of medidasOptions" lines="none">
+                  <ion-item class="checkbox-item"  *ngFor="let m of medidasOptions" lines="none">
                     <ion-checkbox slot="start" [checked]="viewFilterState[m.key]"
                       [disabled]="isFilterDisabled(m.key)"
                       (ionChange)="onFilterChange(m.key, $event.detail.checked)"></ion-checkbox>
@@ -304,43 +304,40 @@
 
               <ion-item slot="header" color="light">
                 <ion-badge slot="start" color="medium">{{ r.id }}</ion-badge>
-                <ion-label>
-                  <h2>Folha {{ r.id }}</h2>
-                  <p *ngIf="viewFilterState.area">Área: {{ r.area | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm' }}²</p>
-                </ion-label>
+                <ion-label></ion-label>
               </ion-item>
 
               <div class="ion-padding" slot="content">
                 <ion-grid class="leaf-details-grid">
                   <ion-row>
-                    <ion-col size="12" *ngIf="viewFilterState.largura">
+                    <ion-col size="12" size-md="6" *ngIf="viewFilterState.largura">
                       <div class="detail-box">
                         <span class="lbl">Largura</span>
                         <span class="val">{{ r.largura | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm'
                           }}</span>
                       </div>
                     </ion-col>
-                    <ion-col size="12" *ngIf="viewFilterState.comprimento">
+                    <ion-col size="12" size-md="6" *ngIf="viewFilterState.comprimento">
                       <div class="detail-box">
                         <span class="lbl">Comprimento</span>
                         <span class="val">{{ r.comprimento | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm'
                           }}</span>
                       </div>
                     </ion-col>
-                    <ion-col size="12" *ngIf="viewFilterState.relacaoLarguraComprimento">
+                    <ion-col size="12" size-md="6" *ngIf="viewFilterState.relacaoLarguraComprimento">
                       <div class="detail-box">
                         <span class="lbl">Relação L/C</span>
                         <span class="val">{{ r.relacaoLarguraComprimento | number:'1.5-5' }}</span>
                       </div>
                     </ion-col>
-                    <ion-col size="12" *ngIf="viewFilterState.area">
+                    <ion-col size="12" size-md="6" *ngIf="viewFilterState.area">
                       <div class="detail-box">
                         <span class="lbl">Área</span>
                         <span class="val">{{ r.area | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm'
                           }}²</span>
                       </div>
                     </ion-col>
-                    <ion-col size="12" *ngIf="viewFilterState.perimetro">
+                    <ion-col size="12" size-md="6" *ngIf="viewFilterState.perimetro">
                       <div class="detail-box">
                         <span class="lbl">Perímetro</span>
                         <span class="val">{{ r.perimetro | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm'

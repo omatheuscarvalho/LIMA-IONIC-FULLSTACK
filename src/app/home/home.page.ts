@@ -156,25 +156,7 @@ export class HomePage {
     private exportService: ExportService            // <--- ADICIONE AQUI
   ) {
     // Registrar ícones (sem duplicatas)
-    addIcons({
-      person,
-      'log-out': logOut,
-      image: imageIcon,
-      calculator,
-      trash,
-      camera,
-      time,
-      help,
-      download,
-      sunny,
-      moon,
-      home,
-      'chevron-down-outline': chevronDownOutline,
-      'chevron-up-outline': chevronUpOutline,
-      'document-outline': documentOutline,           
-      'document-text-outline': documentTextOutline,  
-      'close': close
-    });
+    addIcons({person,logOut,image,calculator,trash,camera,time,download,'logOut':logOut,image:imageIcon,help,sunny,moon,home,'chevronDownOutline':chevronDownOutline,'chevronUpOutline':chevronUpOutline,'documentOutline':documentOutline,'documentTextOutline':documentTextOutline,'close':close});
 
     this.carregarHistorico();
     this.themeService.darkMode$.subscribe(v => this.darkMode = v);

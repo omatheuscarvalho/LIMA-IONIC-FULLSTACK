@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonBackButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { settings } from 'ionicons/icons';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-help',
@@ -15,8 +18,10 @@ import { IonBackButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonC
     IonHeader, 
     IonTitle, 
     IonToolbar, 
+    IonButton,
     IonButtons, 
     IonBackButton, 
+    IonIcon,
     IonCard, 
     IonCardHeader, 
     IonCardTitle, 
@@ -25,9 +30,15 @@ import { IonBackButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonC
 })
 export class HelpPage implements OnInit {
 
-  constructor() { }
+  constructor(private themeService: ThemeService) {
+    addIcons({ settings });
+  }
 
   ngOnInit() {
+  }
+
+  openAccessibilitySettings() {
+    this.themeService.openFontSettings();
   }
 
 }

@@ -11,8 +11,8 @@
         <ion-icon slot="icon-only" [name]="darkMode ? 'sunny' : 'moon'"></ion-icon>
       </ion-button>
 
-      <ion-button (click)="confirmarLogout()" fill="clear">
-        <ion-icon slot="icon-only" name="log-out"></ion-icon>
+      <ion-button (click)="openAccessibilitySettings()" fill="clear" aria-label="Configurações gerais" class="general-settings-button">
+        <ion-icon slot="icon-only" name="settings"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -170,6 +170,21 @@
 
               </ion-grid>
 
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card class="image-card image-card-mobile">
+            <ion-card-header>
+              <ion-card-title>{{ imagemProcessada ? 'Imagem Processada' : 'Imagem' }}</ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <div class="image-container">
+                <ion-img *ngIf="hasImage" [src]="imagemProcessada || imagemSelecionada"></ion-img>
+                <ion-text *ngIf="!hasImage" color="medium" class="placeholder-text">
+                  Selecione uma imagem para análise
+                </ion-text>
+              </div>
             </ion-card-content>
           </ion-card>
 

@@ -45,3 +45,69 @@ ion-content {
 @import "@ionic/angular/css/palettes/dark.class.css";
 /* @import '@ionic/angular/css/palettes/dark.system.css'; */
 
+:root {
+  --app-font-scale: 1;
+  --app-font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --app-text-xs: 0.75rem;
+  --app-text-sm: 0.875rem;
+  --app-text-base: 1rem;
+  --app-text-lg: 1.125rem;
+  --app-text-xl: 1.25rem;
+  --app-text-2xl: 1.5rem;
+  --ion-font-family: var(--app-font-family);
+}
+
+html {
+  font-size: calc(16px * var(--app-font-scale));
+}
+
+body,
+ion-app {
+  font-family: var(--app-font-family);
+  font-size: 1rem;
+}
+
+ion-title {
+  font-size: var(--app-text-lg);
+  font-weight: 600;
+}
+
+h1 {
+  font-size: var(--app-text-2xl);
+}
+
+h2 {
+  font-size: var(--app-text-xl);
+}
+
+h3 {
+  font-size: var(--app-text-lg);
+}
+
+h4 {
+  font-size: var(--app-text-base);
+}
+
+h5 {
+  font-size: var(--app-text-sm);
+}
+
+h6 {
+  font-size: var(--app-text-xs);
+}
+
+p,
+ion-label,
+ion-button,
+ion-input,
+ion-select,
+ion-text,
+ion-card-title,
+ion-card-subtitle {
+  font-size: var(--app-text-base);
+}
+
+small {
+  font-size: var(--app-text-sm);
+}
+

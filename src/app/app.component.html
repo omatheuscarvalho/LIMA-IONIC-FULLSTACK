@@ -1,3 +1,39 @@
 <ion-app>
   <ion-router-outlet></ion-router-outlet>
+
+  <ion-modal [isOpen]="themeService.fontSettingsOpen$ | async" (didDismiss)="themeService.closeFontSettings()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Configurações gerais</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="themeService.closeFontSettings()">
+              <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Acessibilidade</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item lines="none">
+              <ion-label position="stacked">Tamanho da Fonte</ion-label>
+              <ion-select [value]="themeService.fontSizeLevel$ | async"
+                interface="popover"
+                placeholder="Selecione"
+                (ionChange)="themeService.setFontSizeLevel($event.detail.value)">
+                <ion-select-option value="small">Pequena</ion-select-option>
+                <ion-select-option value="normal">Normal (Padrão)</ion-select-option>
+                <ion-select-option value="large">Grande</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-card-content>
+        </ion-card>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-app>

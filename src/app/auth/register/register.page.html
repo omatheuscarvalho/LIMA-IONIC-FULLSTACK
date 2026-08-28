@@ -9,6 +9,10 @@
       <ion-button (click)="toggleTheme()" fill="clear">
         <ion-icon slot="icon-only" [name]="darkMode ? 'sunny' : 'moon'"></ion-icon>
       </ion-button>
+
+      <ion-button (click)="openAccessibilitySettings()" fill="clear" aria-label="Configurações de fonte">
+        <ion-icon slot="icon-only" name="settings"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>

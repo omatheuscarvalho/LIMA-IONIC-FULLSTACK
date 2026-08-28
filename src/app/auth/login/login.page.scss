@@ -11,14 +11,14 @@
   margin-bottom: 30px;
   
   .login-icon {
-    font-size: 64px;
+    font-size: 4rem;
     color: var(--ion-color-primary);
     margin-bottom: 16px;
   }
   
   h1 {
     margin: 0 0 8px 0;
-    font-size: 28px;
+    font-size: 1.75rem;
     font-weight: 600;
     color: var(--ion-color-primary);
   }
@@ -26,7 +26,7 @@
   p {
     margin: 0;
     color: var(--ion-color-medium);
-    font-size: 16px;
+    font-size: 1rem;
   }
 }
 
@@ -40,7 +40,7 @@
     padding-bottom: 0;
     
     ion-card-title {
-      font-size: 24px;
+      font-size: 1.5rem;
       font-weight: 600;
       color: var(--ion-color-primary);
     }
@@ -73,7 +73,7 @@
   
   p {
     margin: 0;
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 }
 
@@ -97,12 +97,12 @@
   
   p {
     margin: 0 0 12px 0;
-    font-size: 14px;
+    font-size: 0.875rem;
   }
   
   ion-button {
     height: 36px;
-    font-size: 12px;
+    font-size: 0.75rem;
     margin: 4px 0;
   }
 }
@@ -113,7 +113,7 @@
   
   p {
     margin: 0 0 8px 0;
-    font-size: 14px;
+    font-size: 0.875rem;
   }
   
   ion-button {

@@ -21,7 +21,7 @@ import {
   AlertController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { personAdd, person, mail, lockClosed, eye, eyeOff, moon, sunny } from 'ionicons/icons';
+import { personAdd, person, mail, lockClosed, eye, eyeOff, moon, sunny, settings } from 'ionicons/icons';
 import { AuthService, RegisterData } from '../auth.service';
 import { ThemeService } from '../../services/theme.service';
 
@@ -70,7 +70,7 @@ export class RegisterPage {
     private alertController: AlertController,
     private themeService: ThemeService
   ) {
-    addIcons({ personAdd, person, mail, lockClosed, eye, eyeOff, moon, sunny });
+    addIcons({ personAdd, person, mail, lockClosed, eye, eyeOff, moon, sunny, settings });
     
     // Subscrever ao estado do dark mode
     this.themeService.darkMode$.subscribe(isDark => {
@@ -181,5 +181,9 @@ export class RegisterPage {
 
   toggleTheme() {
     this.themeService.toggleTheme();
+  }
+
+  openAccessibilitySettings() {
+    this.themeService.openFontSettings();
   }
 }

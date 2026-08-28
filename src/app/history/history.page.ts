@@ -60,12 +60,13 @@ import {
   contract,
   closeOutline,
   camera,
-  image as imageIcon, checkmarkOutline
+  image as imageIcon, checkmarkOutline, settings
 } from 'ionicons/icons';
 import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 import { StorageService } from '../services/storage.service';
 import { ExportService } from '../services/export.service';
+import { ThemeService } from '../services/theme.service';
 
 type MedidaKey =
   'area' | 'perimetro' | 'comprimento' | 'largura' |
@@ -155,7 +156,8 @@ export class HistoryPage implements OnInit {
     private alertController: AlertController,
     private storageService: StorageService,
     private actionSheetCtrl: ActionSheetController,
-    private exportService: ExportService
+    private exportService: ExportService,
+    private themeService: ThemeService
   ) {
     addIcons({
       downloadOutline,
@@ -170,6 +172,7 @@ export class HistoryPage implements OnInit {
       analyticsOutline,
       camera,
       image: imageIcon,
+      settings,
       documentTextOutline,
       closeCircle,
       checkmark,
@@ -569,6 +572,10 @@ export class HistoryPage implements OnInit {
 
   fecharImagemAmpliada() {
     this.imagemAmpliada = null;
+  }
+
+  openAccessibilitySettings() {
+    this.themeService.openFontSettings();
   }
 
   async atualizarStorage() {

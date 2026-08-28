@@ -11,7 +11,7 @@
   }
 
   ion-card-title {
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 600;
   }
 
@@ -50,24 +50,24 @@
   .config-card .compact-item ion-input,
   .config-card .compact-item ion-select,
   .config-card .compact-item ion-select-option {
-    font-size: 20px !important;
+    font-size: 1.25rem !important;
   }
 
   .config-card .compact-item ion-input {
-    --placeholder-font-size: 20px;
+    --placeholder-font-size: 1.25rem;
   }
 
   .config-card .compact-item ion-input::part(native),
   .config-card .compact-item ion-select::part(text),
   .config-card .compact-item ion-select::part(placeholder) {
-    font-size: 20px;
+    font-size: 1.25rem;
   }
 
   .section-label {
     display: block;
     margin: 8px 0 4px 0;
     font-weight: 600;
-    font-size: 18px;
+    font-size: 1.125rem;
   }
 
   /* Estilos para os checkboxes */
@@ -166,6 +166,10 @@
     margin-bottom: 12px;
   }
 
+  .image-card-mobile {
+    display: none;
+  }
+
   .image-card ion-card-content {
     display: flex;
     padding-top: 0;
@@ -225,6 +229,14 @@
 
   /* Estilos para telas pequenas */
   @media (max-width: 767px) {
+    .image-card-mobile {
+      display: block;
+    }
+
+    .image-column {
+      display: none;
+    }
+
     .results-card {
       display: none;
     }
@@ -265,7 +277,7 @@
 
     p {
       margin-top: 12px;
-      font-size: 18px;
+      font-size: 1.125rem;
       font-weight: 500;
       color: var(--ion-text-color);
     }
@@ -283,7 +295,7 @@
     }
 
     .alert-title {
-      font-size: 22px;
+      font-size: 1.375rem;
       font-weight: 600;
       color: var(--ion-color-primary);
     }
@@ -294,7 +306,7 @@
 
     // Estilo dos checkboxes
     .alert-checkbox-label {
-      font-size: 18px;
+      font-size: 1.125rem;
     }
 
     .alert-button.alert-button-confirm {
@@ -322,7 +334,7 @@
 
   .leaf-details-list ion-label,
   .leaf-details-list ion-note[slot="end"] {
-    font-size: 18px;
+    font-size: 1.125rem;
     line-height: 1.2;
   }
 
@@ -382,7 +394,7 @@
     margin-top: 8px;
 
     ion-label {
-      font-size: 18px;
+      font-size: 1.125rem;
       font-weight: 600;
     }
   }
@@ -450,7 +462,7 @@
   }
 
   ion-card-title {
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 600;
     flex-shrink: 0;
     min-width: fit-content;
@@ -467,7 +479,7 @@
   .results-header ion-buttons ion-button {
     --padding-start: 6px;
     --padding-end: 6px;
-    font-size: 16px;
+    font-size: 1rem;
     white-space: nowrap;
     min-width: fit-content;
     flex: 1;
@@ -475,7 +487,7 @@
 
   .results-header ion-buttons ion-button ion-icon {
     margin-right: 0px;
-    font-size: 18px;
+    font-size: 1.125rem;
   }
 
   @media (max-width: 768px) {

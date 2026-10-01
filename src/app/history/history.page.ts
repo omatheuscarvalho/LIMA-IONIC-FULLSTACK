@@ -609,12 +609,14 @@ export class HistoryPage implements OnInit {
           text: 'Exportar como Planilha (CSV)',
           icon: 'document-text-outline',
           handler: () => {
-            this.exportService.exportarCSV(
-              analise,
-              this.viewFilterState, // Usa a visibilidade atual configurada pelo usuário
-              analise.unidade || 'cm',
-              analise.resultados,
-              analise.resultadosAgregados
+            this.exportService.comLoading('Gerando planilha CSV...', () =>
+              this.exportService.exportarCSV(
+                analise,
+                this.viewFilterState, // Usa a visibilidade atual configurada pelo usuário
+                analise.unidade || 'cm',
+                analise.resultados,
+                analise.resultadosAgregados
+              )
             ).catch(e => console.error('Erro na exportação CSV', e));
           }
         },
@@ -625,12 +627,14 @@ export class HistoryPage implements OnInit {
             // Garante que tentamos pegar a melhor imagem possível
             const imagem = this.getThumbnail(analise) || '';
 
-            this.exportService.exportarPDF(
-              analise,
-              analise.unidade || 'cm',
-              analise.resultados,
-              analise.resultadosAgregados,
-              imagem
+            this.exportService.comLoading('Gerando PDF...', () =>
+              this.exportService.exportarPDF(
+                analise,
+                analise.unidade || 'cm',
+                analise.resultados,
+                analise.resultadosAgregados,
+                imagem
+              )
             ).catch(e => console.error('Erro na exportação PDF', e));
           }
         },

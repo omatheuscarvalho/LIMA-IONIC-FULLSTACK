@@ -6,14 +6,54 @@ import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import * as html2pdfPlugin from 'html2pdf.js';
 import { AggregatedMetrics, LeafMetric } from './image-analysis.service';
+import { LoadingController } from '@ionic/angular/standalone';
 
 @Injectable({
     providedIn: 'root'
 })
 export class ExportService {
+    private loadingAtivo: Awaited<ReturnType<LoadingController['create']>> | null = null;
 
-    constructor() { }
+    constructor(private loadingCtrl: LoadingController) { }
 
+    /**
+     * Executa uma tarefa de exportação exibindo um loading até ela terminar.
+     * Herda as cores do tema ativo (claro/escuro) via variáveis do Ionic.
+     */
+    async comLoading<T>(mensagem: string, tarefa: () => Promise<T>): Promise<T> {
+        const inicio = Date.now();
+        await this.fecharLoading(); // evita overlays empilhados em clique duplo
+
+        this.loadingAtivo = await this.loadingCtrl.create({
+            message: mensagem,
+            spinner: 'crescent',
+            backdropDismiss: false,
+            cssClass: 'lima-loading'
+        });
+        await this.loadingAtivo.present();
+
+        // Garante que o loading foi pintado antes do trabalho pesado do html2canvas
+        await new Promise<void>(r => requestAnimationFrame(() => setTimeout(r, 0)));
+
+        try {
+            return await tarefa();
+        } finally {
+            if (this.loadingAtivo) {
+                // Tempo mínimo para o CSV (instantâneo) não "piscar" na tela
+                const restante = 500 - (Date.now() - inicio);
+                if (restante > 0) await new Promise(r => setTimeout(r, restante));
+                await this.fecharLoading();
+            }
+        }
+    }
+
+    private async fecharLoading(): Promise<void> {
+        const el = this.loadingAtivo;
+        this.loadingAtivo = null;
+        if (el) {
+            try { await el.dismiss(); } catch { /* já fechado */ }
+        }
+    }
     // =========================================================================
     // EXPORTAÇÃO EM CSV
     // =========================================================================
@@ -356,6 +396,8 @@ export class ExportService {
                     data: base64Data,
                     directory: Directory.Cache,
                 });
+                await this.fecharLoading(); // fecha o loading antes de abrir a folha de compartilhamento
+
 
                 await Share.share({
                     title: 'Resultados L.I.M.A.',

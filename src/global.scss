@@ -111,3 +111,9 @@ small {
   font-size: var(--app-text-sm);
 }
 
+/* Loading de exportação (PDF/CSV) - acompanha tema claro/escuro */
+ion-loading.lima-loading {
+  --background: var(--ion-color-step-100, var(--ion-background-color));
+  --spinner-color: var(--ion-color-primary);
+  --backdrop-opacity: 0.5;
+}

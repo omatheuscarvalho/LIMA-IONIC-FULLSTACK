@@ -683,13 +683,15 @@ export class HomePage {
               tratamento: this.tratamento,
               replica: this.replica,
               areaEscala: this.areaEscala
-            };
-            this.exportService.exportarCSV(
-              analise,
-              this.medidasSelecionadas,
-              this.unidadeCalculada,
-              this.resultados,
-              this.resultadosAgregados
+            }; 
+            this.exportService.comLoading('Gerando planilha CSV...', () =>
+              this.exportService.exportarCSV(
+                analise,
+                this.medidasSelecionadas,
+                this.unidadeCalculada,
+                this.resultados,
+                this.resultadosAgregados
+              )
             ).catch((e: any) => this.showAlert('Erro', e.message));
           }
         },
@@ -706,12 +708,14 @@ export class HomePage {
               data: new Date()
             };
             const imagem = this.imagemProcessada || this.imagemSelecionada || '';
-            this.exportService.exportarPDF(
-              analise,
-              this.unidadeCalculada,
-              this.resultados,
-              this.resultadosAgregados,
-              imagem
+            this.exportService.comLoading('Gerando PDF...', () =>
+              this.exportService.exportarPDF(
+                analise,
+                this.unidadeCalculada,
+                this.resultados,
+                this.resultadosAgregados,
+                imagem
+              )
             ).catch((e: any) => this.showAlert('Erro', e.message));
           }
         },

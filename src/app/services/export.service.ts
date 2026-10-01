@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 import { Capacitor } from '@capacitor/core';
@@ -14,7 +14,7 @@ import { LoadingController } from '@ionic/angular/standalone';
 export class ExportService {
     private loadingAtivo: Awaited<ReturnType<LoadingController['create']>> | null = null;
 
-    constructor(private loadingCtrl: LoadingController) { }
+    constructor(private loadingCtrl: LoadingController, private zone: NgZone) { }
 
     /**
      * Executa uma tarefa de exportação exibindo um loading até ela terminar.
@@ -32,8 +32,9 @@ export class ExportService {
         });
         await this.loadingAtivo.present();
 
-        // Garante que o loading foi pintado antes do trabalho pesado do html2canvas
-        await new Promise<void>(r => requestAnimationFrame(() => setTimeout(r, 0)));
+        await new Promise<void>(r =>
+            requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(r, 120)))
+        );
 
         try {
             return await tarefa();
@@ -354,16 +355,24 @@ export class ExportService {
         const options = {
             margin: 10,
             filename: filename,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
+            image: { type: 'jpeg', quality: 0.92 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: 'css', avoid: ['tr', '.image-analysis-container', '.section-group'] }
         };
 
         const geradorPdf = (html2pdfPlugin as any).default || html2pdfPlugin;
+        const ceder = () => new Promise<void>(r => setTimeout(r, 0));
 
-        const worker = geradorPdf().set(options).from(htmlTemplate);
-        const pdfBlob = await worker.outputPdf('blob');
+        const pdfBlob: Blob = await this.zone.runOutsideAngular(() =>
+            geradorPdf()
+                .set(options)
+                .from(htmlTemplate)
+                .toContainer().then(ceder)
+                .toCanvas().then(ceder)
+                .toPdf().then(ceder)
+                .outputPdf('blob')
+        );
 
         await this.downloadOuCompartilhar(pdfBlob, filename, 'application/pdf', 'Exportar PDF');
     }

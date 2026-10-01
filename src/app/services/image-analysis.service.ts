@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-
+import { OpenCvLoaderService } from './opencv-loader.service';
 // Declara a variável 'cv' que será injetada pelo script do OpenCV.js
 declare var cv: any;
 
@@ -45,7 +45,7 @@ export interface AnalysisResult {
 })
 export class ImageAnalysisService {
 
-  constructor() { }
+  constructor(private opencvLoader: OpenCvLoaderService) { }
 
   /**
    * Analyzes an image to detect leaves and calculate metrics using OpenCV.js.
@@ -55,6 +55,7 @@ export class ImageAnalysisService {
    * @returns A promise that resolves with the analysis results.
    */
   async processImageDirect(imgElement: HTMLImageElement, realAreaSquare: number = 1.0): Promise<AnalysisResult> {
+    await this.opencvLoader.load();
     return new Promise((resolve, reject) => {
       if (typeof cv === 'undefined' || !cv.imread) {
         return reject(new Error("OpenCV.js is not loaded."));
@@ -166,7 +167,7 @@ export class ImageAnalysisService {
           }
 
           // generate a stable uid for this leaf (unique within this analysis)
-          const uid = `${Date.now()}-${Math.random().toString(36).slice(2,8)}-${i}`;
+          const uid = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${i}`;
 
           leafMetrics.push({
             id: i + 1,
@@ -188,7 +189,7 @@ export class ImageAnalysisService {
         if (n > 0) {
           const getMean = (arr: number[]) => arr.reduce((sum, val) => sum + val, 0) / n;
           const getStdDev = (arr: number[], mean: number) => Math.sqrt(arr.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / n);
- 
+
           const areas = leafMetrics.map(l => l.area);
           aggregatedMetrics.totalArea = areas.reduce((sum, val) => sum + val, 0);
           aggregatedMetrics.averageArea = getMean(areas);
@@ -273,6 +274,7 @@ export class ImageAnalysisService {
    * Retorna uma dataURL PNG com as marcações atualizadas.
    */
   async drawLabelsOnImage(base64Image: string, leavesToMark: LeafMetric[]): Promise<string> {
+    await this.opencvLoader.load();
     return new Promise((resolve, reject) => {
       if (!base64Image) return resolve(null as any);
 
@@ -376,7 +378,7 @@ export class ImageAnalysisService {
         } catch (err) {
           reject(err);
         } finally {
-          try { mats.forEach(m => m.delete()); } catch (_) {}
+          try { mats.forEach(m => m.delete()); } catch (_) { }
         }
       };
       img.onerror = (e) => reject(new Error('Falha ao carregar imagem para desenhar contours com OpenCV'));

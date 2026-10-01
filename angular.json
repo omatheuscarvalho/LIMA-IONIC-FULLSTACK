@@ -32,17 +32,22 @@
               {
                 "glob": "**/*",
                 "input": "src/assets",
+                "ignore": [
+                  "**/*.bak"
+                ],
                 "output": "assets"
               }
             ],
-            "styles": ["src/global.scss", "src/theme/variables.scss"],
-            "scripts": [
-              "src/assets/opencv.js"
+            "styles": [
+              "src/global.scss",
+              "src/theme/variables.scss"
             ],
+            "scripts": [],
             "browser": "src/main.ts",
             "allowedCommonJsDependencies": [
               "papaparse",
-              "file-saver"
+              "file-saver",
+              "html2pdf.js"
             ]
           },
           "configurations": {
@@ -50,13 +55,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "12mb",
-                  "maximumError": "15mb"
+                  "maximumWarning": "1mb",
+                  "maximumError": "2mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "18kb",
-                  "maximumError": "20kb"
+                  "maximumWarning": "24kb",
+                  "maximumError": "30kb"
                 }
               ],
               "fileReplacements": [
@@ -115,7 +120,10 @@
                 "output": "assets"
               }
             ],
-            "styles": ["src/global.scss", "src/theme/variables.scss"],
+            "styles": [
+              "src/global.scss",
+              "src/theme/variables.scss"
+            ],
             "scripts": []
           },
           "configurations": {
@@ -128,7 +136,10 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
           }
         }
       }

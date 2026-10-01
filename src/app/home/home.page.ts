@@ -29,7 +29,8 @@ import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 
-import { ExportService } from '../services/export.service'; // <--- ADICIONE AQUI
+import { ExportService } from '../services/export.service';
+import { OpenCvLoaderService } from '../services/opencv-loader.service';
 /**
  * Tipagem das chaves das medidas (declarada OUTSIDE da classe)
  */
@@ -152,8 +153,9 @@ export class HomePage {
     private imageService: ImageAnalysisService,
     @Inject(DOCUMENT) private document: Document,
     private cdr: ChangeDetectorRef,
-    private actionSheetCtrl: ActionSheetController, // <--- ADICIONE AQUI
-    private exportService: ExportService            // <--- ADICIONE AQUI
+    private actionSheetCtrl: ActionSheetController,
+    private exportService: ExportService,
+    private opencvLoader: OpenCvLoaderService
   ) {
     // Registrar ícones (sem duplicatas)
     addIcons({
@@ -183,6 +185,7 @@ export class HomePage {
 
   // ------- ciclo de vida -------
   ionViewWillEnter() {
+    this.opencvLoader.preload();
     const usuario = this.authService.getCurrentUser()?.id ?? null;
     if (usuario !== this.usuarioAnterior) {
       this.resetAnalise();
@@ -683,7 +686,7 @@ export class HomePage {
               tratamento: this.tratamento,
               replica: this.replica,
               areaEscala: this.areaEscala
-            }; 
+            };
             this.exportService.comLoading('Gerando planilha CSV...', () =>
               this.exportService.exportarCSV(
                 analise,

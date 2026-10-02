@@ -127,6 +127,7 @@ export class HomePage {
   // --- imagens / seleção ---
   imagemSelecionada: string | null = null;
   imagemProcessada: string | null = null;
+  resultadoDimensoes: { width: number; height: number } | null = null;
   nomeImagem = '';
   hasImage = false;
   selectedImageFile: File | null = null;
@@ -222,6 +223,7 @@ export class HomePage {
     this.areaEscala = 1;
     this.imagemSelecionada = null;
     this.imagemProcessada = null;
+    this.resultadoDimensoes = null;
     this.nomeImagem = '';
     this.hasImage = false;
     this.selectedImageFile = null;
@@ -331,6 +333,9 @@ export class HomePage {
       this.resultados = r.leaves ?? [];
       this.resultadosAgregados = r.aggregatedMetrics ?? this.initAggregatedMetrics();
       this.imagemProcessada = r.processedImage ?? null;
+      this.resultadoDimensoes = r.originalWidth > 0 && r.originalHeight > 0
+        ? { width: r.originalWidth, height: r.originalHeight }
+        : null;
       this.unidadeCalculada = this.unidade; // Guarda a unidade usada no momento do cálculo para referência
 
       await this.adicionarAoHistorico();
@@ -515,10 +520,12 @@ export class HomePage {
 
     const idAnalise = Date.now();
     let imagemKey: string | null = null;
+    let imagemOriginalKey: string | null = null;
     let imagemThumbnail: string | null = null;
 
     if (this.imagemProcessada) {
       imagemKey = `img_${idAnalise}`;
+      imagemOriginalKey = this.imagemSelecionada ? `img_original_${idAnalise}` : null;
 
       try {
         console.log('🖼️ Iniciando processamento de imagem...');
@@ -549,6 +556,10 @@ export class HomePage {
           imagemKey
         );
 
+        if (this.imagemSelecionada && imagemOriginalKey) {
+          await this.storageService.salvarImagemAlta(this.imagemSelecionada, imagemOriginalKey);
+        }
+
         if (sucessoIndexedDB) {
           console.log('✅ Imagem salva com sucesso no IndexedDB');
         } else {
@@ -557,6 +568,7 @@ export class HomePage {
       } catch (e: any) {
         console.error('❌ Erro ao processar imagem:', e?.message);
         imagemKey = null;
+        imagemOriginalKey = null;
       }
     }
 
@@ -572,7 +584,10 @@ export class HomePage {
       unidade: this.unidadeCalculada,
       resultados: [...this.resultados],
       resultadosAgregados: this.resultadosAgregados ? { ...this.resultadosAgregados } : null,
+      originalWidth: this.resultadoDimensoes?.width ?? null,
+      originalHeight: this.resultadoDimensoes?.height ?? null,
       imagemKey: imagemKey,
+      imagemOriginalKey: imagemOriginalKey,
       imagemThumbnail: imagemThumbnail
     };
 

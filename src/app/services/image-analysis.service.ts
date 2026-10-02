@@ -37,6 +37,8 @@ export interface AnalysisResult {
   aggregatedMetrics: AggregatedMetrics;
   processedImage: string | null;
   numberOfLeaves: number;
+  originalWidth: number;
+  originalHeight: number;
   error?: string;
 }
 
@@ -56,6 +58,8 @@ export class ImageAnalysisService {
    */
   async processImageDirect(imgElement: HTMLImageElement, realAreaSquare: number = 1.0): Promise<AnalysisResult> {
     await this.opencvLoader.load();
+    const originalWidth = imgElement.naturalWidth || imgElement.width;
+    const originalHeight = imgElement.naturalHeight || imgElement.height;
     return new Promise((resolve, reject) => {
       if (typeof cv === 'undefined' || !cv.imread) {
         return reject(new Error("OpenCV.js is not loaded."));
@@ -124,7 +128,7 @@ export class ImageAnalysisService {
         }
 
         if (squares.length === 0) {
-          return resolve({ error: "No reference object (square) found.", leaves: [], aggregatedMetrics: {}, processedImage: null, numberOfLeaves: 0 });
+          return resolve({ error: "No reference object (square) found.", leaves: [], aggregatedMetrics: {}, processedImage: null, numberOfLeaves: 0, originalWidth, originalHeight });
         }
 
         squares.sort((a, b) => cv.contourArea(b) - cv.contourArea(a));
@@ -253,6 +257,8 @@ export class ImageAnalysisService {
           aggregatedMetrics: aggregatedMetrics,
           processedImage: processedImageBase64,
           numberOfLeaves: leafMetrics.length,
+          originalWidth,
+          originalHeight,
         });
 
 
@@ -273,7 +279,11 @@ export class ImageAnalysisService {
    * Usa as coordenadas de centróide (cx, cy) presentes em cada LeafMetric.
    * Retorna uma dataURL PNG com as marcações atualizadas.
    */
-  async drawLabelsOnImage(base64Image: string, leavesToMark: LeafMetric[]): Promise<string> {
+  async drawLabelsOnImage(
+    base64Image: string,
+    leavesToMark: LeafMetric[],
+    sourceDimensions?: { width: number; height: number }
+  ): Promise<string> {
     await this.opencvLoader.load();
     return new Promise((resolve, reject) => {
       if (!base64Image) return resolve(null as any);
@@ -285,6 +295,11 @@ export class ImageAnalysisService {
           canvas.width = img.naturalWidth || img.width;
           canvas.height = img.naturalHeight || img.height;
           const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+          const sourceWidth = sourceDimensions?.width || canvas.width;
+          const sourceHeight = sourceDimensions?.height || canvas.height;
+          const scaleX = canvas.width / sourceWidth;
+          const scaleY = canvas.height / sourceHeight;
+          const resolutionScale = Math.max(0.75, canvas.width / 1920);
           // Desenha imagem base
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -294,24 +309,26 @@ export class ImageAnalysisService {
           ctx.textBaseline = 'middle';
 
           // primeiro desenha um 'outline' branco grosso para melhorar contraste
-          ctx.lineWidth = Math.max(4, Math.round(canvas.width * 0.003));
-          ctx.font = `${Math.max(14, Math.round(canvas.width * 0.025))}px sans-serif`;
+          ctx.lineWidth = Math.max(3, Math.round(6 * resolutionScale));
+          ctx.font = `${Math.max(14, Math.round(48 * resolutionScale))}px sans-serif`;
 
           for (const lf of leavesToMark || []) {
-            if (typeof lf.cx !== 'number' || typeof lf.cy !== 'number') continue;
+            if (!lf || typeof lf.cx !== 'number' || typeof lf.cy !== 'number') continue;
 
             // circle marker
             ctx.beginPath();
             ctx.fillStyle = 'rgba(255,255,255,0.8)';
-            ctx.arc(lf.cx, lf.cy, Math.max(8, Math.round(canvas.width * 0.01)), 0, Math.PI * 2);
+            const cX = Math.round(lf.cx * scaleX);
+            const cY = Math.round(lf.cy * scaleY);
+            ctx.arc(cX, cY, Math.max(8, Math.round(19 * resolutionScale)), 0, Math.PI * 2);
             ctx.fill();
 
             // text (id) with stroke
             ctx.fillStyle = '#ff0000';
-            ctx.lineWidth = Math.max(3, Math.round(canvas.width * 0.006));
+            ctx.lineWidth = Math.max(2, Math.round(12 * resolutionScale));
             ctx.strokeStyle = 'rgba(255,255,255,0.95)';
-            ctx.strokeText(String(lf.id), lf.cx, lf.cy);
-            ctx.fillText(String(lf.id), lf.cx, lf.cy);
+            ctx.strokeText(String(lf.id), cX, cY);
+            ctx.fillText(String(lf.id), cX, cY);
           }
 
           resolve(canvas.toDataURL('image/png'));
@@ -328,14 +345,42 @@ export class ImageAnalysisService {
    * Redesenha contornos e rótulos (números) usando OpenCV para manter o mesmo estilo
    * que o processamento original (mesma cor / espessura / fonte do putText).
    */
-  async drawContoursAndLabelsOnImage(base64Image: string, leavesToMark: LeafMetric[]): Promise<string> {
+  async drawContoursAndLabelsOnImage(
+    base64Image: string,
+    leavesToMark: LeafMetric[],
+    sourceDimensions?: { width: number; height: number }
+  ): Promise<string> {
+    await this.opencvLoader.load();
     return new Promise((resolve, reject) => {
       if (!base64Image) return resolve(null as any);
 
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        let mats: any[] = [];
+      img.onload = async () => {
+        const mats: any[] = [];
+        const matVectors: any[] = [];
+        const opencvValues: any[] = [];
+
+        const liberarOpenCvObjetos = () => {
+          for (const matVector of matVectors) {
+            try {
+              matVector.delete();
+            } catch (_) { }
+          }
+
+          for (const mat of mats) {
+            try {
+              mat.delete();
+            } catch (_) { }
+          }
+
+          for (const value of opencvValues) {
+            try {
+              value.delete?.();
+            } catch (_) { }
+          }
+        };
+
         try {
           const src = cv.imread(img);
           mats.push(src);
@@ -343,42 +388,73 @@ export class ImageAnalysisService {
           const processed = src.clone();
           mats.push(processed);
 
+          const targetWidth = img.naturalWidth || img.width;
+          const targetHeight = img.naturalHeight || img.height;
+          const sourceWidth = sourceDimensions?.width || targetWidth;
+          const sourceHeight = sourceDimensions?.height || targetHeight;
+          const scaleX = targetWidth / sourceWidth;
+          const scaleY = targetHeight / sourceHeight;
+          const resolutionScale = Math.max(0.75, targetWidth / 1920);
+          const contourThickness = Math.max(2, Math.round(4 * resolutionScale));
+          const textThickness = Math.max(2, Math.round(6 * resolutionScale));
+          const fontScale = Math.max(1, 2.5 * resolutionScale);
+          const labelOffsetX = Math.round(25 * resolutionScale);
+          const labelOffsetY = Math.round(25 * resolutionScale);
+          const contourColor = new cv.Scalar(0, 0, 255, 255);
+          const textColor = new cv.Scalar(255, 0, 0, 255);
+          opencvValues.push(contourColor, textColor);
+
           // Para cada folha, recria a Mat de pontos do contorno e desenha
           for (let i = 0; i < (leavesToMark || []).length; i++) {
             const lf = leavesToMark[i];
             if (!lf || !lf.contour || lf.contour.length === 0) continue;
 
-            const pts = cv.matFromArray(lf.contour.length / 2, 1, cv.CV_32SC2, lf.contour);
+            const scaledContour: number[] = [];
+            for (let pointIndex = 0; pointIndex < lf.contour.length; pointIndex += 2) {
+              scaledContour.push(
+                Math.round(lf.contour[pointIndex] * scaleX),
+                Math.round(lf.contour[pointIndex + 1] * scaleY)
+              );
+            }
+
+            const pts = cv.matFromArray(scaledContour.length / 2, 1, cv.CV_32SC2, scaledContour);
             mats.push(pts);
             const vec = new cv.MatVector();
+            matVectors.push(vec);
             vec.push_back(pts);
 
-            // desenha o contorno com mesma cor/espessura (0,0,255,255) e thickness 4
-            cv.drawContours(processed, vec, -1, new cv.Scalar(0, 0, 255, 255), 4);
+            cv.drawContours(processed, vec, -1, contourColor, contourThickness);
 
-            // desenha o número (mesmos parâmetros que processImageDirect)
-            const cX = lf.cx ?? 0;
-            const cY = lf.cy ?? 0;
+            const cX = Math.round((lf.cx ?? 0) * scaleX);
+            const cY = Math.round((lf.cy ?? 0) * scaleY);
             const text = `${i + 1}`;
-            const org = new cv.Point(cX - 25, cY + 25);
+            const org = new cv.Point(cX - labelOffsetX, cY + labelOffsetY);
+            opencvValues.push(org);
             const fontFace = cv.FONT_HERSHEY_SIMPLEX;
-            const fontScale = 2.5;
-            const color = new cv.Scalar(255, 0, 0, 255);
-            const thickness = 6;
-            cv.putText(processed, text, org, fontFace, fontScale, color, thickness);
+            cv.putText(processed, text, org, fontFace, fontScale, textColor, textThickness);
 
-            vec.delete();
-            // pts will be deleted in mats cleanup
           }
 
           const canvas = document.createElement('canvas');
           cv.imshow(canvas, processed);
-          const out = canvas.toDataURL('image/png');
+          const out = await new Promise<string>((resolveCanvas, rejectCanvas) => {
+            canvas.toBlob(blob => {
+              if (!blob) {
+                rejectCanvas(new Error('Falha ao converter a imagem redesenhada.'));
+                return;
+              }
+
+              const reader = new FileReader();
+              reader.onloadend = () => resolveCanvas(reader.result as string);
+              reader.onerror = () => rejectCanvas(new Error('Falha ao ler a imagem redesenhada.'));
+              reader.readAsDataURL(blob);
+            }, 'image/png');
+          });
           resolve(out);
         } catch (err) {
           reject(err);
         } finally {
-          try { mats.forEach(m => m.delete()); } catch (_) { }
+          liberarOpenCvObjetos();
         }
       };
       img.onerror = (e) => reject(new Error('Falha ao carregar imagem para desenhar contours com OpenCV'));

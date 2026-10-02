@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AlertController } from '@ionic/angular';
+import { AlertController, ToastController } from '@ionic/angular';
 import {
   IonBackButton,
   IonButton,
@@ -67,6 +67,7 @@ import { saveAs } from 'file-saver';
 import { StorageService } from '../services/storage.service';
 import { ExportService } from '../services/export.service';
 import { ThemeService } from '../services/theme.service';
+import { ImageAnalysisService } from '../services/image-analysis.service';
 
 type MedidaKey =
   'area' | 'perimetro' | 'comprimento' | 'largura' |
@@ -154,10 +155,12 @@ export class HistoryPage implements OnInit {
   constructor(
     private router: Router,
     private alertController: AlertController,
+    private toastController: ToastController,
     private storageService: StorageService,
     private actionSheetCtrl: ActionSheetController,
     private exportService: ExportService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private imageService: ImageAnalysisService
   ) {
     addIcons({
       downloadOutline,
@@ -368,9 +371,13 @@ export class HistoryPage implements OnInit {
                 console.warn('Falha ao remover imagem do IndexedDB:', e);
               }
             }
+            if (analise.imagemOriginalKey) {
+              await this.storageService.deletarImagem(analise.imagemOriginalKey);
+            }
 
             // Remove a análise do histórico
             this.historico = this.historico.filter(h => h.id !== analise.id);
+            this.filteredHistorico = this.filteredHistorico.filter(h => h.id !== analise.id);
             await this.atualizarStorage();
 
             // Se a análise excluída for a que está aberta no modal, fecha o modal
@@ -384,9 +391,14 @@ export class HistoryPage implements OnInit {
     await alert.present();
   }
 
-  onDeleteLeafClick(leaf: any, event: Event) {
+  async onDeleteLeafClick(leaf: any, event: Event) {
     event.stopPropagation();
-    this.presentLeafDeleteConfirmation(leaf);
+
+    if (!this.analiseDetalhada || !leaf) {
+      return;
+    }
+
+    await this.presentLeafDeleteConfirmation(leaf);
   }
 
   private async presentLeafDeleteConfirmation(leaf: any) {
@@ -426,10 +438,85 @@ export class HistoryPage implements OnInit {
       resultadosAgregados: this.recalcularAgregados(updatedResult)
     };
 
+    try {
+      const imagemAtualizada = await this.recriarImagemDaAnalise(updatedAnalysis, updatedResult);
+      if (imagemAtualizada) {
+        updatedAnalysis.imagemProcessada = imagemAtualizada;
+
+        if (updatedAnalysis.imagemKey) {
+          await this.storageService.salvarImagemAlta(imagemAtualizada, updatedAnalysis.imagemKey);
+          updatedAnalysis.imagemThumbnail = await this.storageService.gerarThumbnailOtimizado(
+            imagemAtualizada,
+            400,
+            0.5
+          );
+        }
+      }
+    } catch {
+      await this.exibirAvisoImagemLegada();
+    }
+
     this.historico = this.historico.map(h => h.id === updatedAnalysis.id ? updatedAnalysis : h);
-    this.analiseDetalhada = updatedAnalysis;
+    this.filteredHistorico = this.filteredHistorico.map(h => h.id === updatedAnalysis.id ? updatedAnalysis : h);
+    this.analiseDetalhada = { ...updatedAnalysis };
 
     await this.atualizarStorage();
+  }
+
+  private async recriarImagemDaAnalise(analise: any, folhas: any[]): Promise<string | null> {
+    let imagemOriginal: string | null = typeof analise?.imagemOriginal === 'string'
+      ? analise.imagemOriginal
+      : null;
+
+    if (!imagemOriginal && typeof analise?.imagemOriginalKey === 'string') {
+      try {
+        imagemOriginal = await this.storageService.recuperarImagemAlta(analise.imagemOriginalKey);
+      } catch {
+        imagemOriginal = null;
+      }
+    }
+
+    if (!imagemOriginal) {
+      await this.exibirAvisoImagemLegada();
+      return null;
+    }
+
+    const possuiContornosCompletos = folhas.length === 0 || folhas.every(
+      folha => Array.isArray(folha?.contour) && folha.contour.length > 0
+    );
+
+    if (!possuiContornosCompletos) {
+      await this.exibirAvisoImagemLegada();
+      return null;
+    }
+
+    try {
+      return await this.imageService.drawContoursAndLabelsOnImage(
+        imagemOriginal,
+        folhas,
+        {
+          width: analise.originalWidth,
+          height: analise.originalHeight
+        }
+      );
+    } catch (error) {
+      await this.exibirAvisoImagemLegada();
+      return null;
+    }
+  }
+
+  private async exibirAvisoImagemLegada(): Promise<void> {
+    try {
+      const toast = await this.toastController.create({
+        message: 'Esta análise antiga permite excluir os dados numéricos, mas a imagem processada não pode ser regenerada.',
+        duration: 4500,
+        position: 'bottom',
+        color: 'warning'
+      });
+      await toast.present();
+    } catch {
+      // A exclusão numérica não deve falhar se a notificação não puder ser exibida.
+    }
   }
 
   private recalcularAgregados(resultados: any[]) {
@@ -523,6 +610,13 @@ export class HistoryPage implements OnInit {
                   await this.storageService.deletarImagem(analise.imagemKey);
                 } catch (e) {
                   console.warn(`Falha ao remover imagem ${analise.imagemKey}:`, e);
+                }
+              }
+              if (analise.imagemOriginalKey) {
+                try {
+                  await this.storageService.deletarImagem(analise.imagemOriginalKey);
+                } catch (e) {
+                  console.warn(`Falha ao remover imagem original ${analise.imagemOriginalKey}:`, e);
                 }
               }
             }

@@ -14,7 +14,10 @@ export interface StoredAnalysis {
   unidade: string;
   resultados: any[];
   resultadosAgregados: any;
+  originalWidth: number | null;
+  originalHeight: number | null;
   imagemKey: string | null;
+  imagemOriginalKey: string | null;
   imagemThumbnail: string | null;
 }
 
@@ -123,7 +126,7 @@ export class StorageService {
       return new Promise((resolve) => {
         const transaction = this.db!.transaction([this.STORE_IMAGES], 'readwrite');
         const store = transaction.objectStore(this.STORE_IMAGES);
-        const request = store.add({ id: chave, data: blob, tamanho: blob.size, tipo: blob.type, dataCriacao: new Date() });
+        const request = store.put({ id: chave, data: blob, tamanho: blob.size, tipo: blob.type, dataCriacao: new Date() });
 
         request.onsuccess = () => {
           console.log(`✅ Imagem salva no IndexedDB: ${chave} (${blob.size} bytes)`);
@@ -417,7 +420,10 @@ export class StorageService {
           ? a.resultados
           : (Array.isArray(a.leaves) ? a.leaves : []),
         resultadosAgregados: a.resultadosAgregados || a.aggregatedMetrics || null,
+        originalWidth: a.originalWidth ?? null,
+        originalHeight: a.originalHeight ?? null,
         imagemKey: a.imagemKey || null,
+        imagemOriginalKey: a.imagemOriginalKey || null,
         imagemThumbnail: a.imagemThumbnail || null
       }));
     } catch (error) {
@@ -447,11 +453,17 @@ export class StorageService {
             comprimento: r?.comprimento,
             largura: r?.largura,
             relacaoLarguraComprimento: r?.relacaoLarguraComprimento,
+            cx: r?.cx,
+            cy: r?.cy,
+            contour: Array.isArray(r?.contour) ? r.contour : undefined,
             uid: r?.uid
           }))
         : [],
       resultadosAgregados: a.resultadosAgregados || null,
+      originalWidth: a.originalWidth ?? null,
+      originalHeight: a.originalHeight ?? null,
       imagemKey: a.imagemKey || null,
+      imagemOriginalKey: a.imagemOriginalKey || null,
       imagemThumbnail: a.imagemThumbnail || null
     };
   }

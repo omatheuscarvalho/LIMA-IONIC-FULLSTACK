@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -160,7 +161,8 @@ export class HistoryPage implements OnInit {
     private actionSheetCtrl: ActionSheetController,
     private exportService: ExportService,
     private themeService: ThemeService,
-    private imageService: ImageAnalysisService
+    private imageService: ImageAnalysisService,
+    private cdr: ChangeDetectorRef
   ) {
     addIcons({
       downloadOutline,
@@ -392,7 +394,10 @@ export class HistoryPage implements OnInit {
   }
 
   async onDeleteLeafClick(leaf: any, event: Event) {
-    event.stopPropagation();
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
 
     if (!this.analiseDetalhada || !leaf) {
       return;
@@ -459,6 +464,7 @@ export class HistoryPage implements OnInit {
     this.historico = this.historico.map(h => h.id === updatedAnalysis.id ? updatedAnalysis : h);
     this.filteredHistorico = this.filteredHistorico.map(h => h.id === updatedAnalysis.id ? updatedAnalysis : h);
     this.analiseDetalhada = { ...updatedAnalysis };
+    this.cdr.detectChanges();
 
     await this.atualizarStorage();
   }
@@ -640,7 +646,7 @@ export class HistoryPage implements OnInit {
   expandirAnalise(analise: any) {
     // Armazena apenas a referência do ID para encontrar depois
     this.resetFiltroExibicao();
-    this.analiseDetalhada = analise;
+    this.analiseDetalhada = JSON.parse(JSON.stringify(analise));
     this.editingDetalhe = false;
     this.selectedSegment = 'resumo';
   }

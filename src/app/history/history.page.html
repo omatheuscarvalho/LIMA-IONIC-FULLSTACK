@@ -47,7 +47,6 @@
                 </div>
                 <div class="file-info">
                   <div class="file-name" [title]="analise.nomeImagem">{{ analise.nomeImagem || 'Sem nome' }}</div>
-                  <div class="file-id">#{{ analise.id }}</div>
                 </div>
               </div>
             </div>
@@ -308,7 +307,7 @@
                 <ion-badge slot="start" color="medium">{{ r.id }}</ion-badge>
                 <ion-label></ion-label>
                 <ion-button slot="end" fill="clear" class="leaf-delete-button" type="button"
-                  (click)="$event.stopPropagation(); onDeleteLeafClick(r, $event)">
+                  (click)="onDeleteLeafClick(r, $event)">
                   <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
                 </ion-button>
               </ion-item>

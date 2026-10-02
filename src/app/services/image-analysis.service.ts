@@ -394,12 +394,12 @@ export class ImageAnalysisService {
           const sourceHeight = sourceDimensions?.height || targetHeight;
           const scaleX = targetWidth / sourceWidth;
           const scaleY = targetHeight / sourceHeight;
-          const resolutionScale = Math.max(0.75, targetWidth / 1920);
-          const contourThickness = Math.max(2, Math.round(4 * resolutionScale));
-          const textThickness = Math.max(2, Math.round(6 * resolutionScale));
-          const fontScale = Math.max(1, 2.5 * resolutionScale);
-          const labelOffsetX = Math.round(25 * resolutionScale);
-          const labelOffsetY = Math.round(25 * resolutionScale);
+          const drawingScale = (scaleX + scaleY) / 2;
+          const contourThickness = Math.max(1, Math.round(4 * drawingScale));
+          const textThickness = Math.max(1, Math.round(6 * drawingScale));
+          const fontScale = Math.max(0.5, 2.5 * drawingScale);
+          const labelOffsetX = Math.round(25 * scaleX);
+          const labelOffsetY = Math.round(25 * scaleY);
           const contourColor = new cv.Scalar(0, 0, 255, 255);
           const textColor = new cv.Scalar(255, 0, 0, 255);
           opencvValues.push(contourColor, textColor);

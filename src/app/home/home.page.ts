@@ -221,6 +221,11 @@ export class HomePage {
     this.tratamento = '';
     this.replica = '';
     this.areaEscala = 1;
+    this.unidade = 'cm';
+    this.resetEstadoImagem();
+  }
+
+  private resetEstadoImagem() {
     this.imagemSelecionada = null;
     this.imagemProcessada = null;
     this.resultadoDimensoes = null;
@@ -235,7 +240,7 @@ export class HomePage {
   }
 
   selecionarImagem() {
-    this.resetAnalise();
+    this.resetEstadoImagem();
 
     const input = document.createElement('input');
     input.type = 'file';
@@ -272,7 +277,7 @@ export class HomePage {
 
       // Se conseguiu capturar, processa a imagem
       if (image.base64String) {
-        this.resetAnalise(); // Limpa análise anterior se houver
+        this.resetEstadoImagem(); // Limpa apenas a análise anterior
 
         // Cria URI de dados em base64
         const base64Image = `data:image/jpeg;base64,${image.base64String}`;

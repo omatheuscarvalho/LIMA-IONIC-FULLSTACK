@@ -33,7 +33,9 @@ import {
   IonLabel,
   IonItem,
   IonInput,
-  IonList, ActionSheetController
+  IonList,
+  IonSpinner,
+  ActionSheetController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -108,7 +110,8 @@ type MedidaKey =
     IonLabel,
     IonItem,
     IonInput,
-    IonList
+    IonList,
+    IonSpinner
   ]
 })
 export class HistoryPage implements OnInit {
@@ -140,6 +143,15 @@ export class HistoryPage implements OnInit {
 
   // Modal de imagem ampliada
   imagemAmpliada: string | null = null;
+  isRedrawingImage = false;
+
+  private pendingLeafDeletion: {
+    token: number;
+    analysisId: number;
+    leaf: any;
+    originalIndex: number;
+  } | null = null;
+  private leafDeletionToken = 0;
 
   private criarFiltroPadrao(): Record<MedidaKey, boolean> {
     return {
@@ -422,8 +434,9 @@ export class HistoryPage implements OnInit {
         {
           text: 'Excluir',
           role: 'destructive',
-          handler: async () => {
-            await this.deleteLeafFromCurrentAnalysis(leaf.id);
+          handler: () => {
+            void this.deleteLeafFromCurrentAnalysis(leaf.id);
+            return true;
           }
         }
       ]
@@ -438,6 +451,19 @@ export class HistoryPage implements OnInit {
     const target = this.historico.find(h => h.id === this.analiseDetalhada.id);
     if (!target || !Array.isArray(target.resultados)) return;
 
+    if (this.pendingLeafDeletion || this.isRedrawingImage) return;
+
+    const originalIndex = target.resultados.findIndex((item: any) => item?.id === leafId);
+    if (originalIndex < 0) return;
+
+    const token = ++this.leafDeletionToken;
+    this.pendingLeafDeletion = {
+      token,
+      analysisId: target.id,
+      leaf: target.resultados[originalIndex],
+      originalIndex
+    };
+
     const updatedResult = target.resultados
       .filter((leaf: any) => leaf.id !== leafId)
       .map((leaf: any, index: number) => ({ ...leaf, id: index + 1 }));
@@ -448,30 +474,104 @@ export class HistoryPage implements OnInit {
       resultadosAgregados: this.recalcularAgregados(updatedResult)
     };
 
-    try {
-      const imagemAtualizada = await this.recriarImagemDaAnalise(updatedAnalysis, updatedResult);
-      if (imagemAtualizada) {
-        updatedAnalysis.imagemProcessada = imagemAtualizada;
-
-        if (updatedAnalysis.imagemKey) {
-          await this.storageService.salvarImagemAlta(imagemAtualizada, updatedAnalysis.imagemKey);
-          updatedAnalysis.imagemThumbnail = await this.storageService.gerarThumbnailOtimizado(
-            imagemAtualizada,
-            400,
-            0.5
-          );
-        }
-      }
-    } catch {
-      await this.exibirAvisoImagemLegada();
-    }
-
     this.historico = this.historico.map(h => h.id === updatedAnalysis.id ? updatedAnalysis : h);
     this.filteredHistorico = this.filteredHistorico.map(h => h.id === updatedAnalysis.id ? updatedAnalysis : h);
     this.analiseDetalhada = { ...updatedAnalysis };
     this.cdr.detectChanges();
 
-    await this.atualizarStorage();
+    let toast;
+    try {
+      toast = await this.toastController.create({
+        message: `Folha #${leafId} removida`,
+        duration: 4000,
+        position: 'bottom',
+        keyboardClose: false,
+        buttons: [{
+          text: 'Desfazer',
+          role: 'cancel',
+          handler: () => void this.undoLeafDeletion(token)
+        }]
+      });
+      await toast.present();
+      this.cdr.detectChanges();
+    } catch {
+      await this.commitLeafDeletion(token);
+      return;
+    }
+
+    await toast.onDidDismiss();
+    if (this.pendingLeafDeletion?.token === token) {
+      await this.commitLeafDeletion(token);
+    }
+  }
+
+  private async undoLeafDeletion(token: number) {
+    const pending = this.pendingLeafDeletion;
+    if (!pending || pending.token !== token) return;
+
+    const current = this.historico.find(analysis => analysis.id === pending.analysisId);
+    if (!current || !Array.isArray(current.resultados)) return;
+
+    const restoredResults = [...current.resultados];
+    restoredResults.splice(pending.originalIndex, 0, pending.leaf);
+    const reorderedResults = restoredResults.map((leaf, index) => ({ ...leaf, id: index + 1 }));
+    const restoredAnalysis = {
+      ...current,
+      resultados: reorderedResults,
+      resultadosAgregados: this.recalcularAgregados(reorderedResults)
+    };
+
+    this.historico = this.historico.map(analysis =>
+      analysis.id === restoredAnalysis.id ? restoredAnalysis : analysis
+    );
+    this.filteredHistorico = this.filteredHistorico.map(analysis =>
+      analysis.id === restoredAnalysis.id ? restoredAnalysis : analysis
+    );
+    this.analiseDetalhada = { ...restoredAnalysis };
+    this.pendingLeafDeletion = null;
+    this.cdr.detectChanges();
+  }
+
+  private async commitLeafDeletion(token: number) {
+    const pending = this.pendingLeafDeletion;
+    if (!pending || pending.token !== token) return;
+
+    this.isRedrawingImage = true;
+    this.cdr.detectChanges();
+
+    try {
+      const target = this.historico.find(analysis => analysis.id === pending.analysisId);
+      if (!target || !Array.isArray(target.resultados)) return;
+
+      const imagemAtualizada = await this.recriarImagemDaAnalise(target, target.resultados);
+      if (imagemAtualizada) {
+        const updatedAnalysis = {
+          ...target,
+          imagemProcessada: imagemAtualizada,
+          imagemThumbnail: target.imagemKey
+            ? await this.storageService.gerarThumbnailOtimizado(imagemAtualizada, 400, 0.5)
+            : target.imagemThumbnail
+        };
+
+        if (updatedAnalysis.imagemKey) {
+          await this.storageService.salvarImagemAlta(imagemAtualizada, updatedAnalysis.imagemKey);
+        }
+
+        this.historico = this.historico.map(analysis =>
+          analysis.id === updatedAnalysis.id ? updatedAnalysis : analysis
+        );
+        this.filteredHistorico = this.filteredHistorico.map(analysis =>
+          analysis.id === updatedAnalysis.id ? updatedAnalysis : analysis
+        );
+        this.analiseDetalhada = { ...updatedAnalysis };
+      }
+
+      await this.atualizarStorage();
+    } finally {
+      this.pendingLeafDeletion = null;
+      this.isRedrawingImage = false;
+      this.cdr.detectChanges();
+    }
   }
 
   private async recriarImagemDaAnalise(analise: any, folhas: any[]): Promise<string | null> {

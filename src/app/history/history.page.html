@@ -171,8 +171,13 @@
             <div class="analysis-info-card">
               <div class="analysis-image-section">
                 <div class="analysis-thumbnail">
+                  <div class="redrawing-overlay" *ngIf="isRedrawingImage">
+                    <ion-spinner name="crescent"></ion-spinner>
+                    <span>Atualizando marcações da imagem...</span>
+                  </div>
                   <img [src]="getThumbnail(analiseDetalhada)" *ngIf="getThumbnail(analiseDetalhada)"
-                    (click)="abrirImagemAmpliada()" style="cursor: pointer;" />
+                    (click)="!isRedrawingImage && abrirImagemAmpliada()" [class.is-redrawing]="isRedrawingImage"
+                    style="cursor: pointer;" />
                   <ion-icon name="image-outline" *ngIf="!getThumbnail(analiseDetalhada)" size="large"></ion-icon>
                 </div>
               </div>
@@ -348,6 +353,7 @@
                 <ion-badge slot="start" color="medium">{{ r.id }}</ion-badge>
                 <ion-label></ion-label>
                 <ion-button slot="end" fill="clear" class="leaf-delete-button" type="button"
+                  [disabled]="isRedrawingImage"
                   (click)="onDeleteLeafClick(r, $event)">
                   <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
                 </ion-button>

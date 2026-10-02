@@ -95,6 +95,18 @@ export class ThemeService {
     }
   }
 
+  increaseFontSize() {
+    const currentLevel = this.fontSizeSubject.value;
+    const nextLevel: FontSizeLevel = currentLevel === 'small' ? 'normal' : 'large';
+    this.setFontSizeLevel(nextLevel);
+  }
+
+  decreaseFontSize() {
+    const currentLevel = this.fontSizeSubject.value;
+    const nextLevel: FontSizeLevel = currentLevel === 'large' ? 'normal' : 'small';
+    this.setFontSizeLevel(nextLevel);
+  }
+
   openFontSettings() {
     this.fontSettingsOpenSubject.next(true);
   }

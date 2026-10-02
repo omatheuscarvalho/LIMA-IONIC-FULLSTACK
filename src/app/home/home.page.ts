@@ -12,7 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import {
   camera, download, help, home, moon, sunny, time,
-  trash, logOut, person, calculator, image as imageIcon, chevronDownOutline, chevronUpOutline, documentOutline, documentTextOutline, close, settings
+  trash, logOut, calculator, image as imageIcon, chevronDownOutline, chevronUpOutline, documentOutline, documentTextOutline, close
 } from 'ionicons/icons';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import * as Papa from 'papaparse';
@@ -159,8 +159,6 @@ export class HomePage {
   ) {
     // Registrar ícones (sem duplicatas)
     addIcons({
-      person,
-      settings,
       'log-out': logOut,
       image: imageIcon,
       calculator,
@@ -742,8 +740,12 @@ export class HomePage {
     this.themeService.toggleTheme();
   }
 
-  openAccessibilitySettings() {
-    this.themeService.openFontSettings();
+  increaseFontSize() {
+    this.themeService.increaseFontSize();
+  }
+
+  decreaseFontSize() {
+    this.themeService.decreaseFontSize();
   }
 
   async confirmarLogout() {

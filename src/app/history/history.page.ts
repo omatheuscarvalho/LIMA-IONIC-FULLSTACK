@@ -242,7 +242,12 @@ export class HistoryPage implements OnInit {
 
   async carregarHistorico() {
     // Carrega análises do StorageService (já com lógica otimizada)
-    this.historico = this.storageService.carregarAnalises();
+    this.historico = this.storageService.carregarAnalises().map(analise => ({
+      ...analise,
+      especie: analise.especie || 'Não informada',
+      tratamento: analise.tratamento || 'Não informado',
+      replica: analise.replica || 'Não informada'
+    }));
 
     // Para cada análise, carrega a imagem do IndexedDB se necessário
     for (const analise of this.historico) {

@@ -28,8 +28,9 @@
       <div class="table-container" *ngIf="filteredHistorico.length > 0">
         <div class="table-header">
           <div class="table-row">
-            <div class="col-image">Arquivo</div>
-            <div class="col-metadata">Detalhes</div>
+            <div class="col-species">Espécie</div>
+            <div class="col-treatment">Tratamento</div>
+            <div class="col-replica">Réplica</div>
             <div class="col-date">Data</div>
             <div class="col-area">Área Padrão</div>
             <div class="col-actions"></div>
@@ -40,23 +41,21 @@
           <div class="table-row data-row" *ngFor="let analise of filteredHistorico; trackBy: trackByHistorico"
             (click)="expandirAnalise(analise)">
 
-            <div class="col-image">
-              <div class="img-file-group">
+            <div class="col-species">
+              <div class="history-sample-cell">
                 <div class="thumb-small">
-                  <img [src]="getThumbnail(analise) || 'assets/placeholder-image.png'" alt="img" />
+                  <img [src]="getThumbnail(analise) || 'assets/placeholder-image.png'" alt="Imagem da análise" />
                 </div>
-                <div class="file-info">
-                  <div class="file-name" [title]="analise.nomeImagem">{{ analise.nomeImagem || 'Sem nome' }}</div>
-                </div>
+                <span>{{ analise.especie || 'Não informada' }}</span>
               </div>
             </div>
 
-            <div class="col-metadata">
-              <div class="metadata-badges">
-                <span class="badge" *ngIf="analise.especie">{{ analise.especie }}</span>
-                <span class="badge" *ngIf="analise.tratamento">{{ analise.tratamento }}</span>
-                <span class="badge empty" *ngIf="!analise.especie && !analise.tratamento">Sem dados</span>
-              </div>
+            <div class="col-treatment">
+              {{ analise.tratamento || 'Não informado' }}
+            </div>
+
+            <div class="col-replica">
+              {{ analise.replica || 'Não informada' }}
             </div>
 
             <div class="col-date">

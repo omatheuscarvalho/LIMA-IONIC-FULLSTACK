@@ -25,7 +25,7 @@
         </ion-text>
       </div>
 
-      <div class="table-container" *ngIf="filteredHistorico.length > 0">
+      <div class="table-container desktop-history-table" *ngIf="filteredHistorico.length > 0">
         <div class="table-header">
           <div class="table-row">
             <div class="col-species">Espécie</div>
@@ -77,6 +77,48 @@
               </button>
             </div>
 
+          </div>
+        </div>
+      </div>
+
+      <div class="mobile-history-list" *ngIf="filteredHistorico.length > 0">
+        <div class="history-card" *ngFor="let analise of filteredHistorico; trackBy: trackByHistorico">
+          <div class="history-card-header">
+            <div class="history-card-identity">
+              <div class="history-card-thumb">
+                <img [src]="getThumbnail(analise) || 'assets/placeholder-image.png'" alt="Imagem da análise" />
+              </div>
+              <strong>{{ analise.especie || 'Não informada' }}</strong>
+            </div>
+            <span class="history-card-date">{{ analise.data | date:'dd/MM/yy' }}</span>
+          </div>
+
+          <div class="history-card-details">
+            <div class="history-card-field">
+              <span class="history-card-label">Tratamento</span>
+              <span class="history-card-value">{{ analise.tratamento || 'Não informado' }}</span>
+            </div>
+            <div class="history-card-field">
+              <span class="history-card-label">Réplica</span>
+              <span class="history-card-value">{{ analise.replica || '-' }}</span>
+            </div>
+            <div class="history-card-field history-card-area">
+              <span class="history-card-label">Área Padrão</span>
+              <span class="history-card-value">
+                {{ (analise.areaPadrao || analise.areaEscala) | number:'1.5-5' }} {{ analise.unidade || 'cm' }}²
+              </span>
+            </div>
+          </div>
+
+          <div class="history-card-actions">
+            <ion-button fill="clear" size="small" (click)="expandirAnalise(analise)" aria-label="Ver detalhes da análise">
+              <ion-icon slot="start" name="list-outline"></ion-icon>
+              Detalhes
+            </ion-button>
+            <ion-button fill="clear" color="danger" size="small" (click)="onDeleteAnalise(analise)" aria-label="Excluir análise">
+              <ion-icon slot="start" name="trash-outline"></ion-icon>
+              Excluir
+            </ion-button>
           </div>
         </div>
       </div>

@@ -247,6 +247,7 @@
   @media (max-width: 767px) {
     .image-card-mobile {
       display: block;
+      width: auto;
       max-height: 360px;
       overflow: hidden;
     }

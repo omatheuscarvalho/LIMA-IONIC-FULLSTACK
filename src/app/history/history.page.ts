@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -175,7 +175,8 @@ export class HistoryPage implements OnInit {
     private exportService: ExportService,
     private themeService: ThemeService,
     private imageService: ImageAnalysisService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {
     addIcons({
       downloadOutline,
@@ -583,7 +584,19 @@ export class HistoryPage implements OnInit {
         this.filteredHistorico = this.filteredHistorico.map(analysis =>
           analysis.id === updatedAnalysis.id ? updatedAnalysis : analysis
         );
-        this.analiseDetalhada = { ...updatedAnalysis };
+        this.ngZone.run(() => {
+          this.analiseDetalhada = {
+            ...updatedAnalysis,
+            imagemProcessada: imagemAtualizada,
+            timestamp: Date.now()
+          };
+          this.cdr.detectChanges();
+        });
+      }
+
+      const chaveContornos = this.storageService.obterChaveContornos(target);
+      if (chaveContornos) {
+        await this.storageService.salvarContornos(chaveContornos, target.resultados);
       }
 
       await this.atualizarStorage();
@@ -612,7 +625,40 @@ export class HistoryPage implements OnInit {
       return null;
     }
 
-    const possuiContornosCompletos = folhas.length === 0 || folhas.every(
+    let folhasParaRedesenhar = folhas;
+    const possuiContornosLocais = folhasParaRedesenhar.length === 0 || folhasParaRedesenhar.every(
+      folha => Array.isArray(folha?.contour) && folha.contour.length > 0
+    );
+
+    if (!possuiContornosLocais) {
+      const chaveContornos = this.storageService.obterChaveContornos(analise);
+      const contornosSalvos = chaveContornos
+        ? await this.storageService.recuperarContornos(chaveContornos)
+        : null;
+
+      if (contornosSalvos?.length) {
+        folhasParaRedesenhar = folhasParaRedesenhar.map((folha) => {
+          const contornoSalvo = contornosSalvos.find((contorno: any) =>
+            folha?.uid && contorno?.uid === folha.uid
+          ) ?? (!folha?.uid
+            ? contornosSalvos.find((contorno: any) => contorno?.id === folha?.id)
+            : null);
+
+          return contornoSalvo && Array.isArray(contornoSalvo.contour)
+            ? {
+                ...folha,
+                contour: [...contornoSalvo.contour],
+                cx: contornoSalvo.cx ?? folha.cx,
+                cy: contornoSalvo.cy ?? folha.cy
+              }
+            : folha;
+        });
+
+        analise.resultados = folhasParaRedesenhar;
+      }
+    }
+
+    const possuiContornosCompletos = folhasParaRedesenhar.length === 0 || folhasParaRedesenhar.every(
       folha => Array.isArray(folha?.contour) && folha.contour.length > 0
     );
 
@@ -624,7 +670,7 @@ export class HistoryPage implements OnInit {
     try {
       return await this.imageService.drawContoursAndLabelsOnImage(
         imagemOriginal,
-        folhas,
+        folhasParaRedesenhar,
         {
           width: analise.originalWidth,
           height: analise.originalHeight
@@ -639,10 +685,10 @@ export class HistoryPage implements OnInit {
   private async exibirAvisoImagemLegada(): Promise<void> {
     try {
       const toast = await this.toastController.create({
-        message: 'Esta análise antiga permite excluir os dados numéricos, mas a imagem processada não pode ser regenerada.',
-        duration: 4500,
+        message: 'Métricas recalculadas (imagem original indisponível para atualização visual)',
+        duration: 2500,
         position: 'bottom',
-        color: 'warning'
+        color: 'success'
       });
       await toast.present();
     } catch {

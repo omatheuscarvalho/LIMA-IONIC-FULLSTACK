@@ -530,7 +530,7 @@ export class HomePage {
 
     if (this.imagemProcessada) {
       imagemKey = `img_${idAnalise}`;
-      imagemOriginalKey = this.imagemSelecionada ? `img_original_${idAnalise}` : null;
+      imagemOriginalKey = `img_original_${idAnalise}`;
 
       try {
         console.log('🖼️ Iniciando processamento de imagem...');
@@ -561,8 +561,15 @@ export class HomePage {
           imagemKey
         );
 
-        if (this.imagemSelecionada && imagemOriginalKey) {
-          await this.storageService.salvarImagemAlta(this.imagemSelecionada, imagemOriginalKey);
+        if (imagemOriginalKey) {
+          const imagemOriginalSalva = await this.storageService.salvarImagemAlta(
+            this.imagemSelecionada || this.imagemProcessada,
+            imagemOriginalKey
+          );
+
+          if (!imagemOriginalSalva) {
+            imagemOriginalKey = null;
+          }
         }
 
         if (sucessoIndexedDB) {

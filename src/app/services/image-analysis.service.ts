@@ -448,7 +448,7 @@ export class ImageAnalysisService {
               reader.onloadend = () => resolveCanvas(reader.result as string);
               reader.onerror = () => rejectCanvas(new Error('Falha ao ler a imagem redesenhada.'));
               reader.readAsDataURL(blob);
-            }, 'image/png');
+            }, 'image/jpeg', 0.65);
           });
           resolve(out);
         } catch (err) {

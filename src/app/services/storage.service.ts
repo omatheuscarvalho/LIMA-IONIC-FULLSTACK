@@ -37,55 +37,66 @@ export interface StoredImage {
 })
 export class StorageService {
   private db: IDBDatabase | null = null;
+  private readonly dbReady: Promise<boolean>;
   private readonly DB_NAME = 'LIMA_Analytics';
-  private readonly DB_VERSION = 1;
+  private readonly DB_VERSION = 2;
   private readonly STORE_IMAGES = 'images';
   private readonly STORE_ANALYSIS = 'analysis';
+  private readonly STORE_CONTOURS = 'contours';
   private readonly STORAGE_KEY_ANALYSIS = 'historico_analises';
   private readonly MAX_LOCALSTORAGE_BYTES = 4000000; // ~4MB
   private readonly QUOTA_ERROR_PATTERNS = ['QuotaExceededError', 'NS_ERROR_DOM_QUOTA_REACHED', 'QuotaExceeded'];
 
   constructor() {
-    this.initializeDB();
+    this.dbReady = this.initializeDB();
   }
 
   /**
    * Inicializa o banco de dados IndexedDB
    */
-  private initializeDB(): void {
-    if (!indexedDB) {
+  private initializeDB(): Promise<boolean> {
+    if (typeof indexedDB === 'undefined') {
       console.warn('IndexedDB não disponível neste navegador');
-      return;
+      return Promise.resolve(false);
     }
 
-    const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
+    return new Promise(resolve => {
+      const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
 
-    request.onerror = () => {
-      console.error('Erro ao abrir IndexedDB:', request.error);
-    };
+      request.onerror = () => {
+        console.error('Erro ao abrir IndexedDB:', request.error);
+        resolve(false);
+      };
 
-    request.onsuccess = () => {
-      this.db = request.result;
-      console.log('IndexedDB inicializado com sucesso');
-    };
+      request.onsuccess = () => {
+        this.db = request.result;
+        console.log('IndexedDB inicializado com sucesso');
+        resolve(true);
+      };
 
-    request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
-      const db = (event.target as IDBOpenDBRequest).result;
+      request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
+        const db = (event.target as IDBOpenDBRequest).result;
 
-      // Cria store para imagens em alta resolução
-      if (!db.objectStoreNames.contains(this.STORE_IMAGES)) {
-        const imageStore = db.createObjectStore(this.STORE_IMAGES, { keyPath: 'id' });
-        imageStore.createIndex('dataCriacao', 'dataCriacao', { unique: false });
-        console.log('Object store "images" criado');
-      }
+        if (!db.objectStoreNames.contains(this.STORE_IMAGES)) {
+          const imageStore = db.createObjectStore(this.STORE_IMAGES, { keyPath: 'id' });
+          imageStore.createIndex('dataCriacao', 'dataCriacao', { unique: false });
+        }
 
-      // Cria store para análises (metadados)
-      if (!db.objectStoreNames.contains(this.STORE_ANALYSIS)) {
-        const analysisStore = db.createObjectStore(this.STORE_ANALYSIS, { keyPath: 'id' });
-        analysisStore.createIndex('data', 'data', { unique: false });
-        console.log('Object store "analysis" criado');
-      }
-    };
+        if (!db.objectStoreNames.contains(this.STORE_ANALYSIS)) {
+          const analysisStore = db.createObjectStore(this.STORE_ANALYSIS, { keyPath: 'id' });
+          analysisStore.createIndex('data', 'data', { unique: false });
+        }
+
+        if (!db.objectStoreNames.contains(this.STORE_CONTOURS)) {
+          db.createObjectStore(this.STORE_CONTOURS, { keyPath: 'id' });
+        }
+      };
+    });
+  }
+
+  private async aguardarDB(): Promise<boolean> {
+    if (this.isDBReady()) return true;
+    return this.dbReady;
   }
 
   /**
@@ -101,7 +112,7 @@ export class StorageService {
   async salvarImagemAlta(imagemBase64: string, chave: string, tentativa: number = 1): Promise<boolean> {
     const MAX_TENTATIVAS = 3;
 
-    if (!this.isDBReady()) {
+    if (!(await this.aguardarDB())) {
       console.warn(`[${tentativa}/${MAX_TENTATIVAS}] IndexedDB não pronto. Tentando fallback...`);
       
       // Fallback: comprime agressivamente e salva em localStorage
@@ -185,7 +196,7 @@ export class StorageService {
    * Recupera uma imagem em alta resolução do IndexedDB
    */
   async recuperarImagemAlta(chave: string): Promise<string | null> {
-    if (!this.isDBReady()) {
+    if (!(await this.aguardarDB())) {
       return null;
     }
 
@@ -230,7 +241,7 @@ export class StorageService {
    * Deleta uma imagem do IndexedDB
    */
   async deletarImagem(chave: string): Promise<boolean> {
-    if (!this.isDBReady()) {
+    if (!(await this.aguardarDB())) {
       return false;
     }
 
@@ -251,6 +262,93 @@ export class StorageService {
         };
       } catch (error) {
         console.error('Erro na transação de deleção:', error);
+        resolve(false);
+      }
+    });
+  }
+
+  obterChaveContornos(analise: Pick<StoredAnalysis, 'imagemOriginalKey' | 'imagemKey'>): string | null {
+    const chaveBase = analise.imagemOriginalKey || analise.imagemKey;
+    return chaveBase ? `${chaveBase}_contours` : null;
+  }
+
+  async salvarContornos(chave: string, folhas: any[]): Promise<boolean> {
+    if (!(await this.aguardarDB())) {
+      console.warn('IndexedDB não pronto para salvar contornos:', chave);
+      return false;
+    }
+
+    const contornos = (Array.isArray(folhas) ? folhas : []).map((folha, index) => ({
+      id: folha?.id ?? index + 1,
+      uid: folha?.uid ?? null,
+      contour: Array.isArray(folha?.contour) ? [...folha.contour] : [],
+      cx: folha?.cx,
+      cy: folha?.cy
+    }));
+
+    return new Promise(resolve => {
+      try {
+        const transaction = this.db!.transaction([this.STORE_CONTOURS], 'readwrite');
+        const request = transaction.objectStore(this.STORE_CONTOURS).put({
+          id: chave,
+          contornos,
+          dataAtualizacao: new Date()
+        });
+
+        request.onsuccess = () => {
+          console.log(`✅ Contornos salvos no IndexedDB: ${chave} (${contornos.length})`);
+          resolve(true);
+        };
+        request.onerror = () => {
+          console.error('Erro ao salvar contornos:', request.error);
+          resolve(false);
+        };
+      } catch (error) {
+        console.error('Erro na transação de contornos:', error);
+        resolve(false);
+      }
+    });
+  }
+
+  async recuperarContornos(chave: string): Promise<any[] | null> {
+    if (!(await this.aguardarDB())) {
+      return null;
+    }
+
+    return new Promise(resolve => {
+      try {
+        const transaction = this.db!.transaction([this.STORE_CONTOURS], 'readonly');
+        const request = transaction.objectStore(this.STORE_CONTOURS).get(chave);
+
+        request.onsuccess = () => {
+          const contornos = request.result?.contornos;
+          resolve(Array.isArray(contornos) ? contornos : null);
+        };
+        request.onerror = () => {
+          console.error('Erro ao recuperar contornos:', request.error);
+          resolve(null);
+        };
+      } catch (error) {
+        console.error('Erro na transação de recuperação de contornos:', error);
+        resolve(null);
+      }
+    });
+  }
+
+  async deletarContornos(chave: string): Promise<boolean> {
+    if (!(await this.aguardarDB())) return false;
+
+    return new Promise(resolve => {
+      try {
+        const transaction = this.db!.transaction([this.STORE_CONTOURS], 'readwrite');
+        const request = transaction.objectStore(this.STORE_CONTOURS).delete(chave);
+        request.onsuccess = () => resolve(true);
+        request.onerror = () => {
+          console.error('Erro ao deletar contornos:', request.error);
+          resolve(false);
+        };
+      } catch (error) {
+        console.error('Erro na transação de deleção de contornos:', error);
         resolve(false);
       }
     });
@@ -346,6 +444,18 @@ export class StorageService {
   async salvarAnalises(analises: StoredAnalysis[]): Promise<boolean> {
     try {
       console.log(`📝 Tentando salvar ${analises.length} análises...`);
+
+      await Promise.all(analises.map(async analise => {
+        const chaveContornos = this.obterChaveContornos(analise);
+        const folhas = Array.isArray(analise.resultados) ? analise.resultados : [];
+        const possuiContornos = folhas.some(folha =>
+          Array.isArray(folha?.contour) && folha.contour.length > 0
+        );
+
+        if (chaveContornos && (possuiContornos || folhas.length === 0)) {
+          await this.salvarContornos(chaveContornos, folhas);
+        }
+      }));
 
       // Preserva dados exibidos no histórico/modal/exportação e remove campos pesados.
       const analisesPersistidas = analises.map(a => this.criarAnalisePersistida(a));
@@ -455,7 +565,6 @@ export class StorageService {
             relacaoLarguraComprimento: r?.relacaoLarguraComprimento,
             cx: r?.cx,
             cy: r?.cy,
-            contour: Array.isArray(r?.contour) ? r.contour : undefined,
             uid: r?.uid
           }))
         : [],

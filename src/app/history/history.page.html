@@ -183,7 +183,8 @@
                     <ion-spinner name="crescent"></ion-spinner>
                     <span>Atualizando marcações da imagem...</span>
                   </div>
-                  <img [src]="getThumbnail(analiseDetalhada)" *ngIf="getThumbnail(analiseDetalhada)"
+                  <img [src]="analiseDetalhada.imagemProcessada || getThumbnail(analiseDetalhada)"
+                    *ngIf="analiseDetalhada.imagemProcessada || getThumbnail(analiseDetalhada)"
                     (click)="!isRedrawingImage && abrirImagemAmpliada()" [class.is-redrawing]="isRedrawingImage"
                     style="cursor: pointer;" />
                   <ion-icon name="image-outline" *ngIf="!getThumbnail(analiseDetalhada)" size="large"></ion-icon>

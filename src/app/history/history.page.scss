@@ -189,16 +189,12 @@
     }
   }
 
-  /* Destaque de Área */
+  /* Área */
   .area-highlight {
-    font-weight: 700;
-    color: var(--ion-color-primary);
-    font-size: 1rem;
+    color: inherit;
 
     .unit {
-      font-size: 0.75rem;
-      font-weight: 400;
-      color: var(--ion-color-medium);
+      color: inherit;
     }
   }
 

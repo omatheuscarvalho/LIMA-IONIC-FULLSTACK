@@ -110,7 +110,7 @@
                   <ion-col>
                     <ion-button expand="block" class="home-action-button" (click)="selecionarImagem()">
                       <ion-icon slot="start" name="image"></ion-icon>
-                      Selecionar
+                      <span class="home-action-label">Selecionar</span>
                     </ion-button>
                   </ion-col>
 
@@ -118,15 +118,15 @@
                     <ion-button expand="block" color="success" class="home-action-button" (click)="calcular()" [disabled]="isAnalyzing">
                       <ion-spinner *ngIf="isAnalyzing"></ion-spinner>
                       <ion-icon *ngIf="!isAnalyzing" slot="start" name="calculator"></ion-icon>
-                      <span *ngIf="isAnalyzing" class="ml-2">Analisando...</span>
-                      <span *ngIf="!isAnalyzing">Analisar</span>
+                      <span *ngIf="isAnalyzing" class="home-action-label ml-2">Analisando...</span>
+                      <span *ngIf="!isAnalyzing" class="home-action-label">Analisar</span>
                     </ion-button>
                   </ion-col>
 
                   <ion-col>
                     <ion-button expand="block" color="light" class="home-action-button" (click)="resetAnalise()">
                       <ion-icon slot="start" name="trash"></ion-icon>
-                      Limpar campos
+                      <span class="home-action-label">Limpar campos</span>
                     </ion-button>
                   </ion-col>
 
@@ -137,14 +137,14 @@
                   <ion-col>
                     <ion-button expand="block" class="home-action-button" (click)="selecionarImagem()">
                       <ion-icon slot="start" name="image"></ion-icon>
-                      Selecionar
+                      <span class="home-action-label">Selecionar</span>
                     </ion-button>
                   </ion-col>
 
                   <ion-col>
                     <ion-button expand="block" color="medium" class="home-action-button" (click)="capturarImagem()">
                       <ion-icon slot="start" name="camera"></ion-icon>
-                      Capturar
+                      <span class="home-action-label">Capturar</span>
                     </ion-button>
                   </ion-col>
                 </ion-row>
@@ -155,15 +155,15 @@
                     <ion-button expand="block" color="success" class="home-action-button" (click)="calcular()" [disabled]="isAnalyzing">
                       <ion-spinner *ngIf="isAnalyzing"></ion-spinner>
                       <ion-icon *ngIf="!isAnalyzing" slot="start" name="calculator"></ion-icon>
-                      <span *ngIf="isAnalyzing" class="ml-2">Analisando...</span>
-                      <span *ngIf="!isAnalyzing">Analisar</span>
+                      <span *ngIf="isAnalyzing" class="home-action-label ml-2">Analisando...</span>
+                      <span *ngIf="!isAnalyzing" class="home-action-label">Analisar</span>
                     </ion-button>
                   </ion-col>
 
                   <ion-col>
                     <ion-button expand="block" color="light" class="home-action-button" (click)="resetAnalise()">
                       <ion-icon slot="start" name="trash"></ion-icon>
-                      Limpar campos
+                      <span class="home-action-label">Limpar campos</span>
                     </ion-button>
                   </ion-col>
                 </ion-row>

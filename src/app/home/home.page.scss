@@ -179,6 +179,13 @@
     display: none;
   }
 
+  .home-action-button {
+    min-height: 44px;
+    height: 44px;
+    margin: 0;
+    font-size: 1rem;
+  }
+
   .image-card ion-card-content {
     display: flex;
     padding-top: 0;
@@ -240,6 +247,8 @@
   @media (max-width: 767px) {
     .image-card-mobile {
       display: block;
+      max-height: 360px;
+      overflow: hidden;
     }
 
     .image-column {
@@ -255,7 +264,17 @@
     }
     
     .image-container {
-      min-height: 0;
+      height: min(40vh, 280px);
+      max-height: 280px;
+      min-height: 160px;
+      overflow: hidden;
+
+      ion-img {
+        width: 100%;
+        height: 100%;
+        max-height: 280px;
+        object-fit: contain;
+      }
     }
   }
 
@@ -366,6 +385,14 @@
   /* Botões de ação para desktop e mobile */
   .desktop-action-buttons {
     display: flex;
+    gap: 12px;
+    margin: 0 -6px;
+
+    ion-col {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 6px;
+    }
   }
 
   .mobile-image-buttons,
@@ -374,7 +401,7 @@
   }
 
   /* No mobile: mostrar botões mobile, ocultar desktop */
-  @media (max-width: 768px) {
+  @media (max-width: 767px) {
     .desktop-action-buttons {
       display: none;
     }
@@ -382,6 +409,25 @@
     .mobile-image-buttons,
     .mobile-action-buttons {
       display: flex;
+      gap: 12px;
+
+      ion-col {
+        padding: 6px;
+      }
+
+      ion-col {
+        display: flex;
+        flex: 1 1 0;
+        min-width: 0;
+      }
+
+      .home-action-button {
+        width: 100%;
+      }
+    }
+
+    .mobile-action-buttons {
+      margin-top: 12px;
     }
   }
   .results-header {

@@ -1,5 +1,14 @@
 /* history.page.scss */
 
+.font-size-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  min-width: 44px;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: none;
+}
+
 /* Variáveis locais para consistência */
 :root {
   --table-border-color: var(--ion-color-step-150, rgba(0,0,0,0.12));

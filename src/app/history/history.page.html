@@ -4,9 +4,17 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="home"></ion-back-button>
     </ion-buttons>
-    <ion-buttons slot="end">
-      <ion-button (click)="openAccessibilitySettings()" fill="clear" aria-label="Configurações de fonte">
-        <ion-icon slot="icon-only" name="settings"></ion-icon>
+    <ion-buttons slot="end" class="header-buttons">
+      <ion-button (click)="toggleTheme()" fill="clear" aria-label="Alternar tema claro ou escuro">
+        <ion-icon slot="icon-only" [name]="darkMode ? 'sunny' : 'moon'"></ion-icon>
+      </ion-button>
+
+      <ion-button (click)="decreaseFontSize()" fill="clear" aria-label="Diminuir tamanho da fonte" class="font-size-button">
+        <span aria-hidden="true">A-</span>
+      </ion-button>
+
+      <ion-button (click)="increaseFontSize()" fill="clear" aria-label="Aumentar tamanho da fonte" class="font-size-button">
+        <span aria-hidden="true">A+</span>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -16,7 +24,7 @@
 
   <ion-card class="header-card">
     <ion-card-content>
-      <ion-searchbar [(ngModel)]="searchTerm" placeholder="Buscar por espécie, tratamento..."
+      <ion-searchbar [(ngModel)]="searchTerm" placeholder="Buscar espécie, tratamento, réplica, data ou área..."
         debounce="300"></ion-searchbar>
 
       <div *ngIf="filteredHistorico.length === 0" class="ion-text-center ion-padding empty-state">
@@ -69,10 +77,10 @@
             </div>
 
             <div class="col-actions">
-              <button class="action-btn export-btn" (click)="$event.stopPropagation(); exportarAnalise(analise)">
+              <button class="action-btn export-btn" aria-label="Exportar dados da análise em CSV" (click)="$event.stopPropagation(); exportarAnalise(analise)">
                 <ion-icon name="download-outline"></ion-icon>
               </button>
-              <button class="action-btn delete-btn" (click)="$event.stopPropagation(); onDeleteAnalise(analise)">
+              <button class="action-btn delete-btn" aria-label="Excluir análise" (click)="$event.stopPropagation(); onDeleteAnalise(analise)">
                 <ion-icon name="trash-outline"></ion-icon>
               </button>
             </div>
@@ -139,7 +147,7 @@
     <ion-header>
       <ion-toolbar class="detail-modal-toolbar">
         <ion-buttons slot="end">
-          <ion-button (click)="fecharDetalhes()">
+          <ion-button (click)="fecharDetalhes()" aria-label="Fechar detalhes da análise">
             <ion-icon slot="icon-only" name="close"></ion-icon>
           </ion-button>
         </ion-buttons>
@@ -353,7 +361,7 @@
                 <ion-badge slot="start" color="medium">{{ r.id }}</ion-badge>
                 <ion-label></ion-label>
                 <ion-button slot="end" fill="clear" class="leaf-delete-button" type="button"
-                  [disabled]="isRedrawingImage"
+                  [disabled]="isRedrawingImage" aria-label="Excluir folha"
                   (click)="onDeleteLeafClick(r, $event)">
                   <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
                 </ion-button>
@@ -443,7 +451,7 @@
     <ion-header>
       <ion-toolbar color="primary">
         <ion-buttons slot="start">
-          <ion-button (click)="fecharImagemAmpliada()">
+          <ion-button (click)="fecharImagemAmpliada()" aria-label="Fechar imagem ampliada">
             <ion-icon slot="icon-only" name="close"></ion-icon>
           </ion-button>
         </ion-buttons>

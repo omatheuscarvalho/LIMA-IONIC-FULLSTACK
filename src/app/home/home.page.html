@@ -3,7 +3,7 @@
     <ion-title>L.I.M.A.</ion-title>
     <ion-buttons slot="end" class="header-buttons">
 
-      <ion-button (click)="toggleTheme()" fill="clear">
+      <ion-button (click)="toggleTheme()" fill="clear" aria-label="Alternar tema claro ou escuro">
         <ion-icon slot="icon-only" [name]="darkMode ? 'sunny' : 'moon'"></ion-icon>
       </ion-button>
 
@@ -108,14 +108,14 @@
                 <ion-row class="desktop-action-buttons">
 
                   <ion-col>
-                    <ion-button expand="block" (click)="selecionarImagem()">
+                    <ion-button expand="block" class="home-action-button" (click)="selecionarImagem()">
                       <ion-icon slot="start" name="image"></ion-icon>
                       Selecionar
                     </ion-button>
                   </ion-col>
 
                   <ion-col>
-                    <ion-button expand="block" color="success" (click)="calcular()" [disabled]="isAnalyzing">
+                    <ion-button expand="block" color="success" class="home-action-button" (click)="calcular()" [disabled]="isAnalyzing">
                       <ion-spinner *ngIf="isAnalyzing"></ion-spinner>
                       <ion-icon *ngIf="!isAnalyzing" slot="start" name="calculator"></ion-icon>
                       <span *ngIf="isAnalyzing" class="ml-2">Analisando...</span>
@@ -124,7 +124,7 @@
                   </ion-col>
 
                   <ion-col>
-                    <ion-button expand="block" color="light" (click)="resetAnalise()">
+                    <ion-button expand="block" color="light" class="home-action-button" (click)="resetAnalise()">
                       <ion-icon slot="start" name="trash"></ion-icon>
                       Limpar campos
                     </ion-button>
@@ -135,14 +135,14 @@
                 <!-- Mobile: 2 botões (Selecionar e Capturar) -->
                 <ion-row class="mobile-image-buttons">
                   <ion-col>
-                    <ion-button expand="block" (click)="selecionarImagem()">
+                    <ion-button expand="block" class="home-action-button" (click)="selecionarImagem()">
                       <ion-icon slot="start" name="image"></ion-icon>
                       Selecionar
                     </ion-button>
                   </ion-col>
 
                   <ion-col>
-                    <ion-button expand="block" color="medium" (click)="capturarImagem()">
+                    <ion-button expand="block" color="medium" class="home-action-button" (click)="capturarImagem()">
                       <ion-icon slot="start" name="camera"></ion-icon>
                       Capturar
                     </ion-button>
@@ -152,7 +152,7 @@
                 <!-- Mobile: 2 botões (Analisar e Limpar) -->
                 <ion-row class="mobile-action-buttons">
                   <ion-col>
-                    <ion-button expand="block" color="success" (click)="calcular()" [disabled]="isAnalyzing">
+                    <ion-button expand="block" color="success" class="home-action-button" (click)="calcular()" [disabled]="isAnalyzing">
                       <ion-spinner *ngIf="isAnalyzing"></ion-spinner>
                       <ion-icon *ngIf="!isAnalyzing" slot="start" name="calculator"></ion-icon>
                       <span *ngIf="isAnalyzing" class="ml-2">Analisando...</span>
@@ -161,7 +161,7 @@
                   </ion-col>
 
                   <ion-col>
-                    <ion-button expand="block" color="light" (click)="resetAnalise()">
+                    <ion-button expand="block" color="light" class="home-action-button" (click)="resetAnalise()">
                       <ion-icon slot="start" name="trash"></ion-icon>
                       Limpar campos
                     </ion-button>
@@ -173,7 +173,7 @@
             </ion-card-content>
           </ion-card>
 
-          <ion-card class="image-card image-card-mobile">
+          <ion-card class="image-card image-card-mobile" *ngIf="imagemSelecionada">
             <ion-card-header>
               <ion-card-title>{{ imagemProcessada ? 'Imagem Processada' : 'Imagem' }}</ion-card-title>
             </ion-card-header>
@@ -181,9 +181,6 @@
             <ion-card-content>
               <div class="image-container">
                 <ion-img *ngIf="hasImage" [src]="imagemProcessada || imagemSelecionada"></ion-img>
-                <ion-text *ngIf="!hasImage" color="medium" class="placeholder-text">
-                  Selecione uma imagem para análise
-                </ion-text>
               </div>
             </ion-card-content>
           </ion-card>
@@ -240,7 +237,7 @@
                     [name]="visibleLeafDetails.has(r.id) ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
 
                   <!-- botão de excluir rápido (para cada folha) (posicionado no fim) -->
-                  <ion-button slot="end" fill="clear" color="danger" (click)="onDeleteClick(r.id, $event)">
+                  <ion-button slot="end" fill="clear" color="danger" aria-label="Excluir folha" (click)="onDeleteClick(r.id, $event)">
                     <ion-icon name="trash"></ion-icon>
                   </ion-button>
                 </ion-item>
@@ -356,7 +353,7 @@
         </ion-col>
 
         <ion-col size="12" size-md="5" class="image-column">
-          <ion-card class="image-card">
+          <ion-card class="image-card" *ngIf="imagemSelecionada">
             <ion-card-header>
               <ion-card-title>{{ imagemProcessada ? 'Imagem Processada' : 'Imagem' }}</ion-card-title>
             </ion-card-header>
@@ -364,9 +361,6 @@
             <ion-card-content>
               <div class="image-container">
                 <ion-img *ngIf="hasImage" [src]="imagemProcessada || imagemSelecionada"></ion-img>
-                <ion-text *ngIf="!hasImage" color="medium" class="placeholder-text">
-                  Selecione uma imagem para análise
-                </ion-text>
               </div>
             </ion-card-content>
           </ion-card>

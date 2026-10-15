@@ -133,6 +133,7 @@ export class HistoryPage implements OnInit {
   filteredHistorico: any[] = []; // Adicionado para manter consistência com o HTML
   analiseDetalhada: any = null;
   searchTerm: string = '';
+  darkMode = false;
 
   // edição do modal
   editingDetalhe: boolean = false;
@@ -206,6 +207,8 @@ export class HistoryPage implements OnInit {
       'document-outline': documentOutline,
       'document-text-outline': documentTextOutline
     });
+
+    this.themeService.darkMode$.subscribe(value => this.darkMode = value);
   }
 
   ngOnInit() {
@@ -294,13 +297,30 @@ export class HistoryPage implements OnInit {
       return;
     }
 
-    const term = this.searchTerm.toLowerCase();
+    const term = this.searchTerm.trim().toLocaleLowerCase('pt-BR');
     this.filteredHistorico = this.historico.filter(h => {
-      const especie = h.especie ? h.especie.toLowerCase() : '';
-      const tratamento = h.tratamento ? h.tratamento.toLowerCase() : '';
-      const nome = h.nomeImagem ? h.nomeImagem.toLowerCase() : '';
+      const data = h.data ? new Date(h.data) : null;
+      const dataFormatada = data && !Number.isNaN(data.getTime())
+        ? data.toLocaleDateString('pt-BR')
+        : '';
+      const dataCurta = data && !Number.isNaN(data.getTime())
+        ? data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })
+        : '';
+      const areaPadrao = h.areaPadrao ?? h.areaEscala;
+      const camposPesquisaveis = [
+        h.especie,
+        h.tratamento,
+        h.replica,
+        dataFormatada,
+        dataCurta,
+        areaPadrao,
+        typeof areaPadrao === 'number' ? areaPadrao.toLocaleString('pt-BR') : null,
+        h.nomeImagem
+      ];
 
-      return especie.includes(term) || tratamento.includes(term) || nome.includes(term);
+      return camposPesquisaveis.some(campo =>
+        String(campo ?? '').toLocaleLowerCase('pt-BR').includes(term)
+      );
     });
   }
 
@@ -781,6 +801,18 @@ export class HistoryPage implements OnInit {
 
   openAccessibilitySettings() {
     this.themeService.openFontSettings();
+  }
+
+  toggleTheme() {
+    this.themeService.toggleTheme();
+  }
+
+  increaseFontSize() {
+    this.themeService.increaseFontSize();
+  }
+
+  decreaseFontSize() {
+    this.themeService.decreaseFontSize();
   }
 
   async atualizarStorage() {

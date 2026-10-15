@@ -170,9 +170,9 @@ export class ExportService {
             linhasExportacao.push(desvioRow);
         }
 
-        const csvFinal = Papa.unparse(linhasExportacao, {
+        const csvFinal = '\uFEFFsep=;\r\n' + Papa.unparse(linhasExportacao, {
             delimiter: ';',
-            quotes: false,
+            quotes: true,
             newline: '\r\n'
         });
 
@@ -381,15 +381,19 @@ export class ExportService {
     // MÉTODO AUXILIAR DE COMPARTILHAMENTO / DOWNLOAD
     // =========================================================================
     private async downloadOuCompartilhar(conteudo: string | Blob, filename: string, mimeType: string, dialogTitle: string) {
+        const conteudoComBom = typeof conteudo === 'string' && !conteudo.startsWith('\uFEFF')
+            ? '\uFEFF' + conteudo
+            : conteudo;
+
         if (Capacitor.isNativePlatform()) {
             // 📱 NO CELULAR NATIVO: Salva no cache e abre a tela de compartilhar (WhatsApp, etc)
             try {
                 let base64Data: string;
 
-                if (conteudo instanceof Blob) {
+                if (conteudoComBom instanceof Blob) {
                     base64Data = await new Promise((resolve, reject) => {
                         const reader = new FileReader();
-                        reader.readAsDataURL(conteudo);
+                        reader.readAsDataURL(conteudoComBom);
                         reader.onloadend = () => {
                             const result = reader.result as string;
                             resolve(result.split(',')[1]);
@@ -397,7 +401,7 @@ export class ExportService {
                         reader.onerror = reject;
                     });
                 } else {
-                    base64Data = btoa(unescape(encodeURIComponent(conteudo as string)));
+                    base64Data = btoa(unescape(encodeURIComponent(conteudoComBom as string)));
                 }
 
                 const result = await Filesystem.writeFile({
@@ -421,7 +425,9 @@ export class ExportService {
             }
         } else {
             // 💻 NA WEB / NAVEGADOR: Força o download direto sempre!
-            const blob = conteudo instanceof Blob ? conteudo : new Blob(['\uFEFF', conteudo as string], { type: mimeType });
+            const blob = conteudoComBom instanceof Blob
+                ? conteudoComBom
+                : new Blob([conteudoComBom as string], { type: mimeType });
 
             try {
                 saveAs(blob, filename);

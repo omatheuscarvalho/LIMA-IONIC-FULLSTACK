@@ -135,9 +135,12 @@ export class HistoryPage implements OnInit {
   searchTerm: string = '';
   darkMode = false;
 
-  // edição do modal
-  editingDetalhe: boolean = false;
-  editModel: any = null;
+  isEditModalOpen = false;
+  editData = {
+    especie: '',
+    tratamento: '',
+    replica: ''
+  };
 
   // Variável para controlar a aba selecionada no modal
   selectedSegment: string = 'resumo';
@@ -818,14 +821,13 @@ export class HistoryPage implements OnInit {
     // Armazena apenas a referência do ID para encontrar depois
     this.resetFiltroExibicao();
     this.analiseDetalhada = JSON.parse(JSON.stringify(analise));
-    this.editingDetalhe = false;
+    this.isEditModalOpen = false;
     this.selectedSegment = 'resumo';
   }
 
   fecharDetalhes() {
     this.analiseDetalhada = null;
-    this.editingDetalhe = false;
-    this.editModel = null;
+    this.isEditModalOpen = false;
     this.selectedSegment = 'resumo'; // Resetar para a aba principal
     this.resetFiltroExibicao();
   }
@@ -932,53 +934,49 @@ export class HistoryPage implements OnInit {
     await actionSheet.present();
   }
 
-  // --- MÉTODOS DE EDIÇÃO ---
-
-  toggleEditDetalhe() {
+  abrirEditModal() {
     if (!this.analiseDetalhada) return;
 
-    this.editingDetalhe = true;
-
-    // Copia os valores atuais para o modelo de edição
-    this.editModel = {
-      especie: this.analiseDetalhada.especie,
-      tratamento: this.analiseDetalhada.tratamento,
-      replica: this.analiseDetalhada.replica,
-      nomeImagem: this.analiseDetalhada.nomeImagem
+    this.editData = {
+      especie: this.analiseDetalhada.especie || '',
+      tratamento: this.analiseDetalhada.tratamento || '',
+      replica: this.analiseDetalhada.replica || ''
     };
+    this.isEditModalOpen = true;
   }
 
-  cancelEditDetalhe() {
-    this.editingDetalhe = false;
-    this.editModel = null;
+  fecharEditModal() {
+    this.isEditModalOpen = false;
   }
 
-  saveEditDetalhe() {
-    if (!this.analiseDetalhada || !this.editModel) return;
+  async salvarEdicaoAmostra() {
+    if (!this.analiseDetalhada) return;
 
-    // Encontra o índice no array principal
-    const idx = this.historico.findIndex(h => h.id === this.analiseDetalhada.id);
-    if (idx < 0) return;
-
-    // Cria um novo objeto limpo com apenas os dados essenciais
     const analiseAtualizada = {
-      ...this.historico[idx], // Mantém todos os dados originais
-      especie: this.editModel.especie,
-      tratamento: this.editModel.tratamento,
-      replica: this.editModel.replica,
-      nomeImagem: this.editModel.nomeImagem
+      ...this.analiseDetalhada,
+      especie: this.editData.especie,
+      tratamento: this.editData.tratamento,
+      replica: this.editData.replica
     };
 
-    // Atualiza no array
-    this.historico[idx] = analiseAtualizada;
+    this.ngZone.run(() => {
+      this.historico = this.historico.map(analise =>
+        analise.id === analiseAtualizada.id ? { ...analiseAtualizada } : analise
+      );
+      this.filteredHistorico = this.filteredHistorico.map(analise =>
+        analise.id === analiseAtualizada.id ? { ...analiseAtualizada } : analise
+      );
+      this.analiseDetalhada = { ...analiseAtualizada };
+      this.cdr.detectChanges();
+    });
 
-    // Atualiza a visualização do modal
-    this.analiseDetalhada = analiseAtualizada;
-
-    // Salva no storage
-    this.atualizarStorage();
-
-    this.editingDetalhe = false;
-    this.editModel = null;
+    try {
+      await this.atualizarStorage();
+    } finally {
+      this.ngZone.run(() => {
+        this.isEditModalOpen = false;
+        this.cdr.detectChanges();
+      });
+    }
   }
 }

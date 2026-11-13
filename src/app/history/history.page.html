@@ -234,6 +234,21 @@
                 </div>
               </div>
 
+              <h4 class="section-subtitle" *ngIf="viewFilterState.mediaDesvio && viewFilterState.area">Área:</h4>
+
+              <div class="stat-grid" *ngIf="viewFilterState.mediaDesvio && viewFilterState.area">
+                <div class="mini-stat">
+                  <span class="label">Média</span>
+                  <span class="value">{{ (agg.mediaArea || agg.averageArea || 0) | number:'1.5-5' }} <small>{{
+                      analiseDetalhada.unidade || 'cm' }}²</small></span>
+                </div>
+                <div class="mini-stat">
+                  <span class="label">Desvio Padrão</span>
+                  <span class="value">{{ (agg.desvioArea || agg.standardDeviationArea || 0) | number:'1.5-5' }}
+                    <small>{{ analiseDetalhada.unidade || 'cm' }}²</small></span>
+                </div>
+              </div>
+
               <h4 class="section-subtitle" *ngIf="viewFilterState.mediaDesvio && viewFilterState.largura">Largura:</h4>
 
               <div class="stat-grid" *ngIf="viewFilterState.mediaDesvio && viewFilterState.largura">
@@ -262,21 +277,6 @@
                   <span class="value">{{ (agg.desvioComprimento || agg.standardDeviationLength || 0) |
                     number:'1.5-5'
                     }} <small>{{ analiseDetalhada.unidade || 'cm' }}</small></span>
-                </div>
-              </div>
-
-              <h4 class="section-subtitle" *ngIf="viewFilterState.mediaDesvio && viewFilterState.area">Área:</h4>
-
-              <div class="stat-grid" *ngIf="viewFilterState.mediaDesvio && viewFilterState.area">
-                <div class="mini-stat">
-                  <span class="label">Média</span>
-                  <span class="value">{{ (agg.mediaArea || agg.averageArea || 0) | number:'1.5-5' }} <small>{{
-                      analiseDetalhada.unidade || 'cm' }}²</small></span>
-                </div>
-                <div class="mini-stat">
-                  <span class="label">Desvio Padrão</span>
-                  <span class="value">{{ (agg.desvioArea || agg.standardDeviationArea || 0) | number:'1.5-5' }}
-                    <small>{{ analiseDetalhada.unidade || 'cm' }}²</small></span>
                 </div>
               </div>
 
@@ -344,6 +344,13 @@
               <div class="ion-padding" slot="content">
                 <ion-grid class="leaf-details-grid">
                   <ion-row>
+                    <ion-col size="12" size-md="6" *ngIf="viewFilterState.area">
+                      <div class="detail-box">
+                        <span class="lbl">Área</span>
+                        <span class="val">{{ r.area | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm'
+                          }}²</span>
+                      </div>
+                    </ion-col>
                     <ion-col size="12" size-md="6" *ngIf="viewFilterState.largura">
                       <div class="detail-box">
                         <span class="lbl">Largura</span>
@@ -358,24 +365,17 @@
                           }}</span>
                       </div>
                     </ion-col>
-                    <ion-col size="12" size-md="6" *ngIf="viewFilterState.relacaoLarguraComprimento">
-                      <div class="detail-box">
-                        <span class="lbl">Relação L/C</span>
-                        <span class="val">{{ r.relacaoLarguraComprimento | number:'1.5-5' }}</span>
-                      </div>
-                    </ion-col>
-                    <ion-col size="12" size-md="6" *ngIf="viewFilterState.area">
-                      <div class="detail-box">
-                        <span class="lbl">Área</span>
-                        <span class="val">{{ r.area | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm'
-                          }}²</span>
-                      </div>
-                    </ion-col>
                     <ion-col size="12" size-md="6" *ngIf="viewFilterState.perimetro">
                       <div class="detail-box">
                         <span class="lbl">Perímetro</span>
                         <span class="val">{{ r.perimetro | number:'1.5-5' }} {{ analiseDetalhada.unidade || 'cm'
                           }}</span>
+                      </div>
+                    </ion-col>
+                    <ion-col size="12" size-md="6" *ngIf="viewFilterState.relacaoLarguraComprimento">
+                      <div class="detail-box">
+                        <span class="lbl">Relação L/C</span>
+                        <span class="val">{{ r.relacaoLarguraComprimento | number:'1.5-5' }}</span>
                       </div>
                     </ion-col>
                   </ion-row>

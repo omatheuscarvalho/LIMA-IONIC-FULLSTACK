@@ -121,11 +121,11 @@ type MedidaKey =
 export class HistoryPage implements OnInit {
   medidasOptions: { key: MedidaKey; label: string }[] = [
     { key: 'area', label: 'Área' },
-    { key: 'perimetro', label: 'Perímetro' },
-    { key: 'comprimento', label: 'Comprimento' },
     { key: 'largura', label: 'Largura' },
-    { key: 'somarAreas', label: 'Somar áreas' },
+    { key: 'comprimento', label: 'Comprimento' },
+    { key: 'perimetro', label: 'Perímetro' },
     { key: 'relacaoLarguraComprimento', label: 'Relação L/C' },
+    { key: 'somarAreas', label: 'Somar áreas' },
     { key: 'mediaDesvio', label: 'Média e desvio' }
   ];
 

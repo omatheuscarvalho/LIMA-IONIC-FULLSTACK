@@ -179,8 +179,9 @@
             </ion-card-header>
 
             <ion-card-content>
-              <div class="image-container">
-                <ion-img *ngIf="hasImage" [src]="imagemProcessada || imagemSelecionada"></ion-img>
+              <div class="image-container" (click)="abrirImagemAmpliada()" style="cursor: pointer;">
+                <ion-img *ngIf="hasImage" [src]="imagemProcessada || imagemSelecionada"
+                  (click)="abrirImagemAmpliada()" style="cursor: pointer;"></ion-img>
               </div>
             </ion-card-content>
           </ion-card>
@@ -359,8 +360,9 @@
             </ion-card-header>
 
             <ion-card-content>
-              <div class="image-container">
-                <ion-img *ngIf="hasImage" [src]="imagemProcessada || imagemSelecionada"></ion-img>
+              <div class="image-container" (click)="abrirImagemAmpliada()" style="cursor: pointer;">
+                <ion-img *ngIf="hasImage" [src]="imagemProcessada || imagemSelecionada"
+                  (click)="abrirImagemAmpliada()" style="cursor: pointer;"></ion-img>
               </div>
             </ion-card-content>
           </ion-card>
@@ -370,3 +372,25 @@
   </div>
 
 </ion-content>
+
+<ion-modal [isOpen]="imagemAmpliada !== null" (didDismiss)="fecharImagemAmpliada()">
+  <ng-template>
+    <ion-content [scrollY]="false">
+      <div
+        style="width: 100%; height: 100%; overflow: auto; display: flex; justify-content: center; align-items: center;">
+        <img
+          [src]="imagemAmpliada"
+          alt="Imagem ampliada da análise"
+          [style.transform]="'scale(' + zoomScale + ')'"
+          style="transition: transform 0.25s ease;"
+          (dblclick)="toggleZoom()">
+      </div>
+
+      <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+        <ion-fab-button (click)="toggleZoom()" color="light" aria-label="Alternar zoom da imagem">
+          <ion-icon [name]="zoomScale === 1 ? 'search-outline' : 'contract-outline'"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
+    </ion-content>
+  </ng-template>
+</ion-modal>

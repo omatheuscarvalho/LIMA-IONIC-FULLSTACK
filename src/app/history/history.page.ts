@@ -35,6 +35,8 @@ import {
   IonInput,
   IonList,
   IonSpinner,
+  IonFab,
+  IonFabButton,
   ActionSheetController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -63,7 +65,7 @@ import {
   contract,
   closeOutline,
   camera,
-  image as imageIcon, checkmarkOutline, settings
+  image as imageIcon, checkmarkOutline, settings, searchOutline, contractOutline
 } from 'ionicons/icons';
 import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
@@ -111,7 +113,9 @@ type MedidaKey =
     IonItem,
     IonInput,
     IonList,
-    IonSpinner
+    IonSpinner,
+    IonFab,
+    IonFabButton
   ]
 })
 export class HistoryPage implements OnInit {
@@ -147,6 +151,7 @@ export class HistoryPage implements OnInit {
 
   // Modal de imagem ampliada
   imagemAmpliada: string | null = null;
+  zoomScale: number = 1;
   isRedrawingImage = false;
 
   private pendingLeafDeletion: {
@@ -209,7 +214,9 @@ export class HistoryPage implements OnInit {
       expand,
       contract,
       'document-outline': documentOutline,
-      'document-text-outline': documentTextOutline
+      'document-text-outline': documentTextOutline,
+      'search-outline': searchOutline,
+      'contract-outline': contractOutline
     });
 
     this.themeService.darkMode$.subscribe(value => this.darkMode = value);
@@ -840,11 +847,16 @@ export class HistoryPage implements OnInit {
   abrirImagemAmpliada() {
     if (this.analiseDetalhada) {
       this.imagemAmpliada = this.getThumbnail(this.analiseDetalhada);
+      this.zoomScale = 1;
     }
   }
 
   fecharImagemAmpliada() {
     this.imagemAmpliada = null;
+  }
+
+  toggleZoom() {
+    this.zoomScale = this.zoomScale === 1 ? 3 : 1;
   }
 
   openAccessibilitySettings() {

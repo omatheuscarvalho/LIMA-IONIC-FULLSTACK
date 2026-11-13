@@ -5,14 +5,15 @@ import {
   IonCol, IonContent, IonGrid, IonTitle, IonHeader, IonIcon, IonInput, IonItem, IonLabel,
   IonNote, IonRow, IonToolbar, IonImg, IonText, IonList, IonCheckbox,
   IonSpinner, AlertController, AlertInput, IonSelect, IonSelectOption, IonAccordion,
-  IonAccordionGroup, ActionSheetController
+  IonAccordionGroup, ActionSheetController, IonModal, IonFab, IonFabButton
 } from '@ionic/angular/standalone';
 import { DOCUMENT, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import {
   camera, download, help, home, moon, sunny, time,
-  trash, logOut, calculator, image as imageIcon, chevronDownOutline, chevronUpOutline, documentOutline, documentTextOutline, close
+  trash, logOut, calculator, image as imageIcon, chevronDownOutline, chevronUpOutline,
+  documentOutline, documentTextOutline, close, searchOutline, contractOutline
 } from 'ionicons/icons';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import * as Papa from 'papaparse';
@@ -49,7 +50,8 @@ type UnidadeKey = 'cm' | 'mm';
     IonHeader, IonToolbar, IonTitle, IonContent, FormsModule, CommonModule, IonCard,
     IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton,
     IonIcon, IonNote, IonButtons, IonGrid, IonRow, IonCol, IonImg, IonText, IonList,
-    IonCheckbox, IonSpinner, IonSelect, IonSelectOption, IonAccordion, IonAccordionGroup
+    IonCheckbox, IonSpinner, IonSelect, IonSelectOption, IonAccordion, IonAccordionGroup,
+    IonModal, IonFab, IonFabButton
   ],
 })
 export class HomePage {
@@ -127,6 +129,8 @@ export class HomePage {
   // --- imagens / seleção ---
   imagemSelecionada: string | null = null;
   imagemProcessada: string | null = null;
+  imagemAmpliada: string | null = null;
+  zoomScale: number = 1;
   resultadoDimensoes: { width: number; height: number } | null = null;
   currentAnalysisId: number | null = null;
   nomeImagem = '';
@@ -176,6 +180,8 @@ export class HomePage {
       'chevron-up-outline': chevronUpOutline,
       'document-outline': documentOutline,
       'document-text-outline': documentTextOutline,
+      'search-outline': searchOutline,
+      'contract-outline': contractOutline,
       close
     });
 
@@ -239,6 +245,19 @@ export class HomePage {
     this.isAnalyzing = false;
     this.visibleLeafDetails.clear();
     this.aggregatedResultsVisible = false;
+  }
+
+  abrirImagemAmpliada() {
+    this.imagemAmpliada = this.imagemProcessada || this.imagemSelecionada;
+    this.zoomScale = 1;
+  }
+
+  fecharImagemAmpliada() {
+    this.imagemAmpliada = null;
+  }
+
+  toggleZoom() {
+    this.zoomScale = this.zoomScale === 1 ? 3 : 1;
   }
 
   selecionarImagem() {

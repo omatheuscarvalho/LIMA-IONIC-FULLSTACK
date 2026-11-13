@@ -434,7 +434,19 @@
     </ion-header>
 
     <ion-content class="image-modal-content">
-      <img [src]="imagemAmpliada" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+      <div style="width: 100%; height: 100%; overflow: auto; display: flex; justify-content: center; align-items: center;">
+        <img
+          [src]="imagemAmpliada"
+          [style.transform]="'scale(' + zoomScale + ')'"
+          style="transition: transform 0.25s ease; transform-origin: center center;"
+          (dblclick)="toggleZoom()" />
+      </div>
+
+      <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="ion-margin">
+        <ion-fab-button (click)="toggleZoom()" color="light" aria-label="Alternar zoom da imagem">
+          <ion-icon [name]="zoomScale === 1 ? 'search-outline' : 'contract-outline'"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
     </ion-content>
   </ng-template>
 </ion-modal>

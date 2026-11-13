@@ -35,8 +35,6 @@ import {
   IonInput,
   IonList,
   IonSpinner,
-  IonFab,
-  IonFabButton,
   ActionSheetController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -65,7 +63,7 @@ import {
   contract,
   closeOutline,
   camera,
-  image as imageIcon, checkmarkOutline, settings, searchOutline, contractOutline
+  image as imageIcon, checkmarkOutline, settings, removeCircleOutline, addCircleOutline
 } from 'ionicons/icons';
 import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
@@ -113,9 +111,7 @@ type MedidaKey =
     IonItem,
     IonInput,
     IonList,
-    IonSpinner,
-    IonFab,
-    IonFabButton
+    IonSpinner
   ]
 })
 export class HistoryPage implements OnInit {
@@ -151,7 +147,7 @@ export class HistoryPage implements OnInit {
 
   // Modal de imagem ampliada
   imagemAmpliada: string | null = null;
-  zoomScale: number = 1;
+  zoomScale: number = 100;
   isRedrawingImage = false;
 
   private pendingLeafDeletion: {
@@ -215,8 +211,8 @@ export class HistoryPage implements OnInit {
       contract,
       'document-outline': documentOutline,
       'document-text-outline': documentTextOutline,
-      'search-outline': searchOutline,
-      'contract-outline': contractOutline
+      'remove-circle-outline': removeCircleOutline,
+      'add-circle-outline': addCircleOutline
     });
 
     this.themeService.darkMode$.subscribe(value => this.darkMode = value);
@@ -847,7 +843,7 @@ export class HistoryPage implements OnInit {
   abrirImagemAmpliada() {
     if (this.analiseDetalhada) {
       this.imagemAmpliada = this.getThumbnail(this.analiseDetalhada);
-      this.zoomScale = 1;
+      this.resetZoom();
     }
   }
 
@@ -855,8 +851,16 @@ export class HistoryPage implements OnInit {
     this.imagemAmpliada = null;
   }
 
-  toggleZoom() {
-    this.zoomScale = this.zoomScale === 1 ? 3 : 1;
+  zoomIn() {
+    this.zoomScale = Math.min(500, this.zoomScale + 50);
+  }
+
+  zoomOut() {
+    this.zoomScale = Math.max(100, this.zoomScale - 50);
+  }
+
+  resetZoom() {
+    this.zoomScale = 100;
   }
 
   openAccessibilitySettings() {

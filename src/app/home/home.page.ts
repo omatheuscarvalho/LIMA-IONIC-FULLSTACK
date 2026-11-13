@@ -5,7 +5,7 @@ import {
   IonCol, IonContent, IonGrid, IonTitle, IonHeader, IonIcon, IonInput, IonItem, IonLabel,
   IonNote, IonRow, IonToolbar, IonImg, IonText, IonList, IonCheckbox,
   IonSpinner, AlertController, AlertInput, IonSelect, IonSelectOption, IonAccordion,
-  IonAccordionGroup, ActionSheetController, IonModal, IonFab, IonFabButton
+  IonAccordionGroup, ActionSheetController, IonModal, IonFooter
 } from '@ionic/angular/standalone';
 import { DOCUMENT, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,7 +13,7 @@ import { addIcons } from 'ionicons';
 import {
   camera, download, help, home, moon, sunny, time,
   trash, logOut, calculator, image as imageIcon, chevronDownOutline, chevronUpOutline,
-  documentOutline, documentTextOutline, close, searchOutline, contractOutline
+  documentOutline, documentTextOutline, close, removeCircleOutline, addCircleOutline
 } from 'ionicons/icons';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import * as Papa from 'papaparse';
@@ -51,7 +51,7 @@ type UnidadeKey = 'cm' | 'mm';
     IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonButton,
     IonIcon, IonNote, IonButtons, IonGrid, IonRow, IonCol, IonImg, IonText, IonList,
     IonCheckbox, IonSpinner, IonSelect, IonSelectOption, IonAccordion, IonAccordionGroup,
-    IonModal, IonFab, IonFabButton
+    IonModal, IonFooter
   ],
 })
 export class HomePage {
@@ -130,7 +130,7 @@ export class HomePage {
   imagemSelecionada: string | null = null;
   imagemProcessada: string | null = null;
   imagemAmpliada: string | null = null;
-  zoomScale: number = 1;
+  zoomScale: number = 100;
   resultadoDimensoes: { width: number; height: number } | null = null;
   currentAnalysisId: number | null = null;
   nomeImagem = '';
@@ -180,8 +180,8 @@ export class HomePage {
       'chevron-up-outline': chevronUpOutline,
       'document-outline': documentOutline,
       'document-text-outline': documentTextOutline,
-      'search-outline': searchOutline,
-      'contract-outline': contractOutline,
+      'remove-circle-outline': removeCircleOutline,
+      'add-circle-outline': addCircleOutline,
       close
     });
 
@@ -249,15 +249,23 @@ export class HomePage {
 
   abrirImagemAmpliada() {
     this.imagemAmpliada = this.imagemProcessada || this.imagemSelecionada;
-    this.zoomScale = 1;
+    this.resetZoom();
   }
 
   fecharImagemAmpliada() {
     this.imagemAmpliada = null;
   }
 
-  toggleZoom() {
-    this.zoomScale = this.zoomScale === 1 ? 3 : 1;
+  zoomIn() {
+    this.zoomScale = Math.min(500, this.zoomScale + 50);
+  }
+
+  zoomOut() {
+    this.zoomScale = Math.max(100, this.zoomScale - 50);
+  }
+
+  resetZoom() {
+    this.zoomScale = 100;
   }
 
   selecionarImagem() {

@@ -128,6 +128,7 @@ export class HomePage {
   imagemSelecionada: string | null = null;
   imagemProcessada: string | null = null;
   resultadoDimensoes: { width: number; height: number } | null = null;
+  currentAnalysisId: number | null = null;
   nomeImagem = '';
   hasImage = false;
   selectedImageFile: File | null = null;
@@ -229,6 +230,7 @@ export class HomePage {
     this.imagemSelecionada = null;
     this.imagemProcessada = null;
     this.resultadoDimensoes = null;
+    this.currentAnalysisId = null;
     this.nomeImagem = '';
     this.hasImage = false;
     this.selectedImageFile = null;
@@ -523,7 +525,10 @@ export class HomePage {
     // Sempre recarrega o histórico do localStorage antes de adicionar
     this.carregarHistorico();
 
-    const idAnalise = Date.now();
+    if (!this.currentAnalysisId) {
+      this.currentAnalysisId = Date.now();
+    }
+    const idAnalise = this.currentAnalysisId;
     let imagemKey: string | null = null;
     let imagemOriginalKey: string | null = null;
     let imagemThumbnail: string | null = null;
@@ -603,8 +608,13 @@ export class HomePage {
       imagemThumbnail: imagemThumbnail
     };
 
-    // Adiciona ao histórico em memória
-    this.historico.unshift(analise);
+    // Atualiza a análise atual ou adiciona uma nova ao histórico
+    const index = this.historico.findIndex(a => a.id === idAnalise);
+    if (index >= 0) {
+      this.historico[index] = analise;
+    } else {
+      this.historico.unshift(analise);
+    }
 
     // Mantém apenas 30 análises mais recentes
     if (this.historico.length > 30) {

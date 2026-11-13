@@ -2,7 +2,7 @@ import { Injectable, NgZone } from '@angular/core';
 import * as Papa from 'papaparse';
 import { saveAs } from 'file-saver';
 import { Capacitor } from '@capacitor/core';
-import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import * as html2pdfPlugin from 'html2pdf.js';
 import { AggregatedMetrics, LeafMetric } from './image-analysis.service';
@@ -170,7 +170,7 @@ export class ExportService {
             linhasExportacao.push(desvioRow);
         }
 
-        const csvFinal = '\uFEFFsep=;\r\n' + Papa.unparse(linhasExportacao, {
+        const csvString = Papa.unparse(linhasExportacao, {
             delimiter: ';',
             quotes: true,
             newline: '\r\n'
@@ -181,7 +181,7 @@ export class ExportService {
         const tratamentoLimpo = (analise.tratamento || 'sem_tratamento').replace(/[^a-z0-9]/gi, '_').toLowerCase();
         const filename = `LIMA_${especieLimpa}_${tratamentoLimpo}_${dataArquivo}.csv`;
 
-        await this.downloadOuCompartilhar(csvFinal, filename, 'text/csv;charset=utf-8', 'Exportar CSV');
+        await this.downloadOuCompartilhar(csvString, filename, 'text/csv;charset=utf-8;', 'Exportar CSV');
     }
 
     // =========================================================================
@@ -427,7 +427,10 @@ export class ExportService {
             // 💻 NA WEB / NAVEGADOR: Força o download direto sempre!
             const blob = conteudoComBom instanceof Blob
                 ? conteudoComBom
-                : new Blob([conteudoComBom as string], { type: mimeType });
+                : new Blob([
+                    new Uint8Array([0xEF, 0xBB, 0xBF]),
+                    conteudo as string
+                ], { type: mimeType });
 
             try {
                 saveAs(blob, filename);
